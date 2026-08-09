@@ -410,3 +410,86 @@ Claude sadece içinde bulunduğu klasörü görür — bu bir güvenlik özelli�
 ---
 
 *Bu rapor 6 paralel araştırma ajanının bulgularının sentezidir. Doğrulanmamış olarak işaretlenen kalemler: Claude Max saat/token limit rakamları (Anthropic resmî yayınlamıyor — `/usage` tek doğru kaynak), Figma Dev Mode ücretsiz erişimi, ComfyUI MCP olgunluğu.*
+
+---
+
+# EK: İçerik Kararı (Adım B)
+
+**Seçilen yön:** İngilizce, bilim/matematik açıklayıcı kanal, gelir hedefli, Manim + Remotion ile.
+
+## B.1 En önemli düzeltme: "bilim explainer" kategorinin en düşük ödeyen ucu
+
+300 kanalın gerçek YouTube Analytics verisiyle yapılan çalışmada **Education & Science, 13 niş içinde en yüksek ödeyen kategori: medyan RPM $10,22** (tüm-niş medyanı ~$2,30). Ama kategori içi dağılım çok geniş:
+
+| Alt-niş | RPM |
+|---|---|
+| Yazılım & teknoloji | $20–40 |
+| Kantitatif finans / yatırım matematiği | $10–25 (ABD $28–40) |
+| Mühendislik matematiği / sinyal & kontrol | ~$15–25 |
+| Eğitim (sınav, sertifika, dil) | $7–11 |
+| **Bilim explainer (genel: fizik/uzay/biyoloji)** | **$5–9** |
+
+Yani "fizik/uzay/biyoloji" seçmek, "mühendislik matematiği / algoritma" seçmeye kıyasla **aynı izlenmeyle 3–4 kat az para** demek. Üstüne, genel bilim tam olarak devlerin (3Blue1Brown 6,3M, Veritasium, Kurzgesagt) bölgesi.
+
+**Doygunluk "bilim" başlığında var, teknik derinlikte yok.** Boşluk: profesyonel/uygulamalı matematik — arama talebi yüksek, arz düşük, RPM 2–4 kat fazla.
+
+## B.2 Aday alt-nişler
+
+| # | Alt-niş | RPM | Rekabet | İlk video fikirleri |
+|---|---|---|---|---|
+| 1 | Kantitatif finans matematiği | $10–25 | Orta | Black-Scholes sezgisel türetimi · Kelly Criterion neden yarısını oynatır · Neden log-getiri · Sharpe oranının yalanı |
+| 2 | **Mühendislik matematiği / sinyal & kontrol** | $15–25 | **Çok düşük** | Kalman filtresi cebirsiz · PID neden 3 terim · Laplace dönüşümü aslında ne yapar · Nyquist neden 2× · Convolution'ın görsel anlamı |
+| 3 | **Algoritma & CS içselleri** | $18–25 | Düşük | Hash table çarpışmaları · Neden quicksort pratikte kazanır · B-tree'ler ve disk · Dijkstra'dan A*'a · Bloom filter sezgisi |
+| 4 | Uygulamalı istatistik / veri okuryazarlığı | $7–15 | Düşük-orta | p-hacking görsel · A/B testinde kaç örneklem · Bayes tıbbi testlerle · Güven aralığı ne demez · Simpson paradoksu |
+| 5 | Makine öğrenmesi matematiği | $18–25 | Yüksek | Attention'ın matrisi · Backprop zincir kuralı · Neden softmax · Diffusion'da gürültü matematiği · Embedding geometrisi |
+
+**Kaçınılacak:** genel fizik / uzay / biyoloji / kimya — hem en düşük RPM hem devlerin bölgesi.
+
+## B.3 Seslendirme kararı: kendi sesin (AI değil)
+
+- AI sesle büyümüş, doğrulanabilir tek bir bilim kanalı örneği bulunamadı. Bulunan tüm 300k+ açıklayıcı kanallar insan sesli.
+- Kokoro'nun prozodi hataları teknik terimlerde (*eigenvalue*, *Euler*, *asymptote*) izleyiciye "konuyu bilmiyor" hissi veriyor. Matematik kanalında manuel fonem düzeltmesi ciddi iş yükü.
+- **Aksan bu nişte dezavantaj değil, otorite sinyali:** Sabine Hossenfelder (~1,7M), PBS Space Time (~3M), Mathologer (~957K), Artem Kirsanov (~350K) — hepsi belirgin aksanlı.
+- Sıfır bütçeli kayıt: eldeki mikrofon + akustik köşe (dolap/battaniye) + Claude'un yazdığı FFmpeg zinciri (gürültü azaltma, EQ, `loudnorm` −14 LUFS). Script'i yaz ve **oku**, doğaçlama yapma.
+- Monetizasyon riski düşük: "inauthentic content" politikası AI sesi değil, (1) senin yazmadığın metnin okunmasını, (2) videolar arası şablon tekrarını, (3) gerçek kişiyi taklit eden AI persona'ları yasaklıyor.
+
+## B.4 Format spesifikasyonu
+
+| Parametre | Karar | Gerekçe |
+|---|---|---|
+| Uzunluk | **8–14 dk** | Eğitimde optimum 10–15 dk; 8 dk mid-roll reklam eşiği — altına inme |
+| Sıklık | 2–4 video/ay | Ayda 12+ yükleyenler %66 daha fazla abone alıyor; bu avantajı kaybediyoruz, kaliteyle telafi |
+| İlk 6 video | **Arama odaklı** ("Why does X work?") | Arama trafiği abone sayısına bağlı değil — yeni kanalın tek öngörülebilir girişi |
+| Video 7–10 | Hibrit (arama + merak kancası) | Browse/Suggested'a geçiş |
+| Yapı | **Seri** (4–6 bölüm, playlist + end screen) | 2026'nın en ağır sinyali *session watch time*; seri bunu doğrudan besler |
+| Shorts | Sadece abone toplamak için, uzun videodan 40 sn kesit | Shorts izlenmesi 4.000 saate **sayılmıyor** |
+| API otomasyonu | Şimdilik hayır | Haftada 1 video için OAuth uğraşı manuel yüklemeye değmez |
+| Test & Compare | 6. aydan sonra | Yeni kanalda gösterim hacmi yetersiz, sonuç istatistiksel gürültü |
+
+**2026'nın yeni metriği — "New Viewer Attraction":** kanalı hiç izlememiş kişileri getiren videolar ödüllendiriliyor; soğuk kitleden gelen CTR, abone CTR'ından daha ağır sayılıyor. Düşük performanslı video kanalı cezalandırmıyor — sadece o videonun dağıtımı duruyor. İlk 10 video "deneme hakkı".
+
+## B.5 Dürüst 12 ay tahmini
+
+Asıl eşik abone değil izlenme: 10 dk video, %40 retention → izleyici başına 4 dk → **4.000 saat ≈ 60.000 izlenme.**
+
+| Senaryo | Olasılık | 12. ay sonu |
+|---|---|---|
+| Kötü | %30 | <500 abone, YPP yok, **$0** |
+| Baz | %50 | 1.000–4.000 abone, YPP ~10–14. ay, **$300–1.200** + Patreon $30–80/ay |
+| İyi (1 breakout) | %20 | 10.000–30.000 abone, **$3.000–8.000** + ilk sponsor |
+
+Beklenen değer ~**$800–2.000 / 12 ay**, karşılığında ~30 video × 30 saat = **900 saat**. Saatlik ~$1–2.
+
+**Bu iş 12 ayda gelir işi değil, 2–3. yılda gelir işi.**
+
+### AdSense dışı gelir sıralaması (en erken → en geç)
+1. **Patreon / üyelik** — en erken. Bir patron ≈ yıllık 400+ gündelik izleyiciye eşdeğer. Genişletilmiş YPP katmanı: 500 abone + 90 günde 3 video + 3.000 izlenme saati.
+2. **Affiliate** — abone sayısından bağımsız, hemen başlar, düşük hacim.
+3. **Sponsorluk** — eğitim CPM'i $20–40, gerçekçi eşik video başına istikrarlı 20–30K izlenme (~30–50K abone). 12 ayda muhtemelen ulaşılmaz.
+4. **Kurs satışı** — en yüksek marj, en geç.
+
+## B.6 Stratejik sonuç: kanal aynı zamanda portföy olmalı
+
+Araştırmanın gelir sıralamasında **freelance/sözleşmeli iş 1. sırada, oyun satışı sonuncu.** YouTube arada. Bu üçünü tek hamlede birleştirmenin yolu, alt-niş seçiminde: **mühendislik matematiği veya algoritma** içeriği ürettiğinde, ürettiğin her video aynı zamanda "bu kişi bu konuyu biliyor ve anlatabiliyor" kanıtı olur. Kanal yavaş büyürken portföy hemen çalışmaya başlar.
+
+Genel fizik/uzay içeriğinin böyle bir ikinci getirisi yok.
