@@ -1,0 +1,635 @@
+<title>Kurulum Günü — Mac'te sıfırdan ilk videoya</title>
+<style>
+  :root {
+    --bg: #F6F7FA;
+    --surface: #FFFFFF;
+    --ink: #13161D;
+    --ink-2: #4C5468;
+    --ink-3: #767E92;
+    --line: #DEE2EB;
+    --accent: #2C46CE;
+    --accent-soft: #E9ECFC;
+    --warn: #9E4C06;
+    --warn-soft: #FBF0E4;
+    --warn-line: #E8C79C;
+    --ok: #17714A;
+    --ok-soft: #E4F2EA;
+    --term-bg: #171A21;
+    --term-ink: #E6E9F0;
+    --term-dim: #8B94A8;
+    --term-line: #2B3140;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D0F14;
+      --surface: #161A22;
+      --ink: #ECEFF5;
+      --ink-2: #A2AABD;
+      --ink-3: #7B8398;
+      --line: #262C38;
+      --accent: #93A5FF;
+      --accent-soft: #1A2040;
+      --warn: #E5A75A;
+      --warn-soft: #2E2211;
+      --warn-line: #5A4526;
+      --ok: #5CC08E;
+      --ok-soft: #12271D;
+      --term-bg: #090B0F;
+      --term-ink: #E6E9F0;
+      --term-dim: #808999;
+      --term-line: #232936;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D0F14;
+    --surface: #161A22;
+    --ink: #ECEFF5;
+    --ink-2: #A2AABD;
+    --ink-3: #7B8398;
+    --line: #262C38;
+    --accent: #93A5FF;
+    --accent-soft: #1A2040;
+    --warn: #E5A75A;
+    --warn-soft: #2E2211;
+    --warn-line: #5A4526;
+    --ok: #5CC08E;
+    --ok-soft: #12271D;
+    --term-bg: #090B0F;
+    --term-ink: #E6E9F0;
+    --term-dim: #808999;
+    --term-line: #232936;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  /* ---------- masthead ---------- */
+  header.mast {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 56px 0 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1 {
+    font-size: clamp(30px, 6vw, 42px);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 18px;
+    color: var(--ink-2);
+    margin: 0;
+    max-width: 60ch;
+  }
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .fact {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 5px 10px;
+  }
+
+  /* ---------- prose ---------- */
+  h2.sec {
+    font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+    margin: 52px 0 18px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  p { margin: 0 0 16px; max-width: 66ch; }
+  .lead { color: var(--ink-2); }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  strong { font-weight: 650; }
+
+  /* ---------- stage ---------- */
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 22px 6px;
+    margin-bottom: 16px;
+    transition: opacity .2s ease;
+  }
+  .stage.done { opacity: .45; }
+  .stage-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .num {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 4px;
+    padding: 3px 7px;
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .stage h3 {
+    font-size: 20px;
+    letter-spacing: -0.015em;
+    font-weight: 650;
+    margin: 0;
+    flex: 1;
+    text-wrap: balance;
+  }
+  .mins {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--ink-3);
+    flex: none;
+  }
+  .stage > p { font-size: 16px; }
+  .stage p:last-child { margin-bottom: 16px; }
+
+  /* ---------- command block ---------- */
+  .cmd {
+    position: relative;
+    background: var(--term-bg);
+    border: 1px solid var(--term-line);
+    border-radius: 7px;
+    margin: 0 0 14px;
+    overflow-x: auto;
+  }
+  .cmd pre {
+    margin: 0;
+    padding: 14px 76px 14px 16px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--term-ink);
+    white-space: pre;
+  }
+  .cmd pre::before {
+    content: "% ";
+    color: var(--term-dim);
+  }
+  .copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--term-dim);
+    background: transparent;
+    border: 1px solid var(--term-line);
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .copy:hover { color: var(--term-ink); border-color: var(--term-dim); }
+  .copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- verification row: the spine of this document ---------- */
+  .check {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--ok-soft);
+    border-left: 2px solid var(--ok);
+    border-radius: 0 5px 5px 0;
+    padding: 11px 14px;
+    margin: 0 0 14px;
+    font-size: 15px;
+  }
+  .check .lbl {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ok);
+    flex: none;
+    padding-top: 3px;
+    font-weight: 600;
+  }
+  .check div:last-child { color: var(--ink); }
+
+  .trap {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--warn-soft);
+    border: 1px solid var(--warn-line);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin: 0 0 14px;
+    font-size: 15px;
+  }
+  .trap .lbl {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--warn);
+    flex: none;
+    padding-top: 3px;
+    font-weight: 600;
+  }
+
+  code.inline {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: .88em;
+    background: var(--accent-soft);
+    color: var(--ink);
+    padding: 1.5px 5px;
+    border-radius: 3px;
+  }
+  kbd {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: .82em;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    background: var(--bg);
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+
+  /* prompt-to-paste block */
+  .say {
+    background: var(--accent-soft);
+    border-radius: 7px;
+    padding: 14px 16px;
+    margin: 0 0 14px;
+  }
+  .say .lbl {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 7px;
+  }
+  .say q {
+    display: block;
+    font-size: 16px;
+    color: var(--ink);
+    quotes: "“" "”";
+  }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink-3);
+    padding: 12px 0 14px;
+    border-top: 1px solid var(--line);
+    margin-top: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    margin: 0 0 20px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  td:first-child { color: var(--ink-2); white-space: nowrap; }
+  .tbl-scroll { overflow-x: auto; }
+
+  ul.plain { padding-left: 20px; margin: 0 0 16px; max-width: 66ch; }
+  ul.plain li { margin-bottom: 7px; }
+
+  footer.end {
+    margin-top: 56px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-3);
+    font-size: 14px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">Kurulum Günü · Adım A</div>
+  <h1>Mac'te sıfırdan ilk videoya</h1>
+  <p class="standfirst">Kod bilmeden takip edilecek bir gün. Sonunda elinde çalışan bir üretim ortamı ve kendi render ettiğin bir MP4 dosyası olacak.</p>
+  <div class="facts">
+    <span class="fact">Süre: 90–120 dk</span>
+    <span class="fact">Maliyet: 0 ₺</span>
+    <span class="fact">Apple Silicon Mac</span>
+    <span class="fact">9 aşama</span>
+  </div>
+</header>
+
+<h2 class="sec">Başlamadan önce</h2>
+
+<p class="lead">Üç şey gerekiyor: Mac kullanıcı şifren, internet bağlantısı ve kesintisiz bir buçuk saat. Aşamaları <strong>sırayla</strong> yap — burada sıra gerçekten önemli, çünkü her araç bir öncekinin üstüne kuruluyor. Bir aşamayı atlarsan sonraki komut "çalışmıyor" gibi görünür.</p>
+
+<p class="lead">Her aşamada üç şey var: yapıştıracağın komut, <strong>ne göreceksin</strong> satırı (doğru gittiğini buradan anlarsın), ve varsa o adımın bilinen tuzağı. Bir aşamada beklediğin çıktıyı görmüyorsan devam etme — o aşamada kal.</p>
+
+<div class="trap">
+  <div class="lbl">Kural</div>
+  <div>Terminal bir şey sorduğunda ve ne olduğunu anlamadığında, kopyala ve Claude'a yapıştır. "Bu ne demek, ne yapmalıyım? Kod bilmiyorum." diye sor. Tahmin etme.</div>
+</div>
+
+<h2 class="sec">Aşamalar</h2>
+
+<section class="stage">
+  <div class="stage-head">
+    <span class="num">01</span>
+    <h3>Claude Desktop'ı kur</h3>
+    <span class="mins">15 dk</span>
+  </div>
+  <p>Terminal versiyonundan önce bunu kur. Yetenekleri aynı, ama bu, dosya değişikliklerini renkli "önce / sonra" görünümünde gösterir ve her adımda onay butonu sunar. Başlangıçta bu fark çok değerli.</p>
+  <p>Tarayıcıdan <a href="https://claude.ai/download">claude.ai/download</a> → macOS sürümünü indir → <code class="inline">.dmg</code> dosyasına çift tıkla → Claude ikonunu Applications klasörüne sürükle → uygulamayı aç → <strong>Sign in</strong> → Max hesabınla gir.</p>
+  <div class="check">
+    <div class="lbl">Ne göreceksin</div>
+    <div>Uygulamanın sol alt köşesinde hesabının yanında <strong>Max</strong> yazıyor ve sohbet kutusu aktif.</div>
+  </div>
+  <div class="trap">
+    <div class="lbl">Tuzak</div>
+    <div>İlk açılışta "İnternetten indirilen uygulama" uyarısı çıkarsa <strong>Aç</strong> de. Bu macOS'un normal güvenlik uyarısı.</div>
+  </div>
+  <label class="toggle"><input type="checkbox"> Bu aşamayı tamamladım</label>
+</section>
+
+<section class="stage">
+  <div class="stage-head">
+    <span class="num">02</span>
+    <h3>Terminal'i aç</h3>
+    <span class="mins">2 dk</span>
+  </div>
+  <p><kbd>⌘</kbd> + <kbd>Boşluk</kbd> tuşlarına bas → <code class="inline">terminal</code> yaz → <kbd>Enter</kbd>.</p>
+  <p>Bu pencereyi günün sonuna kadar açık tutacaksın. Komutları buraya yapıştırıp <kbd>Enter</kbd>'a basacaksın. Yapıştırma: <kbd>⌘</kbd> + <kbd>V</kbd>.</p>
+  <div class="check">
+    <div class="lbl">Ne göreceksin</div>
+    <div>Bir pencere ve sonunda <code class="inline">%</code> işareti olan bir satır. Bu, "komut bekliyorum" demek.</div>
+  </div>
+  <label class="toggle"><input type="checkbox"> Bu aşamayı tamamladım</label>
+</section>
+
+<section class="stage">
+  <div class="stage-head">
+    <span class="num">03</span>
+    <h3>Xcode Command Line Tools</h3>
+    <span class="mins">10 dk</span>
+  </div>
+  <p>Bu, Apple'ın geliştirici araç setinin küçük sürümü. Bundan sonraki <em>hiçbir şey</em> bu olmadan kurulmaz, o yüzden ilk sırada.</p>
+  <div class="cmd"><pre><code>xcode-select --install</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <p>Bir pencere açılır → <strong>Install</strong> → indirme 5–10 dakika sürer.</p>
+  <div class="check">
+    <div class="lbl">Ne göreceksin</div>
+    <div>Kurulum penceresi ve tamamlandı mesajı. Zaten kuruluysa <code class="inline">already installed</code> yazar — bu da doğru sonuç, devam et.</div>
+  </div>
+  <label class="toggle"><input type="checkbox"> Bu aşamayı tamamladım</label>
+</section>
+
+<section class="stage">
+  <div class="stage-head">
+    <span class="num">04</span>
+    <h3>Homebrew — ve o meşhur PATH satırı</h3>
+    <span class="mins">20 dk</span>
+  </div>
+  <p>Homebrew, Mac için komutla çalışan bir program mağazası. İhtiyacın olan her aracı bununla tek satırda kuracaksın.</p>
+  <div class="cmd"><pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <div class="trap">
+    <div class="lbl">Tuzak</div>
+    <div>Mac şifreni isteyecek. <strong>Yazarken ekranda hiçbir şey görünmez</strong> — nokta bile çıkmaz. Bu bir hata değil, güvenlik. Şifreni yaz ve <kbd>Enter</kbd>'a bas.</div>
+  </div>
+  <p>Kurulum bitince şu iki satırı yapıştır. <strong>Yeni başlayanların yarısı tam burada takılıyor:</strong> kurulum "bitti" der, ama bu satır olmadan <code class="inline">brew</code> komutu çalışmaz.</p>
+  <div class="cmd"><pre><code>echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' &gt;&gt; ~/.zprofile</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <div class="cmd"><pre><code>eval "$(/opt/homebrew/bin/brew shellenv)"</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <p>Şimdi kontrol et:</p>
+  <div class="cmd"><pre><code>brew --version</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <div class="check">
+    <div class="lbl">Ne göreceksin</div>
+    <div><code class="inline">Homebrew 4.x.x</code> gibi bir numara. <code class="inline">command not found</code> görüyorsan yukarıdaki iki satırı atlamışsındır — geri dön.</div>
+  </div>
+  <label class="toggle"><input type="checkbox"> Bu aşamayı tamamladım</label>
+</section>
+
+<section class="stage">
+  <div class="stage-head">
+    <span class="num">05</span>
+    <h3>Üretim araçlarını kur</h3>
+    <span class="mins">15 dk</span>
+  </div>
+  <p>Tek komut, dört araç. <code class="inline">node</code> animasyon motorunu çalıştırır, <code class="inline">ffmpeg</code> video ve sesi birleştirir, <code class="inline">uv</code> Python işlerini senin yerine yönetir, <code class="inline">git</code> çalışmanı yedekler.</p>
+  <div class="cmd"><pre><code>brew install uv node ffmpeg git</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <p>Birkaç dakika sürer, ekranda çok satır akar — normal. Bitince kontrol:</p>
+  <div class="cmd"><pre><code>node --version &amp;&amp; ffmpeg -version | head -1 &amp;&amp; uv --version</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <div class="check">
+    <div class="lbl">Ne göreceksin</div>
+    <div>Üç satır: <code class="inline">v22.x.x</code> gibi bir Node sürümü, bir <code class="inline">ffmpeg version …</code> satırı ve bir <code class="inline">uv 0.x.x</code> satırı.</div>
+  </div>
+  <p>Blender'ı bugün kurmana gerek yok — ilk videon için gerekmiyor. İleride 3D'ye geçtiğinde <code class="inline">brew install --cask blender</code> yeter.</p>
+  <label class="toggle"><input type="checkbox"> Bu aşamayı tamamladım</label>
+</section>
+
+<section class="stage">
+  <div class="stage-head">
+    <span class="num">06</span>
+    <h3>Claude Code'u kur</h3>
+    <span class="mins">10 dk</span>
+  </div>
+  <p>Bu, Claude'un terminal versiyonu. Aynı Max aboneliğini kullanır, ek ücret yok. Asıl üretimi bununla yapacaksın çünkü dosyaları doğrudan oluşturup çalıştırabiliyor.</p>
+  <div class="cmd"><pre><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <div class="trap">
+    <div class="lbl">Tuzak</div>
+    <div>Kurulum bitince <strong>Terminal'i tamamen kapat ve yeniden aç.</strong> Bunu yapmazsan bir sonraki komut "böyle bir komut yok" der ve kurulum bozuk sanırsın.</div>
+  </div>
+  <div class="cmd"><pre><code>claude --version</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <div class="check">
+    <div class="lbl">Ne göreceksin</div>
+    <div><code class="inline">2.x.xxx (Claude Code)</code> gibi bir satır.</div>
+  </div>
+  <label class="toggle"><input type="checkbox"> Bu aşamayı tamamladım</label>
+</section>
+
+<section class="stage">
+  <div class="stage-head">
+    <span class="num">07</span>
+    <h3>İlk projenin klasörünü kur</h3>
+    <span class="mins">10 dk</span>
+  </div>
+  <p>Kural: <strong>her video, her oyun ayrı klasör.</strong> Claude yalnızca içinde bulunduğu klasörü görür — bu bir kısıtlama değil, güvenlik özelliği. Karıştırırsan Claude de karışır.</p>
+  <div class="cmd"><pre><code>mkdir -p ~/Projeler/ilk-video &amp;&amp; cd ~/Projeler/ilk-video &amp;&amp; claude</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <p>İlk çalıştırmada tarayıcı açılır, Max hesabınla giriş yaparsın, terminale dönersin. Sonra Claude'un içindeyken şunu yaz:</p>
+  <div class="cmd"><pre><code>/init</code></pre><button class="copy" type="button">Kopyala</button></div>
+  <p>Bu, klasöre <code class="inline">CLAUDE.md</code> adlı bir not dosyası koyar. Claude her açılışta onu okur — yani tercihlerini bir kere söylersin, bir daha tekrarlamazsın.</p>
+  <div class="say">
+    <span class="lbl">Claude'a şunu yaz</span>
+    <q>CLAUDE.md dosyasına şunları ekle: Ben kod bilmiyorum, her adımı tek cümleyle sade Türkçe anlat. Videolar 1920x1080 ve 30fps olacak. Render çıktıları out/ klasörüne gidecek. Hiçbir dosyayı silme.</q>
+  </div>
+  <div class="check">
+    <div class="lbl">Ne göreceksin</div>
+    <div>Claude "CLAUDE.md güncellendi" der ve değişikliği renkli olarak gösterir.</div>
+  </div>
+  <label class="toggle"><input type="checkbox"> Bu aşamayı tamamladım</label>
+</section>
+
+<section class="stage">
+  <div class="stage-head">
+    <span class="num">08</span>
+    <h3>Animasyon motorunu kur — Remotion</h3>
+    <span class="mins">20 dk</span>
+  </div>
+  <p>Buradan sonrası farklı çalışıyor: <strong>komutu sen değil, Claude çalıştırıyor.</strong> Sen sadece ne istediğini söylüyorsun. Kod bilmeyen biri için doğru yol bu — hata çıkarsa Claude zaten ekranda görüp düzeltiyor.</p>
+  <p>Önce plan moduna geç: <kbd>Shift</kbd> + <kbd>Tab</kbd>. Üstte <em>plan mode</em> yazacak. Bu moddayken Claude hiçbir şeye dokunmaz, sadece ne yapacağını anlatır. Bu senin en önemli alışkanlığın olacak.</p>
+  <div class="say">
+    <span class="lbl">Claude'a şunu yaz</span>
+    <q>Bu klasörde Remotion ile yeni bir video projesi kurmanı istiyorum. Hello World şablonu yeterli. Önce ne yapacağını anlat, onayımı almadan kurulumu başlatma. Ben kod bilmiyorum, kurulum sırasında bana soru sorulursa ne seçeceğimi söyle.</q>
+  </div>
+  <p>Planı okursun, mantıklıysa <kbd>Shift</kbd> + <kbd>Tab</kbd> ile normal moda dönüp "devam et" dersin. Kurulum birkaç dakika sürer.</p>
+  <div class="check">
+    <div class="lbl">Ne göreceksin</div>
+    <div>Klasörde <code class="inline">package.json</code> ve <code class="inline">src/</code> adlı bir klasör oluşur. Claude sana kurulumun bittiğini söyler.</div>
+  </div>
+  <div class="trap">
+    <div class="lbl">Neden Remotion</div>
+    <div>Lisansını özellikle kontrol ettik: <strong>birey olarak kullanıyorsan, videoların para kazansa bile ücretsiz ve ticari kullanıma açık.</strong> Ücret ancak 4+ kişilik bir şirket olursan başlıyor.</div>
+  </div>
+  <label class="toggle"><input type="checkbox"> Bu aşamayı tamamladım</label>
+</section>
+
+<section class="stage">
+  <div class="stage-head">
+    <span class="num">09</span>
+    <h3>İlk MP4'ünü çıkar</h3>
+    <span class="mins">15 dk</span>
+  </div>
+  <p>Günün asıl ödülü. Önce canlı önizlemeyi açıp animasyonu tarayıcıda göreceksin, sonra dosyaya basacaksın.</p>
+  <div class="say">
+    <span class="lbl">Claude'a şunu yaz</span>
+    <q>Remotion Studio'yu başlat ki animasyonu tarayıcıda görebileyim. Açıldıktan sonra bana ne yapacağımı söyle.</q>
+  </div>
+  <p>Tarayıcıda bir editör açılır: solda kompozisyon listesi, ortada oynatıcı, altta zaman çizelgesi. Oynat tuşuna bas — hareket eden bir şey göreceksin. <strong>Bu noktada üretim ortamın çalışıyor demektir.</strong></p>
+  <p>Şimdi kendi dokunuşunu ekle ve dosyaya bas:</p>
+  <div class="say">
+    <span class="lbl">Claude'a şunu yaz</span>
+    <q>Bu animasyondaki yazıyı "İlk videom" olarak değiştir, arka planı koyu lacivert yap ve yazı yumuşak bir şekilde belirsin. Sonra videoyu MP4 olarak render et ve dosyanın tam olarak nerede olduğunu söyle.</q>
+  </div>
+  <div class="check">
+    <div class="lbl">Ne göreceksin</div>
+    <div>Terminalde ilerleme çubuğu, ardından <code class="inline">out/</code> klasöründe bir <code class="inline">.mp4</code> dosyası. Finder'da çift tıkla — QuickTime'da açılır ve oynar.</div>
+  </div>
+  <label class="toggle"><input type="checkbox"> Bu aşamayı tamamladım</label>
+</section>
+
+<h2 class="sec">Bir şey ters giderse</h2>
+
+<div class="tbl-scroll">
+<table>
+  <thead>
+    <tr><th>Belirti</th><th>Sebep ve çözüm</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code class="inline">command not found: brew</code></td><td>Aşama 04'teki PATH satırlarını atladın. Geri dön, iki satırı da yapıştır.</td></tr>
+    <tr><td><code class="inline">command not found: claude</code></td><td>Kurulumdan sonra Terminal'i kapatıp açmadın.</td></tr>
+    <tr><td>Şifre yazarken ekran boş</td><td>Hata değil, güvenlik. Yaz ve <kbd>Enter</kbd>.</td></tr>
+    <tr><td>"Geliştirici doğrulanamadı"</td><td>Sistem Ayarları → Gizlilik ve Güvenlik → aşağı in → <strong>Yine de Aç</strong>.</td></tr>
+    <tr><td><code class="inline">xcrun: error: invalid active developer path</code></td><td>Aşama 03'ü çalıştır.</td></tr>
+    <tr><td>Claude yanlış yola gitti</td><td><kbd>Esc</kbd> — anında durdurur.</td></tr>
+    <tr><td>Yaptığını geri almak istiyorsun</td><td>Claude'a <code class="inline">/rewind</code> yaz.</td></tr>
+    <tr><td>Claude aynı hatayı döngüde tekrarlıyor</td><td><kbd>Esc</kbd> → <code class="inline">/clear</code> → sorunu tek cümleyle yeniden anlat. Uzun sohbet = kafa karışıklığı.</td></tr>
+    <tr><td>Kurulumdan şüpheleniyorsun</td><td>Terminalde <code class="inline">claude doctor</code>.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 class="sec">Günün sonunda elinde ne var</h2>
+
+<ul class="plain">
+  <li>Claude'un iki versiyonu da kurulu ve Max aboneliğine bağlı</li>
+  <li>Homebrew ve dört üretim aracı çalışır durumda</li>
+  <li>Tercihlerini hatırlayan bir proje klasörü</li>
+  <li>Çalışan bir animasyon motoru ve canlı önizleme</li>
+  <li><strong>Kendi render ettiğin bir MP4 dosyası</strong></li>
+</ul>
+
+<p>Bugün yapmadığın ve bilerek ertelediğimiz şeyler: seslendirme (Kokoro / Piper), otomatik altyazı, Blender, Godot. Bunların hiçbiri ilk videon için gerekli değil ve hepsi aynı anda kurulursa hangi parçanın bozulduğunu anlayamazsın.</p>
+
+<div class="trap">
+  <div class="lbl">Sırada</div>
+  <div><strong>Adım B: içerik kararı.</strong> Araçlar hazır olsa bile yanlış format seçilirse 40 saat boşa gider — ve elimizdeki veri, en büyük başarısızlık nedeninin teknik değil editoryal olduğunu gösteriyor. Kurulum bitince oraya geçiyoruz.</div>
+</div>
+
+<footer class="end">
+  Kurulum Günü · Adım A — altı araştırma ajanının bulgularından derlendi.
+  Tam rapor: <code class="inline">docs/claude-ile-oyun-ve-animasyon-arastirmasi.md</code>
+</footer>
+
+</div>
+
+<script>
+  document.querySelectorAll(".copy").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var code = btn.parentElement.querySelector("code");
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        var prev = btn.textContent;
+        btn.textContent = "Kopyalandı";
+        setTimeout(function () { btn.textContent = prev; }, 1400);
+      });
+    });
+  });
+
+  document.querySelectorAll(".toggle input").forEach(function (box) {
+    box.addEventListener("change", function () {
+      box.closest(".stage").classList.toggle("done", box.checked);
+    });
+  });
+</script>
