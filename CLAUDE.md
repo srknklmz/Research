@@ -134,6 +134,30 @@ oraya bak.
 
 ---
 
+## 3.6. Depo herkese açık
+
+`srknklmz/Research` **public** bir depodur ve bu bilinçli bir tercihtir.
+Uygulama da açık bir adreste yayınlanır. Buraya yazılan her şey — hedef
+kartları, veri kartları, günlük raporlar — herkes tarafından okunabilir.
+
+Bu yüzden karta yazmadan önce dur ve şunları **yazma**:
+
+- Parola, API anahtarı, token, özel bağlantı adresleri.
+- Kullanıcının ya da üçüncü kişilerin kişisel bilgileri: telefon, adres,
+  T.C. kimlik no, e-posta, banka/hesap bilgisi.
+- Gizlilik sözleşmesine tabi olduğu belli olan müşteri/tedarikçi belgeleri,
+  paylaşılmamış fiyat teklifleri, iç yazışmalar.
+
+Kullanıcı böyle bir şey paylaşırsa **sessizce commit'leme**. Bilgiyi kullan,
+ama karta yazarken kimliksizleştir ("A tedarikçisi", "bir müşteri") ve durumu
+kullanıcıya söyle: "bunu şu şekilde yazdım, depo açık olduğu için ham hâlini
+koymadım".
+
+Şüphedeysen yazma ve sor. Public bir depoda bir kez commit'lenen şey git
+geçmişinden kolay silinmez.
+
+---
+
 ## 4. Kalite kuralları
 
 - **Kaynaksız iddia veri değildir.** Her veri kartında URL + erişim tarihi olur.
