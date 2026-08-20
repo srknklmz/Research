@@ -1,0 +1,456 @@
+<title>Beyin Sistemi Arayüz Anketi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#EFF1F2;
+  --sheet:#FFFFFF;
+  --ink:#15181D;
+  --ink-2:#565D66;
+  --ink-3:#8B939C;
+  --rule:#D6DADE;
+  --rule-soft:#E4E7EA;
+  --sel-bg:#15181D;
+  --sel-ink:#F7F8F9;
+  --mark:#9E2B25;
+  --ok:#2E6B4E;
+  --shadow:0 1px 0 rgba(21,24,29,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#101317;
+    --sheet:#171B20;
+    --ink:#E8EAEC;
+    --ink-2:#A0A8B0;
+    --ink-3:#6C757E;
+    --rule:#2A3038;
+    --rule-soft:#22272E;
+    --sel-bg:#E8EAEC;
+    --sel-ink:#101317;
+    --mark:#E0736A;
+    --ok:#6FBF95;
+    --shadow:0 1px 0 rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#101317;
+  --sheet:#171B20;
+  --ink:#E8EAEC;
+  --ink-2:#A0A8B0;
+  --ink-3:#6C757E;
+  --rule:#2A3038;
+  --rule-soft:#22272E;
+  --sel-bg:#E8EAEC;
+  --sel-ink:#101317;
+  --mark:#E0736A;
+  --ok:#6FBF95;
+  --shadow:0 1px 0 rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{max-width:640px;margin:0 auto;padding:0 18px 200px}
+
+/* ---- header ---- */
+header{
+  position:sticky;top:0;z-index:20;
+  background:var(--paper);
+  border-bottom:1px solid var(--rule);
+  margin:0 -18px;padding:16px 18px 0;
+}
+.head-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{
+  font-family:Newsreader,Georgia,serif;
+  font-weight:500;font-size:21px;line-height:1.2;margin:0;
+  letter-spacing:-.01em;
+}
+.count{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:12px;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.count b{color:var(--ink);font-weight:500}
+.bar{height:2px;background:var(--rule-soft);margin-top:12px}
+.bar>i{display:block;height:100%;width:0;background:var(--ink);transition:width .25s ease}
+
+/* ---- intro ---- */
+.intro{
+  padding:20px 0 4px;
+  color:var(--ink-2);font-size:14px;
+  border-bottom:1px solid var(--rule-soft);
+}
+.intro p{margin:0 0 10px}
+.intro strong{color:var(--ink);font-weight:500}
+.tools{display:flex;flex-wrap:wrap;gap:8px;padding:14px 0 18px}
+
+/* ---- sections ---- */
+section{padding-top:30px}
+.sec-head{display:flex;align-items:baseline;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--rule)}
+.sec-num{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--ink-3);letter-spacing:.06em;font-variant-numeric:tabular-nums;
+}
+.sec-head h2{
+  font-family:Newsreader,Georgia,serif;
+  font-weight:500;font-size:17px;margin:0;letter-spacing:-.005em;
+}
+
+/* ---- question ---- */
+.q{padding:18px 0;border-bottom:1px solid var(--rule-soft)}
+.q:last-child{border-bottom:0}
+.q-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:11px}
+.q-n{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;
+  color:var(--ink-3);padding-top:2px;min-width:22px;
+  font-variant-numeric:tabular-nums;
+}
+.q-t{font-size:15px;font-weight:500;margin:0;text-wrap:balance;flex:1}
+.q.done .q-n{color:var(--ink)}
+.multi-tag{
+  display:inline-block;font-family:"IBM Plex Mono",monospace;
+  font-size:10px;letter-spacing:.06em;color:var(--ink-3);
+  border:1px solid var(--rule);border-radius:3px;
+  padding:1px 5px;margin-left:7px;vertical-align:1px;font-weight:400;
+}
+.opts{display:flex;flex-wrap:wrap;gap:7px;padding-left:32px}
+.opt{
+  font:inherit;font-size:13.5px;
+  background:var(--sheet);color:var(--ink);
+  border:1px solid var(--rule);border-radius:9px;
+  padding:8px 12px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;
+  text-align:left;box-shadow:var(--shadow);
+  transition:background .12s ease,border-color .12s ease,color .12s ease;
+}
+.opt:hover{border-color:var(--ink-3)}
+.opt:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.opt .k{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--ink-3);transition:color .12s ease;
+}
+.opt .star{color:var(--ink-3);font-size:10px;transition:color .12s ease}
+.opt[aria-checked="true"]{
+  background:var(--sel-bg);border-color:var(--sel-bg);color:var(--sel-ink);
+}
+.opt[aria-checked="true"] .k,.opt[aria-checked="true"] .star{color:var(--sel-ink);opacity:.6}
+
+/* ---- buttons ---- */
+.btn{
+  font:inherit;font-size:13px;
+  background:var(--sheet);color:var(--ink);
+  border:1px solid var(--rule);border-radius:8px;
+  padding:8px 13px;cursor:pointer;box-shadow:var(--shadow);
+}
+.btn:hover{border-color:var(--ink-3)}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.btn.solid{background:var(--sel-bg);color:var(--sel-ink);border-color:var(--sel-bg)}
+
+/* ---- output dock ---- */
+.dock{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:var(--paper);border-top:1px solid var(--rule);
+  padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+}
+.dock-in{max-width:640px;margin:0 auto}
+.dock-row{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.dock-label{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--ink-3);letter-spacing:.06em;
+}
+.code{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.6;
+  background:var(--sheet);border:1px solid var(--rule);border-radius:8px;
+  padding:9px 11px;margin:8px 0 0;
+  max-height:74px;overflow-y:auto;overflow-x:hidden;
+  word-break:break-word;color:var(--ink-2);
+  width:100%;resize:none;display:block;
+}
+.code:focus{outline:2px solid var(--ink);outline-offset:1px}
+.hint{font-size:12px;color:var(--ink-3);margin:7px 0 0}
+.hint.warn{color:var(--mark)}
+.hint.ok{color:var(--ok)}
+
+.done-mark{color:var(--ok)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="head-row">
+      <h1>Arayüz Anketi</h1>
+      <span class="count"><b id="c-done">0</b> / 50</span>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+  </header>
+
+  <div class="intro">
+    <p>Beyin sistemi mobil arayüzü için 50 soru. Her soruda bir seçeneğe dokun — seçimlerin
+    <strong>otomatik kaydedilir</strong>, sayfayı kapatsan da durur.</p>
+    <p><strong>1–12 arası zaten cevaplandı</strong> (sohbette seçtiklerin, işaretli geldi). İstersen değiştir.</p>
+    <p>Bitince en alttaki <strong>cevap kodunu kopyalayıp bana gönder</strong> — ona göre 5 tasarım hazırlayacağım.</p>
+    <div class="tools">
+      <button class="btn" id="fill">Boşları ★ ile doldur</button>
+      <button class="btn" id="reset">Sıfırla</button>
+    </div>
+  </div>
+
+  <main id="form"></main>
+</div>
+
+<div class="dock">
+  <div class="dock-in">
+    <div class="dock-row">
+      <span class="dock-label">CEVAP KODU</span>
+      <button class="btn solid" id="copy">Kopyala</button>
+    </div>
+    <textarea class="code" id="code" readonly rows="2"></textarea>
+    <p class="hint" id="hint">Henüz eksik soru var.</p>
+  </div>
+</div>
+
+<script>
+const DATA = [
+ {s:"Temel yapı", r:"01–04", q:[
+  {n:1, t:"Uygulama hangi teknolojiyle olsun?", o:["PWA (web uygulaması)","Native mobil uygulama","Responsive web sitesi"], r:0, p:0},
+  {n:2, t:"Öncelikli cihaz hangisi?", o:["Telefon","Telefon + masaüstü","Tablet ağırlıklı"], r:0, p:0},
+  {n:3, t:"İnternetsizken çalışması gerekiyor mu?", o:["Evet, okuma çevrimdışı olsun","Gerekmez"], r:1, p:1},
+  {n:4, t:"Uygulamaya giriş nasıl olsun?", o:["Giriş yok, tek kullanıcı","Parmak izi / yüz tanıma","E-posta ile giriş"], r:0, p:0}
+ ]},
+ {s:"Navigasyon", r:"05–08", q:[
+  {n:5, t:"Ana menü nasıl olsun?", o:["Alt sekme çubuğu","Üstte kaydırılabilir sekmeler","Tek akış, menü yok","Yan menü (hamburger)"], r:1, p:1},
+  {n:6, t:"Kaç ana bölüm olsun?", o:["3 — Rapor, Hedefler, Ekle","4 — + Veriler","5 — + Arşiv / Ayarlar"], r:2, p:2},
+  {n:7, t:"Uygulamayı açınca ilk ne görünsün?", o:["Bugünün raporu","Hedef listesi","Karışık akış","Hızlı ekleme"], r:3, p:3},
+  {n:8, t:"Ekleme butonu nerede dursun?", o:["Sağ altta yuvarlak buton","Alt çubuğun ortasında","Üst barda ikon"], r:0, p:0}
+ ]},
+ {s:"Görsel dil", r:"09–16", q:[
+  {n:9,  t:"Tema hangisi olsun?", o:["Koyu","Açık","Sistem ayarına uysun"], r:2, p:2},
+  {n:10, t:"Ana vurgu rengi ne olsun?", o:["Amber / turuncu","Mavi / indigo","Yeşil / teal","Mürekkep — renksiz"], r:3, p:3},
+  {n:11, t:"Uygulamanın genel karakteri?", o:["Sakin ve minimal","Araştırma defteri","Teknik / terminal","Canlı ve enerjik"], r:1, p:1},
+  {n:12, t:"Köşeler nasıl olsun?", o:["Hafif yuvarlak","Çok yuvarlak","Keskin köşe"], r:0, p:0},
+  {n:13, t:"Yazı tipi düzeni?", o:["Serif başlık + sans gövde","Baştan sona sans","Tamamen serif","Monospace aksanlı"], r:0},
+  {n:14, t:"Bilgi yoğunluğu?", o:["Ferah, bol boşluk","Dengeli","Sıkı, çok bilgi tek ekranda"], r:1},
+  {n:15, t:"Kart stili?", o:["İnce çerçeveli","Gölgeli","Çerçevesiz, boşlukla ayrılmış"], r:0},
+  {n:16, t:"Durum vurgusu nasıl görünsün?", o:["Sol kenarda renkli şerit","Küçük rozet","Sadece metin"], r:0}
+ ]},
+ {s:"Hedefler", r:"17–24", q:[
+  {n:17, t:"Hedef listesi görünümü?", o:["Kart","Sade satır listesi","2 sütun ızgara"], r:0},
+  {n:18, t:"Hedef kartında ne öne çıksın?", o:["İlerleme durumu","Açık soru sayısı","Son hareket tarihi","Bağlı veri sayısı"], r:1},
+  {n:19, t:"İlerleme göstergesi?", o:["Yatay çubuk","Aşama noktaları","Halka / daire","Olmasın"], r:1},
+  {n:20, t:"Hedefler neye göre sıralansın?", o:["“Dikkat gerekiyor” üstte","Öncelik","Son hareket","Manuel"], r:0},
+  {n:21, t:"Varsayım durumu nasıl gösterilsin?", o:["Renkli etiket","İkon","Düz metin"], r:0},
+  {n:22, t:"Açık sorular nasıl görünsün?", o:["İşaretlenebilir liste","Ayrı sekme","Katlanır bölüm"], r:0},
+  {n:23, t:"14 gündür hareketsiz hedef?", o:["Üste taşı + uyarı","Soluklaştır","Sadece raporda söyle"], r:0},
+  {n:24, t:"Hedef detay sayfası?", o:["Tek uzun kaydırma","Sekmeli"], r:0}
+ ]},
+ {s:"Veri kartları", r:"25–32", q:[
+  {n:25, t:"Veri listesi düzeni?", o:["Zaman akışı (yeni üstte)","Hedefe göre gruplu","Eşleşme türüne göre"], r:0},
+  {n:26, t:"Eşleşme türü nasıl gösterilsin?", o:["Renkli rozet","İkon","Düz kelime"], r:0},
+  {n:27, t:"“Çürütür” türü nasıl işaretlensin?", o:["Güçlü, ayrı renk","Hafif vurgu","Diğerleriyle aynı"], r:0},
+  {n:28, t:"Kaynak nasıl gösterilsin?", o:["Site ikonu + alan adı","Sadece alan adı","Tam URL"], r:0},
+  {n:29, t:"Güven seviyesi?", o:["Renkli nokta","Yıldız","Yazı (yüksek/orta/düşük)","Gösterme"], r:0},
+  {n:30, t:"Veri kartı nasıl açılsın?", o:["Alttan kayan panel","Tam sayfa","Yerinde genişleme"], r:0},
+  {n:31, t:"Kartta ilk okunan satır?", o:["“Ne değiştirdiği”","Başlık","Özet"], r:0},
+  {n:32, t:"Arama nasıl olsun?", o:["Üstte sürekli açık","İkon, dokununca açılır","Ayrı bölüm"], r:1}
+ ]},
+ {s:"Günlük rapor", r:"33–40", q:[
+  {n:33, t:"Rapor düzeni?", o:["Bölüm bölüm kartlar","Tek uzun metin","Kaydırmalı story"], r:0},
+  {n:34, t:"Rapora nereden ulaşılsın?", o:["Ayrı sekme","Ana ekranın üstünde","Sadece bildirimden"], r:0},
+  {n:35, t:"Geçmiş raporlar?", o:["Liste","Takvim görünümü","Arama"], r:0},
+  {n:36, t:"“Nasıl ilerleriz” önerileri?", o:["Her öneri butonlu","Sadece metin","Onayla / reddet"], r:0},
+  {n:37, t:"Rapor uzunluğu?", o:["Özet + “detayı aç”","Tam metin baştan"], r:0},
+  {n:38, t:"Grafik olsun mu?", o:["Hedef ilerleme grafiği","Veri büyüme grafiği","İkisi de","Olmasın"], r:0},
+  {n:39, t:"Dışa aktarma?", o:["Gerek yok","PDF","Görsel / link"], r:0},
+  {n:40, t:"Okunmamış rapor rozeti?", o:["Evet","Hayır"], r:0}
+ ]},
+ {s:"Bilgi ekleme", r:"41–46", q:[
+  {n:41, t:"Bilgiyi nasıl ekleyeceksin?", o:["Link / metin yapıştır","Telefonun paylaş menüsü","Sesli not","Fotoğraf / ekran görüntüsü"], r:[0,1], m:true},
+  {n:42, t:"Ekledikten sonra ne olsun?", o:["Hemen işlensin","Kuyruğa alsın, 09:00’da işlesin","Bana sorsun"], r:0},
+  {n:43, t:"İşlenirken ne göreyim?", o:["Canlı ilerleme","Sessiz, bitince bildir","Hiçbir şey"], r:0},
+  {n:44, t:"Eşleştirmeyi onaylayayım mı?", o:["Sadece belirsizse sor","Her zaman ben onaylayayım","Tamamen otomatik"], r:0},
+  {n:45, t:"Hiçbir hedefle eşleşmezse?", o:["Bildir + “yine de sakla”","Sessizce arşivle"], r:0},
+  {n:46, t:"Kendi notunu nasıl ekleyeceksin?", o:["Serbest metin","Şablonlu form"], r:0}
+ ]},
+ {s:"Etkileşim", r:"47–50", q:[
+  {n:47, t:"Kaydırma hareketleri?", o:["Sola arşivle / sağa hedefe bağla","Sadece silme","Olmasın"], r:0},
+  {n:48, t:"Bildirim sıklığı?", o:["Sadece 10:00 raporu","Rapor + kritik bulgu","Her yeni veride"], r:0},
+  {n:49, t:"Animasyon ve titreşim?", o:["Minimal","Zengin","Hiç"], r:0},
+  {n:50, t:"Arayüz dili?", o:["Türkçe","İngilizce","İkisi, değiştirilebilir"], r:0}
+ ]}
+];
+
+const LET = "abcdefgh";
+const KEY = "beyin-anket-v1";
+const ALLQ = DATA.flatMap(s => s.q);
+let ans = {};
+
+try {
+  const raw = localStorage.getItem(KEY);
+  if (raw) ans = JSON.parse(raw);
+} catch (e) { ans = {}; }
+
+// prefill answers 1-12 on first visit
+if (!Object.keys(ans).length) {
+  ALLQ.forEach(q => { if (q.p !== undefined) ans[q.n] = [q.p]; });
+}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(ans)); } catch (e) {}
+}
+
+function isRec(q, i) {
+  return Array.isArray(q.r) ? q.r.includes(i) : q.r === i;
+}
+
+function render() {
+  const form = document.getElementById("form");
+  form.innerHTML = "";
+  DATA.forEach(sec => {
+    const el = document.createElement("section");
+    const head = document.createElement("div");
+    head.className = "sec-head";
+    head.innerHTML = '<span class="sec-num">' + sec.r + '</span><h2></h2>';
+    head.querySelector("h2").textContent = sec.s;
+    el.appendChild(head);
+
+    sec.q.forEach(q => {
+      const qd = document.createElement("div");
+      qd.className = "q";
+      qd.dataset.n = q.n;
+
+      const top = document.createElement("div");
+      top.className = "q-top";
+      const num = document.createElement("span");
+      num.className = "q-n";
+      num.textContent = String(q.n).padStart(2, "0");
+      const ttl = document.createElement("p");
+      ttl.className = "q-t";
+      ttl.textContent = q.t;
+      if (q.m) {
+        const tag = document.createElement("span");
+        tag.className = "multi-tag";
+        tag.textContent = "ÇOKLU";
+        ttl.appendChild(tag);
+      }
+      top.append(num, ttl);
+      qd.appendChild(top);
+
+      const opts = document.createElement("div");
+      opts.className = "opts";
+      opts.setAttribute("role", q.m ? "group" : "radiogroup");
+      opts.setAttribute("aria-label", q.t);
+
+      q.o.forEach((label, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "opt";
+        b.setAttribute("role", q.m ? "checkbox" : "radio");
+        const k = document.createElement("span");
+        k.className = "k";
+        k.textContent = LET[i];
+        const tx = document.createElement("span");
+        tx.textContent = label;
+        b.append(k, tx);
+        if (isRec(q, i)) {
+          const st = document.createElement("span");
+          st.className = "star";
+          st.textContent = "★";
+          st.title = "Önerilen";
+          b.appendChild(st);
+        }
+        b.addEventListener("click", () => {
+          const cur = ans[q.n] || [];
+          if (q.m) {
+            ans[q.n] = cur.includes(i) ? cur.filter(x => x !== i) : cur.concat(i).sort();
+            if (!ans[q.n].length) delete ans[q.n];
+          } else {
+            ans[q.n] = [i];
+          }
+          save();
+          paint();
+        });
+        opts.appendChild(b);
+      });
+
+      qd.appendChild(opts);
+      el.appendChild(qd);
+    });
+    form.appendChild(el);
+  });
+  paint();
+}
+
+function paint() {
+  let done = 0;
+  DATA.forEach(sec => sec.q.forEach(q => {
+    const picked = ans[q.n] || [];
+    if (picked.length) done++;
+    const qd = document.querySelector('.q[data-n="' + q.n + '"]');
+    qd.classList.toggle("done", picked.length > 0);
+    qd.querySelectorAll(".opt").forEach((b, i) => {
+      b.setAttribute("aria-checked", picked.includes(i) ? "true" : "false");
+    });
+  }));
+
+  document.getElementById("c-done").textContent = done;
+  document.getElementById("bar").style.width = (done / 50 * 100) + "%";
+
+  const parts = ALLQ
+    .filter(q => (ans[q.n] || []).length)
+    .map(q => q.n + ans[q.n].map(i => LET[i]).join(""));
+  document.getElementById("code").value = parts.join(" ");
+
+  const hint = document.getElementById("hint");
+  const missing = ALLQ.filter(q => !(ans[q.n] || []).length).map(q => q.n);
+  if (!missing.length) {
+    hint.className = "hint ok";
+    hint.textContent = "50/50 tamam. Kodu kopyalayıp sohbete yapıştır.";
+  } else {
+    hint.className = "hint warn";
+    const show = missing.slice(0, 12).join(", ");
+    hint.textContent = "Eksik: " + show + (missing.length > 12 ? " … (+" + (missing.length - 12) + ")" : "");
+  }
+}
+
+document.getElementById("fill").addEventListener("click", () => {
+  ALLQ.forEach(q => {
+    if (!(ans[q.n] || []).length) ans[q.n] = Array.isArray(q.r) ? q.r.slice() : [q.r];
+  });
+  save(); paint();
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  ans = {};
+  ALLQ.forEach(q => { if (q.p !== undefined) ans[q.n] = [q.p]; });
+  save(); paint();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+document.getElementById("copy").addEventListener("click", async () => {
+  const ta = document.getElementById("code");
+  const btn = document.getElementById("copy");
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  let ok = false;
+  try {
+    await navigator.clipboard.writeText(ta.value);
+    ok = true;
+  } catch (e) {
+    try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+  }
+  btn.textContent = ok ? "Kopyalandı ✓" : "Seçildi — elle kopyala";
+  setTimeout(() => { btn.textContent = "Kopyala"; }, 2200);
+});
+
+render();
+</script>
