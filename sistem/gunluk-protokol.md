@@ -38,3 +38,26 @@ sunma. `sistem/arastirma-gunlugu.md` dosyasına "şu sorular arandı, yeni bir �
 Hiçbir şey olmadıysa bile rapor gelir ve "şu sorularda arandı, yeni bir şey
 çıkmadı, hedefler şu durumda" der. Boş rapor, rapor gelmemesinden iyidir —
 sistemin çalıştığını gösterir.
+
+---
+
+## Kurulu tetikleyiciler
+
+Saat dilimi: **Türkiye (UTC+3)**. Cron ifadeleri UTC yazılır.
+
+| Tur | Yerel saat | Cron (UTC) | Tetikleyici kimliği | Bildirim |
+|---|---|---|---|---|
+| Otonom araştırma | 09:00 | `0 6 * * *` | `trig_014zRw1RXTanDpwWUe1GAc1Y` | yok (sessiz) |
+| Günlük rapor | 10:00 | `0 7 * * *` | `trig_01NiMgsEFCPLdCNQybTLrz5c` | telefon bildirimi |
+
+Her tur **yeni bir oturum** açar ve depoyu `main` branch'inden sıfırdan klonlar.
+Bu yüzden:
+
+- Önceki günün sohbeti hatırlanmaz. Tek hafıza bu depodaki dosyalardır.
+- Her tur işini `main`'e commit'leyip push'lamak **zorundadır**. Push edilmeyen iş
+  ertesi gün yok sayılır.
+- Sistem dosyaları `main`'de durmalı. Başka bir branch'te kalırsa otomatik
+  turlar onları göremez.
+
+Tetikleyicileri değiştirmek için: saatler için `update_trigger`, kapatmak için
+`enabled: false`, silmek için `delete_trigger`.
