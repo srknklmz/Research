@@ -1,0 +1,783 @@
+<title>Beş Arayüz Yönü</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#EDEFF1; --sheet:#FFFFFF; --sheet-2:#F7F8F9;
+  --ink:#14171C; --ink-2:#555C65; --ink-3:#8A929B;
+  --rule:#D4D9DD; --rule-soft:#E3E7EA;
+  --inv-bg:#14171C; --inv-ink:#F5F6F7;
+  --mark:#9E2B25; --ok:#2E6B4E; --warn:#8A6520;
+  --sh:0 1px 2px rgba(20,23,28,.05);
+  --sh-lift:0 6px 22px rgba(20,23,28,.10);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1114; --sheet:#171A1F; --sheet-2:#1D2127;
+    --ink:#E9EBED; --ink-2:#A2AAB2; --ink-3:#6B747D;
+    --rule:#2B313A; --rule-soft:#222831;
+    --inv-bg:#E9EBED; --inv-ink:#0E1114;
+    --mark:#E0736A; --ok:#6FBF95; --warn:#D4A855;
+    --sh:0 1px 2px rgba(0,0,0,.35);
+    --sh-lift:0 6px 22px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1114; --sheet:#171A1F; --sheet-2:#1D2127;
+  --ink:#E9EBED; --ink-2:#A2AAB2; --ink-3:#6B747D;
+  --rule:#2B313A; --rule-soft:#222831;
+  --inv-bg:#E9EBED; --inv-ink:#0E1114;
+  --mark:#E0736A; --ok:#6FBF95; --warn:#D4A855;
+  --sh:0 1px 2px rgba(0,0,0,.35);
+  --sh-lift:0 6px 22px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+.page{max-width:1180px;margin:0 auto;padding:34px 20px 90px}
+
+/* ============ PAGE CHROME ============ */
+.masthead{border-bottom:1px solid var(--rule);padding-bottom:22px}
+.kicker{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+  color:var(--ink-3);text-transform:uppercase;margin:0 0 10px;
+}
+h1{
+  font-family:Newsreader,Georgia,serif;font-weight:500;
+  font-size:clamp(30px,5vw,44px);line-height:1.06;letter-spacing:-.02em;
+  margin:0 0 14px;text-wrap:balance;
+}
+.lede{font-size:16px;color:var(--ink-2);max-width:62ch;margin:0}
+.lede b{color:var(--ink);font-weight:500}
+
+.fixed{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(184px,1fr));
+  gap:1px;background:var(--rule-soft);border:1px solid var(--rule-soft);
+  margin:26px 0 0;border-radius:10px;overflow:hidden;
+}
+.fx{background:var(--sheet);padding:11px 13px}
+.fx dt{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;
+  color:var(--ink-3);text-transform:uppercase;margin-bottom:3px;
+}
+.fx dd{margin:0;font-size:13.5px;font-weight:500}
+
+/* ============ SWITCHER ============ */
+.switch{
+  position:sticky;top:0;z-index:40;background:var(--paper);
+  border-bottom:1px solid var(--rule);margin:34px -20px 0;padding:12px 20px;
+}
+.switch-in{max-width:1180px;margin:0 auto;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+.switch-in::-webkit-scrollbar{display:none}
+.sw{
+  font:inherit;font-size:13px;white-space:nowrap;cursor:pointer;
+  background:var(--sheet);color:var(--ink-2);
+  border:1px solid var(--rule);border-radius:999px;padding:7px 15px;
+  display:inline-flex;align-items:center;gap:7px;transition:.15s;
+}
+.sw:hover{border-color:var(--ink-3);color:var(--ink)}
+.sw:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sw b{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:500;opacity:.55}
+.sw[aria-selected="true"]{background:var(--inv-bg);color:var(--inv-ink);border-color:var(--inv-bg)}
+.sw[aria-selected="true"] b{opacity:.6}
+
+/* ============ DIRECTION BLOCK ============ */
+.dir[hidden]{display:none}
+.dir{padding-top:34px;animation:rise .34s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.dir-head{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.dir-id{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+  color:var(--ink-3);text-transform:uppercase;margin:0 0 6px;
+}
+.dir-head h2{
+  font-family:Newsreader,Georgia,serif;font-weight:500;font-size:29px;
+  letter-spacing:-.015em;margin:0 0 8px;
+}
+.thesis{font-size:15.5px;color:var(--ink-2);max-width:56ch;margin:0}
+.thesis b{color:var(--ink);font-weight:500}
+.traits{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.tr{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.05em;
+  border:1px solid var(--rule);border-radius:4px;padding:3px 7px;color:var(--ink-2);
+}
+
+.rail{
+  display:flex;gap:26px;overflow-x:auto;padding:26px 0 14px;
+  scroll-snap-type:x proximity;
+}
+.rail::-webkit-scrollbar{height:8px}
+.rail::-webkit-scrollbar-thumb{background:var(--rule);border-radius:4px}
+.slot{scroll-snap-align:start;flex:0 0 auto;display:flex;flex-direction:column;gap:10px}
+.slot-cap{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;
+  color:var(--ink-3);text-transform:uppercase;
+}
+
+/* ============ PHONE SHELL ============ */
+.phone{
+  width:302px;height:634px;border-radius:30px;overflow:hidden;
+  border:1px solid var(--rule);background:var(--sheet);
+  box-shadow:var(--sh-lift);position:relative;display:flex;flex-direction:column;
+}
+.scr{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.body{flex:1;overflow:hidden;padding:0 14px 14px}
+.notch{height:26px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.notch span{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--ink-3);letter-spacing:.04em}
+
+/* tab strip (5 scrollable tabs) */
+.tabs{display:flex;gap:16px;overflow:hidden;padding:6px 14px 0;flex:0 0 auto}
+.tab{
+  font-size:12.5px;color:var(--ink-3);padding-bottom:8px;white-space:nowrap;
+  border-bottom:2px solid transparent;
+}
+.tab.on{color:var(--ink);border-bottom-color:var(--ink);font-weight:500}
+
+/* fab */
+.fab{
+  position:absolute;right:15px;bottom:16px;width:46px;height:46px;border-radius:50%;
+  background:var(--inv-bg);color:var(--inv-ink);display:grid;place-items:center;
+  font-size:22px;line-height:1;box-shadow:var(--sh-lift);z-index:5;
+}
+
+/* generic bits reused across directions */
+.mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+.dim{opacity:.42}
+.ring{width:34px;height:34px;flex:0 0 auto;transform:rotate(-90deg)}
+.ring .rb{fill:none;stroke:var(--rule);stroke-width:2.5}
+.ring .rf{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:97.4;animation:draw 1.1s cubic-bezier(.4,0,.2,1) both}
+@keyframes draw{from{stroke-dashoffset:97.4}}
+.ring-n{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:500;
+}
+.ring-w{position:relative;width:34px;height:34px;flex:0 0 auto}
+
+/* star confidence */
+.stars{font-size:10px;letter-spacing:1px;color:var(--ink-2)}
+/* badge (status) */
+.bdg{
+  font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.06em;
+  border:1px solid var(--rule);border-radius:3px;padding:1px 5px;color:var(--ink-2);
+}
+.bdg.k{border-color:var(--mark);color:var(--mark)}
+.bdg.g{border-color:var(--ok);color:var(--ok)}
+
+/* story progress segments */
+.segs{display:flex;gap:3px;padding:10px 0 12px}
+.segs i{flex:1;height:2px;background:var(--rule);border-radius:2px}
+.segs i.on{background:var(--ink)}
+
+/* accept/reject */
+.ar{display:flex;gap:6px;margin-top:9px}
+.ar span{
+  flex:1;text-align:center;font-size:11px;padding:6px 0;border-radius:6px;
+  border:1px solid var(--rule);color:var(--ink-2);
+}
+.ar span.y{background:var(--inv-bg);color:var(--inv-ink);border-color:var(--inv-bg)}
+
+/* sparkline / bars */
+.spark{display:flex;align-items:flex-end;gap:2px;height:26px}
+.spark i{flex:1;background:var(--ink-3);border-radius:1px 1px 0 0;opacity:.5}
+.spark i:last-child{background:var(--ink);opacity:1}
+
+.note{
+  border-top:1px solid var(--rule-soft);margin-top:6px;padding-top:16px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:16px 26px;
+}
+.note h3{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 5px;font-weight:500;
+}
+.note p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.note p b{color:var(--ink);font-weight:500}
+
+footer{border-top:1px solid var(--rule);margin-top:44px;padding-top:22px}
+footer h2{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:22px;margin:0 0 10px}
+footer p{color:var(--ink-2);font-size:14.5px;max-width:64ch;margin:0 0 10px}
+footer code{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;background:var(--sheet-2);
+  border:1px solid var(--rule-soft);border-radius:4px;padding:1px 6px;
+}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ================= D1 · DEFTER ================= */
+.d1 .body{
+  background:
+    repeating-linear-gradient(to bottom,transparent 0 27px,var(--rule-soft) 27px 28px);
+  background-position:0 6px;padding-left:26px;position:relative;
+}
+.d1 .body::before{
+  content:"";position:absolute;left:15px;top:0;bottom:0;width:1px;background:var(--rule);
+}
+.d1 h4{font-family:Newsreader,Georgia,serif;font-weight:600;font-size:16px;margin:0;line-height:28px}
+.d1 .lbl{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase;line-height:28px}
+.d1 .rep{border-bottom:1px solid var(--rule);padding-bottom:6px}
+.d1 .rep p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:28px}
+.d1 .comp{
+  margin-top:7px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet-2);
+  padding:9px 11px;font-size:12.5px;color:var(--ink-3);min-height:66px;
+}
+.d1 .comp em{display:block;font-style:italic;font-family:Newsreader,serif;font-size:14px;color:var(--ink-3)}
+.d1 .ways{display:flex;gap:5px;margin-top:8px}
+.d1 .ways span{font-size:14px;width:30px;height:26px;display:grid;place-items:center;border:1px solid var(--rule);border-radius:6px;background:var(--sheet)}
+.d1 .grow{display:flex;align-items:center;gap:10px;line-height:28px;border-bottom:1px solid var(--rule-soft)}
+.d1 .grow .t{flex:1;font-family:Newsreader,serif;font-size:14.5px}
+.d1 .grow.faded{opacity:.4}
+.d1 .pgn{text-align:right;font-family:Newsreader,serif;font-style:italic;font-size:11px;color:var(--ink-3);line-height:28px}
+
+/* ================= D2 · KARTOTEKA ================= */
+.d2 .body{background:var(--sheet-2);padding-top:8px}
+.d2 .card{
+  background:var(--sheet);border:1px solid var(--rule);border-radius:3px 10px 3px 3px;
+  padding:10px 11px;margin-bottom:9px;box-shadow:var(--sh);position:relative;
+}
+.d2 .card::before{
+  content:"";position:absolute;top:-1px;left:-1px;width:52px;height:5px;
+  background:var(--ink);border-radius:3px 3px 0 0;
+}
+.d2 .card.stack::after{
+  content:"";position:absolute;left:5px;right:5px;bottom:-4px;height:4px;
+  border:1px solid var(--rule);border-top:0;border-radius:0 0 4px 4px;background:var(--sheet);
+}
+.d2 h4{font-size:14px;font-weight:600;margin:7px 0 4px;letter-spacing:-.01em}
+.d2 .meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:10.5px;color:var(--ink-3)}
+.d2 .comp{
+  background:var(--sheet);border:1px dashed var(--rule);border-radius:3px;
+  padding:12px 11px;text-align:center;color:var(--ink-3);font-size:12.5px;margin-bottom:10px;
+}
+.d2 .ways{display:flex;gap:5px;justify-content:center;margin-top:9px}
+.d2 .ways span{font-size:13px;width:28px;height:24px;display:grid;place-items:center;border:1px solid var(--rule);border-radius:3px}
+.d2 .kw{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.05em;color:var(--ink-2);text-transform:uppercase}
+.d2 .grow{display:flex;align-items:center;gap:9px}
+.d2 .grow .t{flex:1;font-size:13.5px;font-weight:500}
+.d2 .card.faded{opacity:.42}
+.d2 .card.faded::before{background:var(--ink-3)}
+
+/* ================= D3 · CETVEL ================= */
+.d3 .body{padding-left:24px;position:relative;font-size:13px}
+.d3 .body::before{
+  content:"";position:absolute;left:11px;top:4px;bottom:10px;width:7px;
+  background:repeating-linear-gradient(to bottom,var(--rule) 0 1px,transparent 1px 9px);
+}
+.d3 .sec{
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;
+  color:var(--ink-3);text-transform:uppercase;padding:11px 0 5px;
+  border-bottom:1px solid var(--rule);margin-bottom:8px;display:flex;justify-content:space-between;
+}
+.d3 h4{font-size:13.5px;font-weight:600;margin:0}
+.d3 .comp{
+  border:1px solid var(--ink);border-radius:5px;padding:9px 10px;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);min-height:58px;
+}
+.d3 .ways{display:flex;gap:4px;margin-top:7px}
+.d3 .ways span{flex:1;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:9px;padding:4px 0;border:1px solid var(--rule);border-radius:3px;color:var(--ink-2)}
+.d3 .grow{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--rule-soft)}
+.d3 .grow .t{flex:1;font-size:12.5px;font-weight:500}
+.d3 .grow .sub{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--ink-3)}
+.d3 .grow.faded{opacity:.4}
+.d3 .kv{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:3px 0;color:var(--ink-2)}
+.d3 .kv b{color:var(--ink);font-weight:500}
+
+/* ================= D4 · SESSİZ ================= */
+.d4 .body{padding:0 20px 14px}
+.d4 .tabs{padding:6px 20px 0;gap:14px}
+.d4 h4{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:19px;letter-spacing:-.015em;margin:0 0 3px;line-height:1.25}
+.d4 .lbl{font-size:11px;color:var(--ink-3);letter-spacing:.02em;margin-bottom:22px}
+.d4 .comp{
+  font-family:Newsreader,Georgia,serif;font-style:italic;font-size:17px;
+  color:var(--ink-3);padding:14px 0 18px;border-bottom:1px solid var(--rule);
+}
+.d4 .grow{padding:15px 0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:baseline;gap:11px}
+.d4 .grow .t{flex:1;font-family:Newsreader,serif;font-size:16px;line-height:1.3}
+.d4 .grow .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3)}
+.d4 .grow.faded{opacity:.35}
+.d4 .quiet{font-size:12.5px;color:var(--ink-3);line-height:1.65}
+.d4 .ways{display:flex;gap:16px;margin-top:14px;font-size:15px;color:var(--ink-3)}
+
+/* ================= D5 · KESİT ================= */
+.d5 .body{padding:0}
+.d5 .band{padding:13px 15px;border-bottom:1px solid var(--rule)}
+.d5 .band.inv{background:var(--inv-bg);color:var(--inv-ink);border-bottom-color:var(--inv-bg)}
+.d5 .band.inv .cap,.d5 .band.inv .sub{color:var(--inv-ink);opacity:.62}
+.d5 .cap{
+  font-family:"IBM Plex Sans",sans-serif;font-size:9.5px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px;
+}
+.d5 h4{font-size:17px;font-weight:700;letter-spacing:-.02em;margin:0;line-height:1.18}
+.d5 .sub{font-size:12px;color:var(--ink-2);margin-top:4px}
+.d5 .comp{
+  background:var(--inv-bg);color:var(--inv-ink);padding:15px;
+  font-size:14px;font-weight:600;min-height:74px;
+}
+.d5 .comp .ph{opacity:.5;font-weight:400}
+.d5 .ways{display:flex;gap:0;border-bottom:1px solid var(--rule)}
+.d5 .ways span{flex:1;text-align:center;padding:9px 0;font-size:14px;border-right:1px solid var(--rule)}
+.d5 .ways span:last-child{border-right:0}
+.d5 .grow{display:flex;align-items:center;gap:11px;padding:12px 15px;border-bottom:1px solid var(--rule)}
+.d5 .grow .t{flex:1;font-size:14px;font-weight:600;letter-spacing:-.01em}
+.d5 .grow.faded{opacity:.38}
+.d5 .big{font-size:31px;font-weight:700;letter-spacing:-.03em;line-height:1}
+</style>
+
+<div class="page">
+<div class="masthead">
+  <p class="kicker">Beyin Sistemi · Mobil Arayüz</p>
+  <h1>Beş Arayüz Yönü</h1>
+  <p class="lede">50 sorunun cevabı ortak iskeleti belirledi: <b>PWA</b>, telefon öncelikli, üstte kaydırmalı beş sekme, renksiz mürekkep paleti, araştırma defteri karakteri. Aşağıdaki beş yön bu iskeleti paylaşıyor — ayrıldıkları yer <b>defter fikrinin nasıl ifade edildiği</b>.</p>
+
+  <dl class="fixed">
+    <div class="fx"><dt>Sekmeler</dt><dd>Bugün · Hedefler · Veriler · Arşiv · Ayarlar</dd></div>
+    <div class="fx"><dt>Açılış</dt><dd>Rapor şeridi + ekleme kutusu</dd></div>
+    <div class="fx"><dt>Hedef listesi</dt><dd>Sade satır · halka gösterge</dd></div>
+    <div class="fx"><dt>Rapor</dt><dd>Kaydırmalı story · onayla/reddet</dd></div>
+    <div class="fx"><dt>Renk</dt><dd>Yalnız mürekkep · durum rengi istisna</dd></div>
+    <div class="fx"><dt>Hareket</dt><dd>Zengin · sistem temasına uyar</dd></div>
+  </dl>
+</div>
+
+<nav class="switch" aria-label="Tasarım yönleri">
+  <div class="switch-in" role="tablist">
+    <button class="sw" role="tab" aria-selected="true"  data-d="1"><b>A</b> Defter</button>
+    <button class="sw" role="tab" aria-selected="false" data-d="2"><b>B</b> Kartoteka</button>
+    <button class="sw" role="tab" aria-selected="false" data-d="3"><b>C</b> Cetvel</button>
+    <button class="sw" role="tab" aria-selected="false" data-d="4"><b>D</b> Sessiz</button>
+    <button class="sw" role="tab" aria-selected="false" data-d="5"><b>E</b> Kesit</button>
+  </div>
+</nav>
+
+<!-- ============================ A · DEFTER ============================ -->
+<article class="dir d1" id="dir-1">
+  <div class="dir-head">
+    <div>
+      <p class="dir-id">Yön A</p>
+      <h2>Defter</h2>
+      <p class="thesis">Ekran gerçekten çizgili bir defter sayfası. Satır aralığı sabit bir <b>28 piksellik yazı çizgisine</b> oturur, solda kenar payı çizgisi vardır, sayfa numarası köşede durur. Yazmak birincil eylem gibi hissettirir.</p>
+      <div class="traits"><span class="tr">ÇİZGİLİ ZEMİN</span><span class="tr">SERİF BAŞLIK</span><span class="tr">KENAR PAYI</span><span class="tr">EL YAZISI RİTMİ</span></div>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="slot"><span class="slot-cap">01 · Bugün</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab on">Bugün</span><span class="tab">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <div class="rep">
+            <span class="lbl">20 Ağustos · Rapor</span>
+            <h4>3 hedef ilerledi, 1 varsayım çürüdü</h4>
+            <p>V-0012 birim maliyeti 400₺ altına indirmenin tedarikçiye bağlı olmadığını gösteriyor. <em>Devamını oku →</em></p>
+          </div>
+          <span class="lbl">Yeni bilgi</span>
+          <div class="comp"><em>Öğrendiğin şeyi buraya yaz ya da yapıştır…</em></div>
+          <div class="ways"><span>🔗</span><span>↗</span><span>🎙</span><span>📷</span></div>
+          <span class="lbl">Son eklenenler</span>
+          <div class="grow"><span class="t">V-0012 · Tedarikçi fiyat listesi</span><span class="bdg k">ÇÜRÜTÜR</span></div>
+          <div class="grow"><span class="t">V-0011 · Rakip beta çıktı</span><span class="bdg">RİSK</span></div>
+          <p class="pgn">— 1 —</p>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">02 · Hedefler</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab">Bugün</span><span class="tab on">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <span class="lbl">Dikkat gerekiyor</span>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:79.9"/></svg><span class="ring-n">18</span></span><span class="t">İlk 50 kullanıcıyı bul</span><span class="bdg k">5 SORU</span></div>
+          <span class="lbl">Aktif</span>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:37"/></svg><span class="ring-n">62</span></span><span class="t">Ürünü 3 ayda pazara çıkar</span></div>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:63.3"/></svg><span class="ring-n">35</span></span><span class="t">Birim maliyeti 400₺ altına indir</span></div>
+          <div class="grow faded"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:89.6"/></svg><span class="ring-n">8</span></span><span class="t">Bayi ağını genişlet</span></div>
+          <div class="grow faded" style="border:0"><span class="lbl" style="padding-left:44px">14 gündür veri gelmedi</span></div>
+          <p class="pgn">— 2 —</p>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">03 · Rapor</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>10:00</span><span>▮▮▮</span></div>
+        <div class="body" style="padding-top:4px">
+          <div class="segs"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+          <span class="lbl">Bölüm 2/6 · Dün eklenenler</span>
+          <h4>Maliyet varsayımı çürüdü</h4>
+          <p style="font-size:12.5px;color:var(--ink-2);line-height:28px;margin:0">V-0012, H-02'nin “tedarikçi fiyatı sabit” varsayımını çürütüyor. Aynı parça iki tedarikçide <span class="mono">340₺</span> ve <span class="mono">495₺</span>.</p>
+          <div class="spark" style="margin:6px 0"><i style="height:30%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:62%"></i><i style="height:70%"></i><i style="height:95%"></i></div>
+          <span class="lbl">Öneri 1/3</span>
+          <h4 style="font-size:14px">İkinci tedarikçiden numune iste</h4>
+          <p style="font-size:12px;color:var(--ink-2);line-height:24px;margin:0">Fiyat farkı hedefi tek başına kurtarıyor.</p>
+          <div class="ar"><span class="y">Onayla</span><span>Reddet</span></div>
+          <p class="pgn">— 3 —</p>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <div><h3>En güçlü yanı</h3><p>Yazma eylemi merkezde. <b>Bilgi biriktirme</b> duygusunu en somut veren yön — sayfa doldukça sistem büyümüş gibi hissettirir.</p></div>
+    <div><h3>Bedeli</h3><p>Çizgili zemin bilgi yoğunluğunu sınırlar; uzun veri listelerinde satır ritmi kısıtlayıcı olabilir.</p></div>
+    <div><h3>Şuna uygun</h3><p>Günde birkaç kez not düşüp akşam okuyacaksan.</p></div>
+  </div>
+</article>
+
+<!-- ============================ B · KARTOTEKA ============================ -->
+<article class="dir d2" id="dir-2" hidden>
+  <div class="dir-head">
+    <div>
+      <p class="dir-id">Yön B</p>
+      <h2>Kartoteka</h2>
+      <p class="thesis">Her bilgi fiziksel bir <b>fiş kartı</b>. Üstünde çıkıntılı sekmesi var, altında kaç karta bağlı olduğunu gösteren istif payı görünür. Zettelkasten'in kart kutusu doğrudan ekrana taşınır.</p>
+      <div class="traits"><span class="tr">SEKMELİ KART</span><span class="tr">İSTİF PAYI</span><span class="tr">KART = VERİ</span><span class="tr">GRİ ZEMİN</span></div>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="slot"><span class="slot-cap">01 · Bugün</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab on">Bugün</span><span class="tab">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <div class="card stack">
+            <div class="meta"><span class="kw">20 AĞU · RAPOR</span></div>
+            <h4>3 hedef ilerledi, 1 varsayım çürüdü</h4>
+            <div class="meta"><span>V-0012 maliyet varsayımını yıktı</span></div>
+          </div>
+          <div class="comp">Yeni bir fiş aç
+            <div class="ways"><span>🔗</span><span>↗</span><span>🎙</span><span>📷</span></div>
+          </div>
+          <div class="card">
+            <div class="meta"><span class="kw">V-0012</span><span class="bdg k">ÇÜRÜTÜR</span></div>
+            <h4>Tedarikçi fiyat listesi 2026</h4>
+            <div class="meta"><span>tedarikci-x.com</span><span class="stars">★★☆</span></div>
+          </div>
+          <div class="card">
+            <div class="meta"><span class="kw">V-0011</span><span class="bdg">RİSK</span></div>
+            <h4>Rakip beta sürümü çıkardı</h4>
+            <div class="meta"><span>techblog.io</span><span class="stars">★★★</span></div>
+          </div>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">02 · Hedefler</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab">Bugün</span><span class="tab on">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <div class="card" style="border-color:var(--mark)">
+            <div class="meta"><span class="kw">H-03 · DİKKAT</span></div>
+            <div class="grow" style="margin-top:5px"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:79.9"/></svg><span class="ring-n">18</span></span><span class="t">İlk 50 kullanıcıyı bul</span></div>
+            <div class="meta" style="margin-top:6px"><span>5 açık soru cevapsız</span></div>
+          </div>
+          <div class="card stack">
+            <div class="meta"><span class="kw">H-01</span></div>
+            <div class="grow" style="margin-top:5px"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:37"/></svg><span class="ring-n">62</span></span><span class="t">Ürünü 3 ayda pazara çıkar</span></div>
+          </div>
+          <div class="card stack">
+            <div class="meta"><span class="kw">H-02</span></div>
+            <div class="grow" style="margin-top:5px"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:63.3"/></svg><span class="ring-n">35</span></span><span class="t">Birim maliyeti 400₺ altına indir</span></div>
+          </div>
+          <div class="card faded">
+            <div class="meta"><span class="kw">H-04 · 14 GÜN SESSİZ</span></div>
+            <div class="grow" style="margin-top:5px"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:89.6"/></svg><span class="ring-n">8</span></span><span class="t">Bayi ağını genişlet</span></div>
+          </div>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">03 · Rapor</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>10:00</span><span>▮▮▮</span></div>
+        <div class="body" style="padding-top:4px">
+          <div class="segs"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+          <div class="card">
+            <div class="meta"><span class="kw">BÖLÜM 2/6 · DÜN EKLENENLER</span></div>
+            <h4>Maliyet varsayımı çürüdü</h4>
+            <p style="font-size:12px;color:var(--ink-2);margin:5px 0 0">V-0012, H-02'nin “tedarikçi fiyatı sabit” varsayımını yıkıyor. Aynı parça <span class="mono">340₺</span> ve <span class="mono">495₺</span>.</p>
+            <div class="spark" style="margin-top:9px"><i style="height:30%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:62%"></i><i style="height:70%"></i><i style="height:95%"></i></div>
+          </div>
+          <div class="card">
+            <div class="meta"><span class="kw">ÖNERİ 1/3</span></div>
+            <h4>İkinci tedarikçiden numune iste</h4>
+            <p style="font-size:12px;color:var(--ink-2);margin:5px 0 0">Fiyat farkı hedefi tek başına kurtarıyor.</p>
+            <div class="ar"><span class="y">Onayla</span><span>Reddet</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <div><h3>En güçlü yanı</h3><p>Verinin <b>ayrı bir nesne</b> olduğunu en iyi anlatan yön. İstif payı sayesinde bir hedefe kaç kart bağlı olduğu bakışta görünür.</p></div>
+    <div><h3>Bedeli</h3><p>Kart çerçeveleri ekranda yer yer; aynı alana daha az bilgi sığar.</p></div>
+    <div><h3>Şuna uygun</h3><p>Çok sayıda kaynak biriktirip aralarında bağ kuracaksan.</p></div>
+  </div>
+</article>
+
+<!-- ============================ C · CETVEL ============================ -->
+<article class="dir d3" id="dir-3" hidden>
+  <div class="dir-head">
+    <div>
+      <p class="dir-id">Yön C</p>
+      <h2>Cetvel</h2>
+      <p class="thesis">Ölçüm aleti mantığı. Sol kenarda gerçek bir <b>ölçek şeridi</b> boyunca her şey hizalanır, sayılar monospace ve sütun sütun okunur. Sistem bir defterden çok bir <b>gösterge paneli</b> gibi davranır.</p>
+      <div class="traits"><span class="tr">ÖLÇEK ŞERİDİ</span><span class="tr">MONOSPACE SAYI</span><span class="tr">YÜKSEK YOĞUNLUK</span><span class="tr">HALKA GÖSTERGE</span></div>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="slot"><span class="slot-cap">01 · Bugün</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab on">Bugün</span><span class="tab">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <div class="sec"><span>20.08 · RAPOR</span><span>10:00</span></div>
+          <h4>3 hedef ilerledi · 1 varsayım çürüdü</h4>
+          <div class="kv"><span>aktif hedef</span><b>4</b></div>
+          <div class="kv"><span>toplam veri</span><b>12</b></div>
+          <div class="kv"><span>dün eklenen</span><b>2</b></div>
+          <div class="sec"><span>YENİ BİLGİ</span><span>+</span></div>
+          <div class="comp">&gt; yapıştır ya da yaz_</div>
+          <div class="ways"><span>LİNK</span><span>PAYLAŞ</span><span>SES</span><span>FOTO</span></div>
+          <div class="sec"><span>SON EKLENENLER</span><span>2</span></div>
+          <div class="grow"><span class="t">Tedarikçi fiyat listesi<br><span class="sub">V-0012 · tedarikci-x.com</span></span><span class="bdg k">ÇÜRÜTÜR</span></div>
+          <div class="grow"><span class="t">Rakip beta çıkardı<br><span class="sub">V-0011 · techblog.io</span></span><span class="bdg">RİSK</span></div>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">02 · Hedefler</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab">Bugün</span><span class="tab on">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <div class="sec"><span>DİKKAT GEREKİYOR</span><span>1</span></div>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:79.9"/></svg><span class="ring-n">18</span></span><span class="t">İlk 50 kullanıcıyı bul<br><span class="sub">H-03 · 5 açık soru · 1 veri</span></span></div>
+          <div class="sec"><span>AKTİF</span><span>2</span></div>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:37"/></svg><span class="ring-n">62</span></span><span class="t">Ürünü 3 ayda pazara çıkar<br><span class="sub">H-01 · 2 açık soru · 7 veri</span></span></div>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:63.3"/></svg><span class="ring-n">35</span></span><span class="t">Birim maliyeti 400₺ altına<br><span class="sub">H-02 · 3 açık soru · 4 veri</span></span></div>
+          <div class="sec"><span>SESSİZ</span><span>1</span></div>
+          <div class="grow faded"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:89.6"/></svg><span class="ring-n">8</span></span><span class="t">Bayi ağını genişlet<br><span class="sub">H-04 · 14 gündür veri yok</span></span></div>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">03 · Rapor</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>10:00</span><span>▮▮▮</span></div>
+        <div class="body" style="padding-top:4px">
+          <div class="segs"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+          <div class="sec"><span>2/6 · DÜN EKLENENLER</span><span>20.08</span></div>
+          <h4>Maliyet varsayımı çürüdü</h4>
+          <div class="kv"><span>tedarikçi A</span><b>340₺</b></div>
+          <div class="kv"><span>tedarikçi B</span><b>495₺</b></div>
+          <div class="kv"><span>hedef eşik</span><b>400₺</b></div>
+          <div class="spark" style="margin:10px 0"><i style="height:30%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:62%"></i><i style="height:70%"></i><i style="height:95%"></i></div>
+          <div class="sec"><span>ÖNERİ 1/3</span><span>H-02</span></div>
+          <h4>İkinci tedarikçiden numune iste</h4>
+          <div class="ar"><span class="y">Onayla</span><span>Reddet</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <div><h3>En güçlü yanı</h3><p>Aynı ekranda <b>en çok bilgi</b>. Sayılar hizalı okunduğu için hedefler arası kıyas anında yapılır.</p></div>
+    <div><h3>Bedeli</h3><p>Defter sıcaklığından en uzak yön; alet gibi hissettirir, oturup okumaya davet etmez.</p></div>
+    <div><h3>Şuna uygun</h3><p>Günde bir kez açıp durum taraması yapacaksan.</p></div>
+  </div>
+</article>
+
+<!-- ============================ D · SESSİZ ============================ -->
+<article class="dir d4" id="dir-4" hidden>
+  <div class="dir-head">
+    <div>
+      <p class="dir-id">Yön D</p>
+      <h2>Sessiz</h2>
+      <p class="thesis">Kutu yok, çerçeve yok, gölge yok. Yalnızca <b>tipografi ve boşluk</b>. Serif baştan sona kullanılır, ekranda aynı anda az sayıda şey durur. Arayüz susar, cümle konuşur.</p>
+      <div class="traits"><span class="tr">ÇERÇEVESİZ</span><span class="tr">BAŞTAN SONA SERİF</span><span class="tr">GENİŞ BOŞLUK</span><span class="tr">AZ ÖĞE</span></div>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="slot"><span class="slot-cap">01 · Bugün</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab on">Bugün</span><span class="tab">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <p class="lbl" style="margin:16px 0 4px">20 Ağustos raporu</p>
+          <h4>Üç hedef ilerledi. Bir varsayım çürüdü.</h4>
+          <p class="quiet" style="margin:6px 0 0">Oku →</p>
+          <div class="comp">Ne öğrendin?</div>
+          <div class="ways"><span>🔗</span><span>↗</span><span>🎙</span><span>📷</span></div>
+          <p class="lbl" style="margin:26px 0 0">Son eklenenler</p>
+          <div class="grow"><span class="t">Tedarikçi fiyat listesi</span><span class="n">çürütür</span></div>
+          <div class="grow"><span class="t">Rakip beta çıkardı</span><span class="n">risk</span></div>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">02 · Hedefler</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab">Bugün</span><span class="tab on">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <p class="lbl" style="margin:16px 0 0">Dikkat gerekiyor</p>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:79.9"/></svg><span class="ring-n">18</span></span><span class="t">İlk 50 kullanıcıyı bul</span></div>
+          <p class="lbl" style="margin:20px 0 0">Aktif</p>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:37"/></svg><span class="ring-n">62</span></span><span class="t">Ürünü 3 ayda pazara çıkar</span></div>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:63.3"/></svg><span class="ring-n">35</span></span><span class="t">Birim maliyeti 400₺ altına indir</span></div>
+          <div class="grow faded"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:89.6"/></svg><span class="ring-n">8</span></span><span class="t">Bayi ağını genişlet</span></div>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">03 · Rapor</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>10:00</span><span>▮▮▮</span></div>
+        <div class="body" style="padding-top:4px">
+          <div class="segs"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+          <p class="lbl" style="margin:14px 0 2px">Dün eklenenler</p>
+          <h4>Maliyet varsayımı çürüdü.</h4>
+          <p class="quiet" style="margin:10px 0 0">V-0012, H-02'nin “tedarikçi fiyatı sabit” varsayımını yıkıyor. Aynı parça iki tedarikçide <span class="mono">340₺</span> ve <span class="mono">495₺</span>.</p>
+          <div class="spark" style="margin:18px 0"><i style="height:30%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:62%"></i><i style="height:70%"></i><i style="height:95%"></i></div>
+          <p class="lbl" style="margin:8px 0 2px">Öneri 1/3</p>
+          <h4 style="font-size:17px">İkinci tedarikçiden numune iste.</h4>
+          <div class="ar"><span class="y">Onayla</span><span>Reddet</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <div><h3>En güçlü yanı</h3><p>Okumaya en davetkâr yön. Rapor bir <b>bildirim değil, metin</b> gibi okunur; uzun cümleler burada yorulmadan okunur.</p></div>
+    <div><h3>Bedeli</h3><p>Ekran başına en az bilgi. Çok kaydırma gerekir, kıyas yapmak zorlaşır.</p></div>
+    <div><h3>Şuna uygun</h3><p>Sistemi düşünmek için değil, okumak için açacaksan.</p></div>
+  </div>
+</article>
+
+<!-- ============================ E · KESİT ============================ -->
+<article class="dir d5" id="dir-5" hidden>
+  <div class="dir-head">
+    <div>
+      <p class="dir-id">Yön E</p>
+      <h2>Kesit</h2>
+      <p class="thesis">Ekran, kenardan kenara uzanan <b>yatay bantlara</b> bölünür. Her bant tek bir işi anlatır ve önemli olan bant mürekkebe boyanır. Story formatındaki rapor bu yapının doğal karşılığıdır.</p>
+      <div class="traits"><span class="tr">TAM GENİŞLİK BANT</span><span class="tr">TERS BLOK VURGU</span><span class="tr">KALIN SANS</span><span class="tr">YÜKSEK KONTRAST</span></div>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="slot"><span class="slot-cap">01 · Bugün</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab on">Bugün</span><span class="tab">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <div class="band inv">
+            <div class="cap">20 Ağustos · Rapor</div>
+            <h4>3 hedef ilerledi<br>1 varsayım çürüdü</h4>
+            <div class="sub">Raporu aç →</div>
+          </div>
+          <div class="comp">Ne öğrendin?<div class="ph" style="font-size:12px;margin-top:5px">yapıştır · yaz · konuş · çek</div></div>
+          <div class="ways"><span>🔗</span><span>↗</span><span>🎙</span><span>📷</span></div>
+          <div class="band">
+            <div class="cap">Son eklenenler</div>
+          </div>
+          <div class="grow"><span class="t">Tedarikçi fiyat listesi<div class="sub" style="font-weight:400">tedarikci-x.com · çürütür</div></span><span class="stars">★★☆</span></div>
+          <div class="grow"><span class="t">Rakip beta çıkardı<div class="sub" style="font-weight:400">techblog.io · risk</div></span><span class="stars">★★★</span></div>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">02 · Hedefler</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tabs"><span class="tab">Bugün</span><span class="tab on">Hedefler</span><span class="tab">Veriler</span><span class="tab">Arşiv</span><span class="tab">Ayar</span></div>
+        <div class="body">
+          <div class="band inv">
+            <div class="cap">Dikkat gerekiyor</div>
+            <div style="display:flex;align-items:center;gap:11px;margin-top:6px">
+              <span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5" style="stroke:rgba(128,128,128,.4)"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke:currentColor;stroke-dashoffset:79.9"/></svg><span class="ring-n">18</span></span>
+              <h4 style="flex:1">İlk 50 kullanıcıyı bul</h4>
+            </div>
+            <div class="sub">5 açık soru cevapsız</div>
+          </div>
+          <div class="band"><div class="cap">Aktif</div></div>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:37"/></svg><span class="ring-n">62</span></span><span class="t">Ürünü 3 ayda pazara çıkar</span></div>
+          <div class="grow"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:63.3"/></svg><span class="ring-n">35</span></span><span class="t">Birim maliyeti 400₺ altına</span></div>
+          <div class="band"><div class="cap">Sessiz · 14 gün</div></div>
+          <div class="grow faded"><span class="ring-w"><svg class="ring" viewBox="0 0 36 36"><circle class="rb" cx="18" cy="18" r="15.5"/><circle class="rf" cx="18" cy="18" r="15.5" style="stroke-dashoffset:89.6"/></svg><span class="ring-n">8</span></span><span class="t">Bayi ağını genişlet</span></div>
+        </div>
+        <div class="fab">+</div>
+      </div></div>
+    </div>
+
+    <div class="slot"><span class="slot-cap">03 · Rapor</span>
+      <div class="phone"><div class="scr">
+        <div class="notch"><span>10:00</span><span>▮▮▮</span></div>
+        <div class="body">
+          <div style="padding:0 15px"><div class="segs"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="band inv">
+            <div class="cap">Bölüm 2/6 · Dün eklenenler</div>
+            <h4>Maliyet varsayımı<br>çürüdü</h4>
+          </div>
+          <div class="band">
+            <div class="sub" style="margin:0 0 9px">Aynı parça iki tedarikçide:</div>
+            <div style="display:flex;gap:18px;align-items:flex-end">
+              <div><div class="big mono">340₺</div><div class="cap" style="margin:4px 0 0">TEDARİKÇİ A</div></div>
+              <div style="opacity:.45"><div class="big mono">495₺</div><div class="cap" style="margin:4px 0 0">TEDARİKÇİ B</div></div>
+            </div>
+          </div>
+          <div class="band">
+            <div class="cap">Öneri 1/3</div>
+            <h4>İkinci tedarikçiden numune iste</h4>
+            <div class="ar"><span class="y">Onayla</span><span>Reddet</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <div><h3>En güçlü yanı</h3><p>Hiyerarşi tartışmasız. Ters bant sayesinde <b>en önemli şey</b> ekranda tek bakışta bulunur; story raporu buna birebir oturur.</p></div>
+    <div><h3>Bedeli</h3><p>Araştırma defteri hissinden uzaklaşır, uygulama daha “ürün” gibi görünür.</p></div>
+    <div><h3>Şuna uygun</h3><p>Günde bir kez bakıp “bugün neye bakmalıyım” cevabını alacaksan.</p></div>
+  </div>
+</article>
+
+<footer>
+  <h2>Nasıl seçersin</h2>
+  <p>Beşi de 50 cevabının tamamına uyuyor — aralarındaki fark işlev değil, <b>ton</b>. Kaba ayrım şu: <b>A</b> ve <b>D</b> okumaya, <b>C</b> ve <b>E</b> taramaya, <b>B</b> biriktirmeye çalışır.</p>
+  <p>Bir harf söyle, o yönü gerçek çalışan PWA'ya çeviririm. İki yönün parçalarını karıştırmak da olur — örneğin <code>A + E raporu</code> gibi.</p>
+</footer>
+</div>
+
+<script>
+const tabs = [...document.querySelectorAll(".sw")];
+const dirs = [...document.querySelectorAll(".dir")];
+tabs.forEach(t => t.addEventListener("click", () => {
+  tabs.forEach(x => x.setAttribute("aria-selected", String(x === t)));
+  dirs.forEach(d => { d.hidden = d.id !== "dir-" + t.dataset.d; });
+  document.querySelector(".switch").scrollIntoView({ behavior: "smooth", block: "start" });
+}));
+</script>
