@@ -19,6 +19,9 @@ yönlendirme kaynağı budur.
 | `arsiv/` | İşlendi ama hiçbir hedefle eşleşmedi | Claude |
 | `raporlar/` | Günlük raporlar (`2026-08-21.md`) | Claude |
 | `sistem/` | Şablonlar, protokoller, kaynak defteri | Claude |
+| `uygulama/` | Mobil arayüz (PWA) — markdown'dan derlenen veriyi okur | Claude |
+| `araclar/` | Derleme betikleri | Claude |
+| `tasarim/` | Arayüz tercihleri ve tasarım yönleri | Claude |
 
 Kimlik şeması: hedef `H-01`, veri `V-0001`, ham girdi `ham/YYYY-AA-GG-konu.md`.
 Numaralar asla geri kullanılmaz; silinen kayıt `durum: iptal` ile durur.
@@ -111,6 +114,23 @@ Zorlama eşleştirme sistemi çöpe çevirir; `arsiv/`'e atmaktan çekinme.
 
 Bir veri birden çok hedefle eşleşebilir. Her eşleşme için ayrı satır yaz:
 hedef kimliği, tür, ve **tek cümlede ne değiştirdiği**.
+
+---
+
+## 3.5. Uygulama verisi
+
+Markdown kartları tek gerçek kaynaktır. Mobil uygulama onları doğrudan okumaz —
+`araclar/derle.py` kartları `uygulama/data.json` dosyasına çevirir.
+
+**Kart ekledikten ya da değiştirdikten sonra her seferinde çalıştır:**
+
+```bash
+python3 araclar/derle.py
+```
+
+Bu adım atlanırsa telefonda eski veri görünür. Arayüz tercihleri
+`tasarim/tercihler.md` dosyasında bağlayıcıdır; arayüzde bir şey değiştirirken
+oraya bak.
 
 ---
 

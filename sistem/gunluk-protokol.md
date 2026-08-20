@@ -19,7 +19,10 @@ tek bilgi kaynağı depodaki dosyalardır — önceki günün sohbeti hatırlanm
 6. Hedef kartlarını güncelle: varsayım durumları, açık soru kutuları,
    `son_hareket`, bağlı veriler tablosu.
 7. `veri/indeks.md` ve `sistem/kaynak-defteri.md` satırlarını ekle.
-8. Commit + push.
+8. **`python3 araclar/derle.py` çalıştır** — mobil uygulamanın okuduğu
+   `uygulama/data.json` yeniden üretilsin. Bu adım atlanırsa telefonda
+   dünkü veri görünür.
+9. Commit + push.
 
 **Yeni bir şey bulunamazsa:** rapor doldurmak için zayıf bulguyu veri diye
 sunma. `sistem/arastirma-gunlugu.md` dosyasına "şu sorular arandı, yeni bir şey
@@ -31,7 +34,8 @@ sunma. `sistem/arastirma-gunlugu.md` dosyasına "şu sorular arandı, yeni bir �
 2. `sistem/sablonlar/rapor.md` şablonuyla `raporlar/YYYY-AA-GG.md` yaz.
 3. Öneri bölümünde en fazla 3 madde; her biri somut eylem + neden şimdi.
    "Araştırmaya devam edelim" türü genel tavsiye yazma.
-4. Commit + push, sonra raporu kullanıcıya ilet.
+4. **`python3 araclar/derle.py` çalıştır** — rapor uygulamada görünsün.
+5. Commit + push, sonra raporu kullanıcıya ilet.
 
 ## Kural: sessiz gün yoktur
 

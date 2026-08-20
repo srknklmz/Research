@@ -1,0 +1,402 @@
+{
+ "uretim": "2026-08-20T20:00:00+00:00",
+ "hedefler": [
+  {
+   "kimlik": "H-01",
+   "baslik": "Ürünü 3 ayda pazara çıkar",
+   "proje": "Lansman",
+   "durum": "aktif",
+   "oncelik": "yuksek",
+   "acildi": "2026-06-02",
+   "son_hareket": "2026-08-20",
+   "ilerleme": 62,
+   "varis": "Kasım başında ilk sipariş alınmış ve teslim edilmiş olacak.",
+   "neden": "Rakip beta sürümünü çıkardı; pencerenin kapanmasından önce girmek gerekiyor.",
+   "olcut": "1 Kasım 2026'da en az 1 ödemeli sipariş teslim edilmiş olacak.",
+   "durum_metni": "Prototip bitti, sertifika başvurusu kurumda bekliyor.",
+   "sonraki": "Sertifika kurumundan yazılı süre taahhüdü iste.",
+   "varsayimlar": [
+    {
+     "n": "V1",
+     "metin": "Sertifika süreci 6 haftadan uzun sürmez",
+     "durum": "kısmen",
+     "dayanak": "V-0009"
+    },
+    {
+     "n": "V2",
+     "metin": "Kalıp üretimi 3 haftada tamamlanır",
+     "durum": "destekleniyor",
+     "dayanak": "V-0007"
+    },
+    {
+     "n": "V3",
+     "metin": "Rakip bizden önce tam sürümü çıkarmaz",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    }
+   ],
+   "sorular": [
+    {
+     "cevaplandi": true,
+     "metin": "S1: Sertifika süreci gerçekte kaç hafta sürüyor?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S2: Rakibin beta sürümünde eksik olan ne?"
+    }
+   ],
+   "veriler": [
+    {
+     "kimlik": "V-0011",
+     "tur": "risk",
+     "etki": "Rakibin beta çıkışı pencereyi daraltıyor"
+    },
+    {
+     "kimlik": "V-0009",
+     "tur": "açık-soru",
+     "etki": "Sertifika süresini 6 değil 9 hafta olarak veriyor"
+    },
+    {
+     "kimlik": "V-0007",
+     "tur": "doğrular",
+     "etki": "Kalıp süresi varsayımını doğruluyor"
+    }
+   ]
+  },
+  {
+   "kimlik": "H-02",
+   "baslik": "Birim maliyeti 400₺ altına indir",
+   "proje": "Lansman",
+   "durum": "aktif",
+   "oncelik": "yuksek",
+   "acildi": "2026-06-02",
+   "son_hareket": "2026-08-20",
+   "ilerleme": 35,
+   "varis": "Seri üretimde birim maliyeti 400₺ altında sabitlenmiş olacak.",
+   "neden": "400₺ üstünde hedef satış fiyatı marjı bırakmıyor.",
+   "olcut": "100 adetlik partide birim maliyet ≤ 400₺.",
+   "durum_metni": "Tek tedarikçiyle 495₺; ikinci tedarikçi 340₺ veriyor ama numune alınmadı.",
+   "sonraki": "İkinci tedarikçiden numune iste ve kalite testi yaptır.",
+   "varsayimlar": [
+    {
+     "n": "V1",
+     "metin": "Tedarikçi fiyatı sabit, pazarlık payı yok",
+     "durum": "çürütüldü",
+     "dayanak": "V-0012"
+    },
+    {
+     "n": "V2",
+     "metin": "Nakliye birim başına 20₺'yi geçmez",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    }
+   ],
+   "sorular": [
+    {
+     "cevaplandi": false,
+     "metin": "S1: İkinci tedarikçinin kalitesi standardı tutuyor mu?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S2: 100 adet altında fiyat kırılıyor mu?"
+    }
+   ],
+   "veriler": [
+    {
+     "kimlik": "V-0012",
+     "tur": "çürütür",
+     "etki": "Aynı parçanın iki tedarikçide 155₺ fark ettiğini gösteriyor"
+    }
+   ]
+  },
+  {
+   "kimlik": "H-03",
+   "baslik": "İlk 50 kullanıcıyı bul",
+   "proje": "Lansman",
+   "durum": "aktif",
+   "oncelik": "orta",
+   "acildi": "2026-07-14",
+   "son_hareket": "2026-08-18",
+   "ilerleme": 18,
+   "varis": "Ürünü kullanmayı taahhüt etmiş 50 kişilik bir liste olacak.",
+   "neden": "Lansmanda konuşacak referans olmadan satış zor.",
+   "olcut": "50 kişilik ön kayıt listesi, en az 10'u ödemeli.",
+   "durum_metni": "Kanal belirsiz; hiçbir kanal test edilmedi.",
+   "sonraki": "Bir kanal seç ve 20 kişiyle konuş.",
+   "varsayimlar": [
+    {
+     "n": "V1",
+     "metin": "Hedef kitle çevrimiçi topluluklarda bulunabilir",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    }
+   ],
+   "sorular": [
+    {
+     "cevaplandi": false,
+     "metin": "S1: Hedef kitle hangi kanalda toplanıyor?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S2: Ön kayıt için ne teklif etmeli?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S3: Benzer ürünler ilk 50'yi nasıl bulmuş?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S4: Ödemeli ön sipariş makul mü?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S5: Fiyat itirazı nerede başlıyor?"
+    }
+   ],
+   "veriler": []
+  },
+  {
+   "kimlik": "H-04",
+   "baslik": "Bayi ağını genişlet",
+   "proje": "Dağıtım",
+   "durum": "aktif",
+   "oncelik": "dusuk",
+   "acildi": "2026-06-20",
+   "son_hareket": "2026-08-04",
+   "ilerleme": 8,
+   "varis": "Üç şehirde bayi anlaşması imzalanmış olacak.",
+   "neden": "Doğrudan satış tek başına hacmi taşımıyor.",
+   "olcut": "3 imzalı bayi sözleşmesi.",
+   "durum_metni": "Lansman önceliği nedeniyle beklemede.",
+   "sonraki": "Lansman sonrası yeniden değerlendir.",
+   "varsayimlar": [
+    {
+     "n": "V1",
+     "metin": "Bayiler %25 marjla çalışmayı kabul eder",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    }
+   ],
+   "sorular": [
+    {
+     "cevaplandi": false,
+     "metin": "S1: Bayi marj beklentisi ne?"
+    }
+   ],
+   "veriler": []
+  }
+ ],
+ "veriler": [
+  {
+   "kimlik": "V-0012",
+   "baslik": "İki tedarikçinin 2026 fiyat listesi karşılaştırması",
+   "tarih": "2026-08-20",
+   "kaynak_tipi": "otonom",
+   "guven": "orta",
+   "ozet": "Aynı parça için A tedarikçisi 340₺, B tedarikçisi 495₺ istiyor; fark %45.",
+   "kaynaklar": [
+    {
+     "ad": "A tedarikçi fiyat listesi",
+     "url": "https://tedarikci-a.com/liste-2026",
+     "erisim": "2026-08-20"
+    },
+    {
+     "ad": "B tedarikçi fiyat listesi",
+     "url": "https://tedarikci-b.com.tr/fiyat",
+     "erisim": "2026-08-20"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "Aynı teknik şartnamedeki parça iki tedarikçide 155₺ fark ediyor",
+     "tip": "olgu",
+     "dogrulama": "İki liste de doğrudan okundu"
+    },
+    {
+     "metin": "Fark hacim taahhüdünden kaynaklanıyor olabilir",
+     "tip": "tahmin",
+     "dogrulama": "Doğrulanmadı — numune gerekiyor"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "A tedarikçisi kendi hammaddesini döküyor, B ara toptancıdan alıyor.",
+    "Kim yapıyor": "Aynı sektörde iki firma A ile çalışıyor, kalite şikâyeti bulunamadı.",
+    "Maliyet / şart": "A minimum 100 adet sipariş şartı koyuyor.",
+    "Karşı görüş": "B'nin teslim süresi 2 hafta daha kısa.",
+    "Ne zaman yanlış olur": "A'nın kalite testi standardı tutmazsa fark anlamsızlaşır."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-02",
+     "tur": "çürütür",
+     "etki": "“Tedarikçi fiyatı sabit” varsayımını yıkıyor"
+    }
+   ],
+   "eylem": "A tedarikçisinden numune iste, kalite testi yaptır."
+  },
+  {
+   "kimlik": "V-0011",
+   "baslik": "Rakip beta sürümünü yayınladı",
+   "tarih": "2026-08-19",
+   "kaynak_tipi": "kullanici",
+   "guven": "yuksek",
+   "ozet": "Rakip firma 18 Ağustos'ta sınırlı beta açtı; tam sürüm için tarih vermedi.",
+   "kaynaklar": [
+    {
+     "ad": "Duyuru yazısı",
+     "url": "https://techblog.io/rakip-beta",
+     "erisim": "2026-08-19"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "Beta 18 Ağustos'ta açıldı",
+     "tip": "olgu",
+     "dogrulama": "Duyuru tarihi doğrulandı"
+    },
+    {
+     "metin": "Tam sürüm 3 ay içinde gelir",
+     "tip": "tahmin",
+     "dogrulama": "Kaynak yok — firma tarih vermedi"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "Sınırlı beta genelde 2-4 ay sürüyor.",
+    "Karşı görüş": "Beta'da eksik olan modül bizim ana özelliğimiz.",
+    "Ne zaman yanlış olur": "Firma beta'yı doğrudan tam sürüme çevirirse pencere kapanır."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-01",
+     "tur": "risk",
+     "etki": "Pazara giriş penceresini daraltıyor"
+    }
+   ],
+   "eylem": "Beta'ya kaydol, eksik modülü doğrula."
+  },
+  {
+   "kimlik": "V-0009",
+   "baslik": "Sertifika kurumu ortalama işlem süreleri",
+   "tarih": "2026-08-18",
+   "kaynak_tipi": "otonom",
+   "guven": "dusuk",
+   "ozet": "Kurumun kendi yayınladığı ortalama süre 9 hafta; bizim varsayımımız 6 haftaydı.",
+   "kaynaklar": [
+    {
+     "ad": "Kurum istatistik sayfası",
+     "url": "https://kurum.gov.tr/istatistik",
+     "erisim": "2026-08-18"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "2025 ortalaması 9 hafta",
+     "tip": "olgu",
+     "dogrulama": "Kurum sayfası — 2026 verisi henüz yok"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "Yaz aylarında başvuru yığılması oluyor.",
+    "Ne zaman yanlış olur": "Hızlandırılmış başvuru hakkı varsa süre 4 haftaya düşebilir."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-01",
+     "tur": "açık-soru",
+     "etki": "S1'i cevaplıyor ama 6 hafta varsayımını sarsıyor"
+    }
+   ],
+   "eylem": "Hızlandırılmış başvuru şartlarını sor."
+  },
+  {
+   "kimlik": "V-0007",
+   "baslik": "Kalıp üretimi süre teyidi",
+   "tarih": "2026-08-14",
+   "kaynak_tipi": "kullanici",
+   "guven": "yuksek",
+   "ozet": "Kalıpçı 3 hafta teslim süresi için yazılı teyit verdi.",
+   "kaynaklar": [
+    {
+     "ad": "Kalıpçı teklifi",
+     "url": "https://kalipci-firma.com/teklif",
+     "erisim": "2026-08-14"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "3 hafta teslim yazılı taahhüt",
+     "tip": "olgu",
+     "dogrulama": "Teklif belgesi"
+    }
+   ],
+   "derinlesme": {
+    "Maliyet / şart": "Peşin ödemede 3 hafta, vadeli ödemede 5 hafta."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-01",
+     "tur": "doğrular",
+     "etki": "Kalıp süresi varsayımını doğruluyor"
+    }
+   ],
+   "eylem": "yok"
+  }
+ ],
+ "arsiv": [
+  {
+   "kimlik": "V-0010",
+   "baslik": "Sektörde yapay zekâ kullanımı üzerine genel rapor",
+   "tarih": "2026-08-17",
+   "kaynak_tipi": "otonom",
+   "guven": "orta",
+   "ozet": "Sektör raporu genel eğilimleri anlatıyor ama hiçbir aktif hedefe dokunmuyor.",
+   "kaynaklar": [
+    {
+     "ad": "Sektör raporu",
+     "url": "https://arastirma-kurumu.org/rapor-2026",
+     "erisim": "2026-08-17"
+    }
+   ],
+   "iddialar": [],
+   "derinlesme": {},
+   "eslesmeler": [],
+   "eylem": "yok"
+  }
+ ],
+ "raporlar": [
+  {
+   "tarih": "2026-08-20",
+   "bolumler": [
+    {
+     "baslik": "Hedeflerde durum",
+     "icerik": "| H-01 Ürünü 3 ayda pazara çıkar | %62 | sertifika süresi 9 haftaya çıktı |\n| H-02 Birim maliyeti 400₺ altına | %35 | fiyat varsayımı çürüdü |\n| H-03 İlk 50 kullanıcıyı bul | %18 | değişiklik yok |\n| H-04 Bayi ağını genişlet | %8 | 16 gündür veri yok |"
+    },
+    {
+     "baslik": "Verilerimiz",
+     "icerik": "Toplam 4 veri kartı, 1 arşiv kaydı.\n\n| H-01 | 3 veri |\n| H-02 | 1 veri |\n| H-03 | 0 veri |\n| H-04 | 0 veri |"
+    },
+    {
+     "baslik": "Dün eklenenler",
+     "icerik": "**V-0012** — Aynı parçanın iki tedarikçide 155₺ fark ettiğini gösteriyor; H-02'nin “tedarikçi fiyatı sabit” varsayımını çürütüyor.\n\n**V-0011** — Rakibin beta çıkışı H-01'in pazara giriş penceresini daraltıyor."
+    },
+    {
+     "baslik": "Senin bulduklerin",
+     "icerik": "Rakip beta haberini sen paylaştın; duyuru tarihi doğrulandı. Ancak “tam sürüm 3 ay içinde gelir” kısmı senin tahminin — firma tarih vermemiş. Bunu **düşük güven** olarak işaretledim."
+    },
+    {
+     "baslik": "Nasıl ilerleriz",
+     "icerik": "1. A tedarikçisinden numune iste — 155₺ fark H-02'yi tek başına kurtarıyor, numune olmadan karar veremeyiz.\n2. Sertifika kurumundan hızlandırılmış başvuru şartlarını sor — 9 hafta kabul edilirse H-01'in tarihi kayar.\n3. H-03 için bir kanal seç ve 20 kişiyle konuş — 5 açık sorunun hepsi kanal seçilmeden cevaplanamıyor."
+    },
+    {
+     "baslik": "Dikkat",
+     "icerik": "• H-01'in V1 varsayımı (6 hafta sertifika) sarsıldı; kaynak kurumun kendi sayfası ama 2025 verisi.\n• H-04 16 gündür veri almadı — ya yanlış tanımlı ya da artık öncelik değil.\n• V-0009 düşük güvenli: 2026 verisi yayınlanmamış."
+    }
+   ],
+   "oneriler": [
+    "A tedarikçisinden numune iste — 155₺ fark H-02'yi tek başına kurtarıyor.",
+    "Sertifika kurumundan hızlandırılmış başvuru şartlarını sor.",
+    "H-03 için bir kanal seç ve 20 kişiyle konuş."
+   ]
+  }
+ ]
+}
