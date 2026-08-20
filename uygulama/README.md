@@ -31,16 +31,44 @@ python3 -m http.server 8000 --directory uygulama
 
 `file://` ile açma — `data.json` çekilemez.
 
-## Yayına almak
+## Yayına almak — Vercel
 
-Depo ayarlarından **GitHub Pages**'i `main` dalı / kök klasör olarak aç.
-Uygulama şu adreste yayınlanır:
+Depo kökündeki `vercel.json` gerekli her şeyi tanımlar; Vercel'de tek yapılacak
+depoyu içe aktarmaktır.
 
-```
-https://srknklmz.github.io/Research/uygulama/
-```
+1. [vercel.com/new](https://vercel.com/new) → GitHub ile giriş yap.
+2. `srknklmz/Research` deposunu **Import** et.
+3. Hiçbir ayarı değiştirme — Framework "Other", build komutu boş kalsın.
+   `vercel.json` çıktı klasörünü `uygulama` olarak zaten belirtiyor.
+4. **Deploy**.
 
-Telefonda o adresi aç → tarayıcı menüsünden **Ana ekrana ekle**.
+Uygulama `https://<proje-adı>.vercel.app/` adresinde açılır. `uygulama/` alt
+yolu görünmez; klasörün içi doğrudan kök olarak sunulur.
+
+**Vercel ayarlardan çıktı klasörünü almazsa** (nadiren olur): proje
+ayarlarında *Build & Development Settings → Root Directory* alanını
+`uygulama` yap ve yeniden dağıt.
+
+### Otomatik güncelleme
+
+Vercel `main` dalına her push'ta yeniden dağıtır. Günlük 09:00 ve 10:00
+turları işini bitirince `araclar/derle.py` çalıştırıp `uygulama/data.json`
+dosyasını commit'ler — yani **yeni veri ve rapor telefona kendiliğinden
+düşer**, elle bir şey yapman gerekmez.
+
+`vercel.json` içindeki header kuralları bunun için kritik: `data.json` ve
+`ornek.json` için `no-store` verilir, aksi hâlde CDN dünkü veriyi tutar.
+
+### Telefona kurmak
+
+Yayın adresini telefonda aç → tarayıcı menüsünden **Ana ekrana ekle**.
+Tam ekran açılır, adres çubuğu görünmez.
+
+### Alternatif: GitHub Pages
+
+Vercel yerine Pages de olur: depo ayarlarından `main` / kök seç. Adres
+`https://srknklmz.github.io/Research/uygulama/` olur — alt yol göründüğü için
+Vercel daha temiz.
 
 ## Dosyalar
 

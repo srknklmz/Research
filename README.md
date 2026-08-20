@@ -49,5 +49,24 @@ paylaşırım        kendi araştırır
 | Rapor istemek | "Rapor ver" |
 | Hedefi değiştirmek | "H-02'yi şöyle güncelle: …" |
 
+## Mobil uygulama
+
+`uygulama/` klasöründe kurulabilir bir PWA var — tasarım yönü **Cetvel**.
+Markdown kartlarını doğrudan okumaz; `araclar/derle.py` onları
+`uygulama/data.json` dosyasına derler ve uygulama onu okur.
+
+Yayın: Vercel'e bağlıdır, `main` dalına her push'ta kendiliğinden güncellenir.
+Kurulum adımları `uygulama/README.md` dosyasında.
+
+## Klasör haritası
+
+| Klasör | İçerik |
+|---|---|
+| `hedefler/` `veri/` `ham/` `arsiv/` `raporlar/` | Beyin sisteminin kendisi |
+| `uygulama/` | Mobil arayüz (PWA) |
+| `araclar/` | Derleme betikleri |
+| `tasarim/` | Arayüz tercihleri, tasarım yönleri, önizleme |
+| `sistem/` | Şablonlar, protokol, kaynak defteri |
+
 Çalışma kuralları `CLAUDE.md` dosyasında. Günlük otomatik iş akışı
 `sistem/gunluk-protokol.md` dosyasında.
