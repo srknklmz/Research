@@ -1,5 +1,5 @@
 {
- "uretim": "2026-08-21T20:07:26+00:00",
+ "uretim": "2026-08-21T20:12:10+00:00",
  "hedefler": [
   {
    "kimlik": "H-01",
@@ -9,12 +9,12 @@
    "oncelik": "yuksek",
    "acildi": "2026-08-21",
    "son_hareket": "2026-08-21",
-   "ilerleme": 62,
+   "ilerleme": 71,
    "varis": "Bir oyun fikrini hayata geçirirken görsel taraf beni durdurmayacak. İstediğim görünüşü makul sürede ve kendi içinde tutarlı biçimde üretebilecek, kod tarafı akarken grafikte tıkanmayacağım.",
    "neden": "Şu anda oyun yaparken darboğaz kod değil, grafik tasarım. İlerleme orada kesiliyor; bitmemiş görünen oyunlar ortaya çıkıyor.",
    "olcut": "Tek bir oyun için üç parçalık tutarlı bir görsel set — oynanan nesne/karakter, arka plan/sahne, arayüz — **bir hafta içinde** üretilmiş olacak ve oyunu daha önce görmemiş 3 kişiden en az 2'si \"bitmiş bir oyun gibi görünüyor\" diyecek.",
-   "durum_metni": "İlk araştırma turu yapıldı; beş sorudan beşi kapandı ve hedefin yönü değişti. Artık gerçekçilik değil **tutarlılık** peşindeyiz. Kalan iki soru (S1, S2) araştırmayla cevaplanamaz — kullanıcıdan gelmesi gerekiyor ve gelmeden araç seçimi yapılamaz.",
-   "sonraki": "S1 ve S2'yi cevapla. Sonra tek sayfalık sanat kılavuzunu yaz (palet, ışık yönü, çizgi kalınlığı, siluet kuralı, çözünürlük) — varlık üretimine girmeden önce.",
+   "durum_metni": "Teknoloji **web**, darboğaz **varlık üretimi** olarak netleşti. Bu netleşmeyle hedef ikiye bölündü: bu kart artık sonucu ölçüyor, yolu iki alt hedef taşıyor. - **H-02** — görsel yön kilitlensin (ne üreteceğimizi bilelim) - **H-03** — varlık üretim hattı kurulsun (üretebilelim) İkisi de kapanmadan bu kartın başarı ölçütü sınanamaz.",
+   "sonraki": "H-02'yi başlat: tek sayfalık sanat kılavuzunu yaz. H-03 ondan sonra anlam kazanır — ne üreteceğini bilmeden hat kurmak boşa gider.",
    "varsayimlar": [
     {
      "n": "V1",
@@ -50,17 +50,23 @@
      "n": "V6",
      "metin": "Hedef üslup yordamsal kodla ifade edilebilir",
      "durum": "test edilmedi",
+     "dayanak": "H-03/S3 bekliyor"
+    },
+    {
+     "n": "V7",
+     "metin": "Oyun 2B",
+     "durum": "test edilmedi",
      "dayanak": "—"
     }
    ],
    "sorular": [
     {
-     "cevaplandi": false,
-     "metin": "S1: Hangi motor/teknoloji ile geliştiriyorum? Araç seçiminin tamamı buna bağlı."
+     "cevaplandi": true,
+     "metin": "S1: Hangi motor/teknoloji ile geliştiriyorum? → **web** (canvas/SVG doğal olarak elde)"
     },
     {
-     "cevaplandi": false,
-     "metin": "S2: Darboğaz tam olarak nerede — varlık üretimi mi, sanat yönü mü, teknik render mı?"
+     "cevaplandi": true,
+     "metin": "S2: Darboğaz tam olarak nerede? → **varlık üretimi**"
     },
     {
      "cevaplandi": true,
@@ -122,9 +128,325 @@
      "etki": "Darboğazın koda taşınabileceği bir yol açtı"
     }
    ]
+  },
+  {
+   "kimlik": "H-02",
+   "baslik": "Görsel yön kilitlensin",
+   "proje": "Oyun geliştirme",
+   "durum": "aktif",
+   "oncelik": "yuksek",
+   "acildi": "2026-08-21",
+   "son_hareket": "2026-08-21",
+   "ilerleme": 25,
+   "varis": "Oyunun neye benzeyeceği yazılı ve teknik olarak kilitli olacak. Yeni bir varlık üretilirken \"bu buraya uyar mı\" sorusu tartışma konusu olmayacak; kılavuza bakılıp cevaplanacak.",
+   "neden": "V-0001 gösterdi ki algılanan kaliteyi belirleyen gerçekçilik değil tutarlılık, ve V-0003 tutarlılığın iyi niyetle değil üretim öncesi yazılan bir kılavuzla sağlandığını gösterdi. Kılavuz yoksa üretilen her varlık kendi yönüne gider.",
+   "olcut": "Tek sayfalık sanat kılavuzu yazılmış olacak ve şunları içerecek: 4-6 renklik palet (hex kodlarıyla), ışık yönü, çizgi kalınlığı, siluet kuralı, çözünürlük ve ölçek. Ardından üretilen ilk 3 varlığın üçü de paletten sapmayacak.",
+   "durum_metni": "Yeni açıldı. Kılavuzun ne içermesi gerektiği biliniyor (V-0003), içeriğin kendisi bilinmiyor — bu kullanıcının kararı.",
+   "sonraki": "Palet ve üslup kararını ver (S1, S2). Referans olarak beğendiğin 3 oyunun ekran görüntüsünü paylaş; ortak paydayı çıkarayım.",
+   "varsayimlar": [
+    {
+     "n": "V1",
+     "metin": "Kısıtlı palet çizim becerisi gerektirmeden tutarlılık veriyor",
+     "durum": "destekleniyor",
+     "dayanak": "V-0001"
+    },
+    {
+     "n": "V2",
+     "metin": "Kılavuzu üretimden önce yazmak gerekiyor; sonradan yazılan kurtarmıyor",
+     "durum": "destekleniyor",
+     "dayanak": "V-0003"
+    },
+    {
+     "n": "V3",
+     "metin": "Bu oyunun üslubu prototip aşamasında kilitlenebilecek kadar netleşti",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    },
+    {
+     "n": "V4",
+     "metin": "Kilitli palet web'de teknik olarak zorlanabilir (kodda sabit)",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    }
+   ],
+   "sorular": [
+    {
+     "cevaplandi": false,
+     "metin": "S1: Bu oyunun paleti ne olacak — hangi 4-6 renk ve neden?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S2: Üslup ne? Piksel sanatı mı, düz vektör mü, başka bir şey mi? Bu seçim üretim hattını da belirliyor."
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S3: Web'de paleti teknik olarak nasıl kilitlerim — CSS değişkeni, tek bir palet modülü, başka?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S4: Erken kilitlemek keşfi kısıtlar mı? Prototipte hangi noktada kilitlemek doğru?"
+    }
+   ],
+   "veriler": [
+    {
+     "kimlik": "V-0001",
+     "tur": "çürütür",
+     "etki": "Hedefi gerçekçilikten tutarlılığa çevirdi"
+    },
+    {
+     "kimlik": "V-0003",
+     "tur": "yöntem",
+     "etki": "Kılavuzun içeriğini ve zamanlamasını verdi"
+    }
+   ]
+  },
+  {
+   "kimlik": "H-03",
+   "baslik": "Web için varlık üretim hattı kurulsun",
+   "proje": "Oyun geliştirme",
+   "durum": "aktif",
+   "oncelik": "yuksek",
+   "acildi": "2026-08-21",
+   "son_hareket": "2026-08-21",
+   "ilerleme": 30,
+   "varis": "Yeni bir varlığa ihtiyaç duyduğumda onu sıfırdan çizmeyeceğim; tekrarlanabilir bir hattan geçirip üreteceğim. Varlık üretimi darboğaz olmaktan çıkacak.",
+   "neden": "Darboğaz burası (H-01/S2). Kod tarafı akarken üretim burada tıkanıyor.",
+   "olcut": "Yeni bir oyun varlığı (nesne ya da karakter), kılavuza uygun biçimde **30 dakikadan kısa sürede** üretilebilecek ve bu süre arka arkaya 3 varlıkta tekrarlanabilecek.",
+   "durum_metni": "Yeni açıldı. Karar kuralı elde var (V-0006): basit dolgu şekilleri koda, detaylı/gradyanlı varlıklar görüntüye. Hangi varlığın hangi kovaya düştüğü bilinmiyor.",
+   "sonraki": "S3'ü çöz: tek bir nesneyi hem Canvas koduyla hem görüntü üretimiyle üret, yan yana koy, süreyi ölç. Bu deneme V-0005'in düşük güvenini de kapatır.",
+   "varsayimlar": [
+    {
+     "n": "V1",
+     "metin": "Yapay zekâ görsel üretimi kareler arası tutarlılıkta kırılıyor",
+     "durum": "destekleniyor",
+     "dayanak": "V-0002"
+    },
+    {
+     "n": "V2",
+     "metin": "Yordamsal kod üretimi tutarlılık sorununu yapısal olarak çözüyor",
+     "durum": "destekleniyor",
+     "dayanak": "V-0006"
+    },
+    {
+     "n": "V3",
+     "metin": "Tek bir yöntem yeter (ya hep kod ya hep görüntü)",
+     "durum": "çürütüldü",
+     "dayanak": "V-0006"
+    },
+    {
+     "n": "V4",
+     "metin": "Üslup yordamsal kodla ifade edilebilir",
+     "durum": "test edilmedi",
+     "dayanak": "H-02/S2 bekliyor"
+    },
+    {
+     "n": "V5",
+     "metin": "Ücretli araç gerekiyor",
+     "durum": "test edilmedi",
+     "dayanak": "V-0007"
+    }
+   ],
+   "sorular": [
+    {
+     "cevaplandi": false,
+     "metin": "S1: Oyun 2B mi 3B mi? Hat tamamen buna bağlı."
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S2: Hangi varlıklar basit dolgu (koda gider), hangileri detaylı (görüntüye gider)?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S3: Claude'a kod ürettirerek varlık üretmek pratikte nereye kadar gidiyor — denenmeli."
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S4: Animasyon gerekiyor mu? Gerekiyorsa hat tamamen değişir."
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S5: Aylık 30-80 dolarlık araç bütçesi bu iş için gerekli mi, yoksa ücretsiz yol var mı?"
+    }
+   ],
+   "veriler": [
+    {
+     "kimlik": "V-0002",
+     "tur": "risk",
+     "etki": "Yapay zekâ görsellerinin doğrudan kullanılamayacağını gösterdi"
+    },
+    {
+     "kimlik": "V-0005",
+     "tur": "fırsat",
+     "etki": "Darboğazı koda taşıma yolunu açtı"
+    },
+    {
+     "kimlik": "V-0006",
+     "tur": "yöntem",
+     "etki": "Kod mu görüntü mü sorusuna karar kuralı verdi"
+    },
+    {
+     "kimlik": "V-0007",
+     "tur": "yöntem",
+     "etki": "2026 solo yığınını ve maliyetini verdi"
+    }
+   ]
   }
  ],
  "veriler": [
+  {
+   "kimlik": "V-0007",
+   "baslik": "2026 tek kişilik varlık üretim yığını ve maliyeti",
+   "tarih": "2026-08-21",
+   "kaynak_tipi": "otonom",
+   "guven": "dusuk",
+   "ozet": "Tek kişilik geliştirici için önerilen 2026 yığını araç başına değil kategori başına kuruluyor; toplam aylık maliyet 30-80 dolar aralığında veriliyor. Kaynakların çoğu araç satıcısı — sayılar bu gözle okunmalı.",
+   "kaynaklar": [
+    {
+     "ad": "AI Tools for Indie Game Developers (Summer Engine)",
+     "url": "https://www.summerengine.com/blog/ai-tools-for-indie-game-developers",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "AI 2D Game Asset Generator: What Works in 2026 (Summer Engine)",
+     "url": "https://www.summerengine.com/blog/ai-2d-game-asset-generator",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Best AI Tools for Game Developers in 2026 (Spritesheets.ai)",
+     "url": "https://www.spritesheets.ai/blog/best-ai-tools-for-game-developers-2026",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Pixel Art Pipelines: Best Tools for 2026 (Relish Games)",
+     "url": "https://relishgames.com/journal/pixel-art-pipelines-best-tools-for-2026/",
+     "erisim": "2026-08-21"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "Aylık 30-80 dolarlık bütçe tek geliştiricinin tüm kategorilerini karşılıyor",
+     "tip": "tahmin",
+     "dogrulama": "K1 — satıcı kaynağı, bağımsız doğrulama yok"
+    },
+    {
+     "metin": "Önerilen yığın kategori başına kuruluyor: sprite sayfası, kavram görseli, müzik, ses efekti, kod asistanı, piksel editörü",
+     "tip": "olgu",
+     "dogrulama": "K1"
+    },
+    {
+     "metin": "Aseprite piksel sanatı için ilk başvuru aracı olmayı sürdürüyor",
+     "tip": "olgu",
+     "dogrulama": "K4 — V-0003 ile aynı yönde"
+    },
+    {
+     "metin": "Ludo.ai varlık hattını Claude ve Cursor'a API ile bağlıyor",
+     "tip": "olgu",
+     "dogrulama": "K3 — satıcı iddiası, denenmedi"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "Yığın mantığı, tek bir aracın her şeyi yapmasını beklemek yerine her darboğaza ayrı araç koymak. Tek kişilik ekipte bunun bedeli araç sayısı ve aralarındaki aktarım.",
+    "Kim yapıyor": "Kaynakların tamamı bu yığını öneriyor; gerçek projelerden bağımsız kullanım raporu bulunamadı.",
+    "Maliyet / şart": "30-80 dolar/ay iddiası tek bir satıcı kaynağından geliyor ve kategori başına araç varsayıyor. Yordamsal yol (V-0006) seçilirse bu kalemlerin çoğu düşer.",
+    "Karşı görüş": "V-0006 ve V-0005 birlikte, web + basit dolgu üslubunda bu yığının büyük kısmının gereksiz olabileceğini gösteriyor — kod zaten üretimi yapıyor.",
+    "Ne zaman yanlış olur": "Üslup detaylı/dokulu ise ve animasyon gerekiyorsa yığın gerçekten gerekli hâle gelir."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-03",
+     "tur": "yöntem",
+     "etki": "Ücretli yolun neye benzediğini ve kaça mal olduğunu veriyor"
+    },
+    {
+     "hedef": "H-03",
+     "tur": "risk",
+     "etki": "Kaynakların satıcı olması nedeniyle maliyet iddiası doğrulanmamış"
+    }
+   ],
+   "eylem": "Araç satın almadan önce S3 denemesini yap. Yordamsal yol tutarsa bu yığının çoğu gereksiz."
+  },
+  {
+   "kimlik": "V-0006",
+   "baslik": "Kod mu görüntü mü — varlık üretiminde karar kuralı",
+   "tarih": "2026-08-21",
+   "kaynak_tipi": "otonom",
+   "guven": "orta",
+   "ozet": "Soru \"kod mu görüntü mü\" değil, \"hangi varlık hangisine gider\". Ayrım net: **basit dolgu şekilleri koda, detaylı/gradyanlı/konturlu varlıklar görüntüye.** Oyununu bitirenler ikisinden birini seçmiyor, ikisini karıştırıyor.",
+   "kaynaklar": [
+    {
+     "ad": "DOM Sprites: a Viable Alternative to Canvas (Build New Games)",
+     "url": "http://buildnewgames.com/dom-sprites/",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Procedural Generation vs Hand-Crafted Design",
+     "url": "https://gamedesigning.org/beyond/procedural-generation-vs-hand-crafted-design-choosing-the-right-approach/",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Sprite generator tools: manual vs AI workflows compared",
+     "url": "https://www.sprite-ai.art/blog/sprite-generator-tools-compared",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "HTML5 Canvas Performance and Optimization Tips",
+     "url": "https://gist.github.com/jaredwilli/5469626",
+     "erisim": "2026-08-21"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "Düz dolgulu basit şekiller çiziliyorsa, yordamsal üretim en iyi yol",
+     "tip": "olgu",
+     "dogrulama": "K1"
+    },
+    {
+     "metin": "Kontur, gradyan dolgu ve performansa duyarlı öğeler varsa görüntü sprite'ı daha iyi",
+     "tip": "olgu",
+     "dogrulama": "K1"
+    },
+    {
+     "metin": "Yordamsal varlıklar açılışta bir kez çizilip sonra kopyalanarak boyanmalı; her karede yeniden üretilmemeli",
+     "tip": "olgu",
+     "dogrulama": "K1, K4 — teknik yöntem"
+    },
+    {
+     "metin": "Sprite üreteçleri, elle 2-3 varlık çizilecek sürede onlarca varlık üretiyor",
+     "tip": "olgu",
+     "dogrulama": "K3"
+    },
+    {
+     "metin": "Oyununu bitirip yayınlayanlar tek yöntem seçmiyor, ikisini harmanlıyor",
+     "tip": "olgu",
+     "dogrulama": "K2"
+    },
+    {
+     "metin": "Yordamsal sistemler çeşitliliği artırırken, kısıtlar iyi ayarlanmazsa tutarsız düzen üretiyor",
+     "tip": "olgu",
+     "dogrulama": "K2"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "Yordamsal üretimde tutarlılık kaynak dosyadaki sabit palet ve tohumdan gelir — V-0002'deki rastgelelik sorunu yapısal olarak yok. Ama karşılığında ifade gücü kodla sınırlı.",
+    "Kim yapıyor": "Endüstri standardı harman: tasarımcı kuralları, tohumları ve kısıtları tanımlıyor; yordamsal sistem çeşitliliği dolduruyor; elle çizim kritik anlara saklanıyor.",
+    "Maliyet / şart": "Yordamsal yolun maliyeti kod yazmak — kullanıcının zaten güçlü olduğu taraf. Canvas'ta performans için \"bir kez çiz, sonra kopyala\" kuralı zorunlu.",
+    "Karşı görüş": "Piksel yerleşimi üzerinde güçlü fikirleri olan ve çizmekten keyif alan biri için üretimi devretmek kontrolü bırakmak gibi geliyor — kaynak bunu meşru bir itiraz olarak niteliyor.",
+    "Ne zaman yanlış olur": "Hedef üslup organik/elle çizilmiş hissi istiyorsa (suluboya, dokulu fırça) yordamsal yol tıkanır; V-0005'teki sınırla aynı yer."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-03",
+     "tur": "yöntem",
+     "etki": "\"Kod mu görüntü mü\" sorusunu karar kuralına çeviriyor: dolgu → kod, detay → görüntü"
+    },
+    {
+     "hedef": "H-03",
+     "tur": "çürütür",
+     "etki": "\"Tek bir yöntem yeter\" varsayımını yıkıyor; harman standart"
+    }
+   ],
+   "eylem": "Oyundaki varlıkları iki kovaya ayır: basit dolgu (koda gider) ve detaylı (görüntüye gider). Hattı iki kovaya göre kur, tek yöntem arama."
+  },
   {
    "kimlik": "V-0005",
    "baslik": "Claude'dan görsel değil, görseli çizen kod istemek",
@@ -185,9 +507,9 @@
      "etki": "Darboğazın kullanıcının güçlü olduğu tarafa (kod) taşınabileceğini gösteriyor"
     },
     {
-     "hedef": "H-01",
+     "hedef": "H-03",
      "tur": "fırsat",
-     "etki": "V-0002'deki tutarlılık kırılmalarını araç değiştirerek değil, yaklaşım değiştirerek çözme yolu"
+     "etki": "Hattın kod tarafını kurma yolunu açıyor; web'de canvas/SVG zaten doğal"
     }
    ],
    "eylem": "Küçük bir deneme yap: tek bir nesneyi hem görüntü üretimiyle hem Canvas koduyla üret, ikisini yan yana koy. S9 bu denemeyle cevaplanır."
@@ -342,6 +664,11 @@
      "hedef": "H-01",
      "tur": "doğrular",
      "etki": "\"Sorun yöntem ve araç hattı eksikliği\" varsayımını (V1) destekliyor"
+    },
+    {
+     "hedef": "H-02",
+     "tur": "yöntem",
+     "etki": "Kılavuzun tam içeriğini ve üretimden önce yazılması gerektiğini veriyor"
     }
    ],
    "eylem": "Tek sayfalık sanat kılavuzu yaz: palet, ışık yönü, çizgi kalınlığı, siluet kuralı, çözünürlük. Varlık üretmeden önce."
@@ -419,6 +746,11 @@
      "hedef": "H-01",
      "tur": "açık-soru",
      "etki": "S6'yı cevaplıyor: kırılma noktaları tutarlılık, tohum, sürüm değişimi ve kare arası kimlik"
+    },
+    {
+     "hedef": "H-03",
+     "tur": "risk",
+     "etki": "Üretim hattının görüntü tarafına güvenilemeyeceğini gösteriyor"
     }
    ],
    "eylem": "Yapay zekâdan varlık istemeden önce sanat kılavuzunu yaz. Kareler arası tutarlılık gerektiren varlıklarda (karakter, animasyon) doğrudan üretime güvenme."
@@ -496,6 +828,11 @@
      "hedef": "H-01",
      "tur": "doğrular",
      "etki": "\"Hazır varlık paketleri tutarlılığı bozar\" varsayımını (V5) destekliyor"
+    },
+    {
+     "hedef": "H-02",
+     "tur": "doğrular",
+     "etki": "Kısıtlı paletin çizim becerisi olmadan tutarlılık verdiğini gösteriyor (V1)"
     }
    ],
    "eylem": "Hedefi gerçekçilikten tutarlılığa çevir. İlk somut adım: 4-6 renklik bir palet seç ve oyunun tamamında ona bağlı kal."

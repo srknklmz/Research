@@ -5,6 +5,7 @@
 | Tarih | Aranan sorular | Sonuç |
 |---|---|---|
 | 2026-08-21 | H-01: S3, S4, S5, S6, S7 | Beşi de kapandı. V-0001…V-0005 açıldı. V2 ve V3 çürütüldü. S8-S10 doğdu. |
+| 2026-08-21 | H-01: S1, S2 kullanıcıdan geldi (web / varlık üretimi) | Hedef bölündü: H-02 görsel yön, H-03 üretim hattı. V-0006, V-0007 açıldı. Mevcut kartlar yeni hedeflerle yeniden eşleştirildi. |
 
 ## 2026-08-21 — kısıt notu
 
