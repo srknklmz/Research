@@ -11,12 +11,14 @@ const TURLER = ["doğrular", "çürütür", "yöntem", "açık-soru", "risk", "f
 let D = { hedefler: [], veriler: [], arsiv: [], raporlar: [], uretim: "" };
 let Y = {                       // yerel durum
   kutu: [],                     // gelen kutusu
+  taslaklar: [],                // Claude'a gönderilmeyi bekleyen hedef taslakları
   sorular: {},                  // "H-01|S2" -> true
   kararlar: {},                 // "2026-08-21|0" -> "y" | "n"
   tema: "sistem",
   ornek: false,
 };
 let aktif = "bugun";
+let sonUyari = null;            // son işlemden kalan uyarı (Bugün ekranında gösterilir)
 let arama = { q: "", tur: "" };
 
 /* ---------------------------------------------------------------- depolama */
@@ -128,7 +130,8 @@ function cizBugun() {
   if (!D.hedefler.length && !Y.kutu.length) {
     h += `<div class="empty">
       <h3>Sistem kurulu, hedef yok</h3>
-      <p>Kafandaki projeyi Claude'a anlat; hedef kartları açılsın.</p>
+      <p>Hedef olmadan eşleştirme çalışmaz. <b>Hedefler</b> sekmesinden bir
+      taslak yaz, kopyala, Claude'a ver — kart açılsın.</p>
       <p class="hint">Ayarlar → Örnek veriyi göster, arayüzü dolu görmek için</p>
     </div>`;
   }
@@ -156,8 +159,21 @@ function kutuHtml() {
   <input type="file" accept="image/*" capture="environment" id="dosya" hidden>
   <div id="islem"></div>`;
 
+  if (sonUyari && sonUyari.tur === "hedefsiz") {
+    h += `<div class="uyari">
+      <b>Bu bir hedef mi?</b>
+      <p>Henüz tanımlı hedef olmadığı için eşleştirme yapılamadı — yazdığın
+      gelen kutusunda duruyor. Hedefin kendisini yazdıysan taslak olarak kaydet;
+      Claude ondan kart açar.</p>
+      <div class="ar">
+        <button class="y" id="uyari-hedef">Hedef taslağı yap</button>
+        <button id="uyari-kapat">Bilgiydi, kalsın</button>
+      </div>
+    </div>`;
+  }
+
   if (Y.kutu.length) {
-    h += `<div class="sec"><span>Gelen kutusu</span><b>${Y.kutu.length}</b></div>`;
+    h += `<div class="sec"><span>Bekleyenler</span><b>${Y.kutu.length} bilgi · ${Y.taslaklar.length} taslak</b></div>`;
     h += Y.kutu.map((it, i) => `
       <div class="row" data-kutu="${i}">
         <div class="t">
@@ -166,8 +182,12 @@ function kutuHtml() {
         </div>
         <span class="bdg ${it.hedef ? "" : "u"}">${it.hedef ? "EŞLEŞTİ" : "ARŞİV"}</span>
       </div>`).join("");
-    h += `<p class="kv" style="border-top:1px solid var(--rule-soft);margin-top:6px">
-      <span>Claude 09:00 turunda derinleştirip veri kartına çevirir</span></p>`;
+    // Dürüstlük: bu kayıtlar tarayıcının yerel hafızasında durur. Claude oraya
+    // erişemez — kullanıcı dışa aktarmadan hiçbir şey depoya ulaşmaz.
+    h += `<p class="kv" style="border-top:1px solid var(--rule-soft);margin-top:6px;
+      display:block;line-height:1.55;color:var(--ink-3)">
+      Bunlar <b>yalnızca bu telefonda</b> duruyor; Claude göremez.
+      Ayarlar → Dışa aktar ile kopyalayıp ver, veri kartına çevirsin.</p>`;
   }
   return h;
 }
@@ -183,14 +203,31 @@ function satirHedef(h) {
   </button>`;
 }
 
+function taslakBolumu() {
+  let h = `<div class="sec"><span>Taslaklar</span><b>${Y.taslaklar.length}</b></div>`;
+  if (Y.taslaklar.length) {
+    h += Y.taslaklar.map((t, i) => `<div class="row" data-taslak="${i}">
+      <span class="t"><span class="ttl">${esc(t.baslik)}</span>
+      <span class="sub">${esc(t.tarih)} · ${t.sorular.length} açık soru · gönderilmeyi bekliyor</span></span>
+      <span class="bdg u">TASLAK</span></div>`).join("");
+    h += `<div class="ar" style="margin-top:10px">
+      <button class="y" id="taslak-kopyala">Claude'a göndermek için kopyala</button></div>`;
+  }
+  h += `<div class="ar" style="margin-top:${Y.taslaklar.length ? 7 : 10}px">
+    <button id="taslak-yeni">+ Hedef taslağı yaz</button></div>`;
+  return h;
+}
+
 function cizHedefler() {
   const k = hedefKumeleri();
   if (!D.hedefler.length) {
     $("#v-hedefler").innerHTML = `<div class="empty">
-      <h3>Hedef yok</h3>
-      <p>Hedefler, kafandaki projeyi anlattığında Claude tarafından açılır.
-      Her kartta varsayımlar ve açık sorular bulunur; sabah 09:00 araştırması bunlardan beslenir.</p>
-    </div>`;
+      <h3>Henüz hedef yok</h3>
+      <p>Hedef kartlarını <b>Claude açar</b> — uygulama depoya yazamaz.
+      Aşağıdan bir taslak yaz, kopyala, Claude'a ver; kart açılıp buraya düşer.</p>
+      <p class="hint">Taslakta en önemli iki alan: neyin doğru olduğunu varsaydığın
+      ve cevabını bilmediğin sorular. Sabah 09:00 araştırması bunlardan beslenir.</p>
+    </div>` + taslakBolumu();
     return;
   }
   let h = "";
@@ -213,7 +250,7 @@ function cizHedefler() {
            ${halka(x.ilerleme)}<span class="t"><span class="ttl">${esc(x.baslik)}</span>
            <span class="sub">${esc(x.kimlik)} · ${esc(x.durum)}</span></span><span class="chev">›</span></button>`).join("");
   }
-  $("#v-hedefler").innerHTML = h;
+  $("#v-hedefler").innerHTML = h + taslakBolumu();
 }
 
 /* ========================================================= GÖRÜNÜM: VERİLER */
@@ -307,10 +344,10 @@ function cizAyarlar() {
       <div class="ds">data.json'u yeniden oku</div></div>
       <div class="seg"><button id="yenile">Yenile</button></div></div>
 
-    <div class="sec"><span>Gelen kutusu</span><b>${Y.kutu.length}</b></div>
+    <div class="sec"><span>Bekleyenler</span><b>${Y.kutu.length} bilgi · ${Y.taslaklar.length} taslak</b></div>
     <div class="set"><div><div class="nm">Dışa aktar</div>
-      <div class="ds">Bekleyenleri ham/ biçiminde kopyala</div></div>
-      <div class="seg"><button id="disa" ${Y.kutu.length ? "" : "disabled"}>Kopyala</button></div></div>
+      <div class="ds">Taslakları ve bekleyen bilgileri kopyala</div></div>
+      <div class="seg"><button id="disa" ${Y.kutu.length || Y.taslaklar.length ? "" : "disabled"}>Kopyala</button></div></div>
     <div class="set"><div><div class="nm">Kutuyu temizle</div>
       <div class="ds">Yerel kayıtları siler</div></div>
       <div class="seg"><button id="temizle">Temizle</button></div></div>
@@ -530,6 +567,64 @@ function grafikHedef() {
       <span class="pc">${h.ilerleme}</span></div>`).join("")}</div>`;
 }
 
+/* ================================================= HEDEF TASLAĞI */
+const TASLAK_ALANLARI = [
+  ["baslik", "Hedef", "Ölçülebilir bir varış noktası — yapılacaklar listesi değil", 1],
+  ["varis", "Varış noktası", "Ulaşınca ne farklı olacak?", 2],
+  ["neden", "Neden", "Hangi daha büyük şeye hizmet ediyor?", 2],
+  ["olcut", "Başarı ölçütü", "Ulaştığını nasıl anlarız? Tarih ya da sayı yaz", 2],
+  ["sorular", "Açık sorular", "Cevabını bilmediğin, cevabı hedefi değiştirecek sorular — her satıra bir tane", 3],
+];
+
+function taslakFormu(onDolgu) {
+  panel(`<h3>Hedef taslağı</h3>
+    <p class="lead">Sadece ilk alan zorunlu. Alt alanları doldurursan Claude'un
+    açacağı kart daha iyi olur — özellikle açık sorular.</p>
+    <div class="form">
+      ${TASLAK_ALANLARI.map(([ad, etiket, ipucu, satir]) => `
+        <label class="fld">
+          <span class="fl">${esc(etiket)}</span>
+          <textarea data-t="${ad}" rows="${satir}" placeholder="${esc(ipucu)}">${esc(
+            ad === "baslik" ? (onDolgu || "") : "")}</textarea>
+        </label>`).join("")}
+    </div>
+    <div class="ar" style="margin-top:14px">
+      <button class="y" id="taslak-kaydet">Kaydet</button>
+      <button data-kapat="1">Vazgeç</button>
+    </div>`);
+  const ilk = $('[data-t="baslik"]');
+  if (ilk) ilk.focus();
+}
+
+function taslakKaydet() {
+  const al = ad => ($(`[data-t="${ad}"]`) || {}).value || "";
+  const baslik = al("baslik").trim();
+  if (!baslik) return toast("hedef başlığı boş olamaz");
+  Y.taslaklar.push({
+    baslik,
+    varis: al("varis").trim(),
+    neden: al("neden").trim(),
+    olcut: al("olcut").trim(),
+    sorular: al("sorular").split("\n").map(x => x.trim()).filter(Boolean),
+    tarih: bugunTarih(),
+  });
+  kaydet();
+  kapat(false);
+  sekme("hedefler");
+  toast("taslak kaydedildi — kopyalayıp Claude'a ver");
+}
+
+function taslakMetni() {
+  return Y.taslaklar.map(t => {
+    const satir = [`## Hedef taslağı — ${t.baslik}`, `tarih: ${t.tarih}`];
+    if (t.varis) satir.push(`varış noktası: ${t.varis}`);
+    if (t.neden) satir.push(`neden: ${t.neden}`);
+    if (t.olcut) satir.push(`başarı ölçütü: ${t.olcut}`);
+    if (t.sorular.length) satir.push("açık sorular:", ...t.sorular.map(q => `  - ${q}`));
+    return satir.join("\n");
+  }).join("\n\n");
+}
+
 /* ============================================== EKLEME + YEREL EŞLEŞTİRME */
 const DURAK = new Set(("ve ile için bir bu şu o da de ki mi ne çok daha en gibi olarak olan " +
   "var yok ama ancak ise the a an of to in is are and or for on at by").split(" "));
@@ -597,15 +692,22 @@ async function isle(metin, yol, gorsel) {
     secilen = await sor(adaylar);                     // belirsiz → sor
   }
 
-  ciz(3, secilen ? "eşleşti: " + secilen.kimlik : "eşleşme yok — arşive gitti");
+  const hedefsiz = !D.hedefler.some(h => h.durum === "aktif");
+  const sonuc = secilen ? "eşleşti: " + secilen.kimlik
+              : hedefsiz ? "hedef yok — eşleştirme yapılamadı"
+              : "eşleşme yok — arşive gitti";
+  ciz(3, sonuc);
   Y.kutu.unshift({
     metin, yol, gorsel: gorsel || null,
     tarih: bugunTarih(),
     hedef: secilen ? secilen.kimlik : null,
   });
+  // Hiç hedef yokken eşleştirme anlamsızdır; kullanıcı büyük ihtimalle
+  // hedefin kendisini yazmıştır. Sessizce arşivlemek yerine bunu söyle.
+  sonUyari = hedefsiz ? { metin, tur: "hedefsiz" } : null;
   kaydet();
   titret(secilen ? 18 : 8);
-  setTimeout(() => { ciz(3, secilen ? "eşleşti: " + secilen.kimlik : "arşive gitti"); cizBugun(); }, 900);
+  setTimeout(() => { cizBugun(); }, 900);
 }
 
 function sor(adaylar) {
@@ -631,6 +733,7 @@ function sor(adaylar) {
 
 /* ================================================================ OLAYLAR */
 function sekme(v) {
+  if (v !== aktif) sonUyari = null;
   aktif = v;
   document.querySelectorAll(".tab").forEach(t =>
     t.setAttribute("aria-selected", String(t.dataset.v === v)));
@@ -693,13 +796,54 @@ document.addEventListener("click", async e => {
 
   if (t.closest("#yenile")) { toast("yenileniyor…"); return yukle(); }
 
+  if (t.closest("#taslak-yeni")) return taslakFormu("");
+  if (t.closest("#taslak-kaydet")) return taslakKaydet();
+
+  if (t.closest("#uyari-hedef")) {
+    const metin = sonUyari ? sonUyari.metin : "";
+    sonUyari = null;
+    return taslakFormu(metin);
+  }
+  if (t.closest("#uyari-kapat")) { sonUyari = null; return cizBugun(); }
+
+  if (t.closest("#taslak-kopyala")) {
+    try { await navigator.clipboard.writeText(taslakMetni()); toast("kopyalandı — Claude'a yapıştır"); }
+    catch (err) { toast("kopyalanamadı"); }
+    return;
+  }
+
+  const taslak = t.closest("[data-taslak]");
+  if (taslak) {
+    const i = +taslak.dataset.taslak, tt = Y.taslaklar[i];
+    return panel(`<span class="mono" style="font-size:10px;letter-spacing:.1em;color:var(--ink-3)">
+        TASLAK · ${esc(tt.tarih)} · gönderilmeyi bekliyor</span>
+      <h3>${esc(tt.baslik)}</h3>
+      ${tt.varis ? `<div class="sec"><span>Varış noktası</span><b></b></div><p class="lead">${esc(tt.varis)}</p>` : ""}
+      ${tt.neden ? `<div class="sec"><span>Neden</span><b></b></div><p class="lead">${esc(tt.neden)}</p>` : ""}
+      ${tt.olcut ? `<div class="sec"><span>Başarı ölçütü</span><b></b></div><p class="lead">${esc(tt.olcut)}</p>` : ""}
+      ${tt.sorular.length ? `<div class="sec"><span>Açık sorular</span><b>${tt.sorular.length}</b></div>` +
+        tt.sorular.map(q => `<div class="asm"><span class="m">${esc(q)}</span></div>`).join("") : ""}
+      <div class="ar" style="margin-top:14px">
+        <button class="y" id="taslak-kopyala">Kopyala</button>
+        <button data-taslak-sil="${i}">Sil</button>
+      </div>`);
+  }
+
+  const sil = t.closest("[data-taslak-sil]");
+  if (sil) {
+    Y.taslaklar.splice(+sil.dataset.taslakSil, 1);
+    kaydet(); kapat(false); sekme("hedefler");
+    return toast("taslak silindi");
+  }
+
   if (t.closest("#temizle")) {
     Y.kutu = []; kaydet(); cizAyarlar(); return toast("gelen kutusu temizlendi");
   }
 
   if (t.closest("#disa")) {
-    const md = Y.kutu.map(it =>
-      `## ${it.tarih} · ${it.yol}\n${it.metin}\n\n> eşleşme: ${it.hedef || "yok"}\n`).join("\n");
+    const md = [taslakMetni(), Y.kutu.map(it =>
+      `## ${it.tarih} · ${it.yol}\n${it.metin}\n\n> eşleşme: ${it.hedef || "yok"}\n`).join("\n")]
+      .filter(Boolean).join("\n\n");
     try { await navigator.clipboard.writeText(md); toast("kopyalandı — Claude'a yapıştır"); }
     catch (err) { toast("kopyalanamadı"); }
     return;

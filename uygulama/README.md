@@ -95,10 +95,18 @@ ilerleme = (cevaplanan soru + test edilmiş varsayım) / (toplam soru + toplam v
 
 Uygulamanın arka ucu yok. Bunun iki sonucu var:
 
-1. **Ekleme kutusu yerelde durur.** Yazdığın bilgi `localStorage`'a düşer ve
-   aktif hedeflerle *kaba* bir kelime eşleştirmesi yapılır — hangi hedefe
-   yakın durduğunu hemen gösterir. Gerçek derinleştirme (kaynak doğrulama,
-   karşı görüş, mekanizma) 09:00 turunda Claude tarafından yapılır.
-   Ayarlar → **Dışa aktar** ile bekleyenleri kopyalayıp Claude'a verebilirsin.
+1. **Uygulama depoya yazamaz.** Ekleme kutusuna yazdığın da, hedef taslakları
+   da tarayıcının `localStorage` alanında durur — Claude oraya erişemez.
+   Depoya ulaşmasının tek yolu **Ayarlar → Dışa aktar** ile kopyalayıp
+   Claude'a vermendir.
+
+   Uygulama yine de işe yarar: yazdığın bilgiyi aktif hedeflerle *kaba* bir
+   kelime eşleştirmesinden geçirir ve hangi hedefe yakın durduğunu anında
+   gösterir. Gerçek derinleştirme (kaynak doğrulama, karşı görüş, mekanizma)
+   Claude tarafından yapılır.
+
+   **Hedef oluşturma:** Hedefler sekmesi → *+ Hedef taslağı yaz*. Taslak
+   kartın şablonundaki kritik alanları toplar (varış noktası, başarı ölçütü,
+   açık sorular), kopyalarsın, Claude `hedefler/H-XX.md` kartını açar.
 2. **Bildirimi uygulama göndermez.** Günlük 10:00 raporu bildirimi Claude'un
    kendi zamanlayıcısından gelir; uygulama kapalıyken de düşer.
