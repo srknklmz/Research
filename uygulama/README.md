@@ -82,14 +82,19 @@ Vercel daha temiz.
 | `data.json` | Derlenmiş gerçek veri |
 | `ornek.json` | Örnek veri — Ayarlar'dan açılır, arayüzü dolu görmek için |
 
-## İlerleme nasıl hesaplanıyor
+## Halkadaki sayı ne ölçüyor
 
-Hedef kartındaki cevaplanmış açık soru + test edilmiş varsayım sayısının
-toplama oranı. Uydurma bir yüzde değil, kartın kendi içeriğinden türer:
+**Hedefe ne kadar yaklaşıldığını değil**, kartın kendi belirsizliğinin ne
+kadarının kapandığını:
 
 ```
-ilerleme = (cevaplanan soru + test edilmiş varsayım) / (toplam soru + toplam varsayım)
+belirsizlik kapandı = (cevaplanan soru + test edilmiş varsayım) / (toplam soru + toplam varsayım)
 ```
+
+Bu ayrım önemli: araştırma soruları cevaplandıkça sayı yükselir, oysa hedefin
+başarı ölçütü hâlâ hiç üretilmemiş olabilir. Araştırma yeni sorular doğurunca
+sayı geri de düşer — bu bir hata değil, dürüstlük. Hedefe ulaşılıp
+ulaşılmadığını kartın **başarı ölçütü** söyler, bu halka değil.
 
 ## Sınırlar
 

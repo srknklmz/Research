@@ -400,7 +400,7 @@ function panelHedef(kimlik) {
     <h3>${esc(h.baslik)}</h3>`;
   if (h.varis) c += `<p class="lead">${esc(h.varis)}</p>`;
 
-  c += `<div class="prog"><span class="nm">ilerleme</span>
+  c += `<div class="prog"><span class="nm">belirsizlik kapandı</span>
     <span class="tr"><i style="width:${h.ilerleme}%"></i></span>
     <span class="pc">${h.ilerleme}</span></div>`;
 

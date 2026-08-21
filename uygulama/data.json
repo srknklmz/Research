@@ -1,5 +1,5 @@
 {
- "uretim": "2026-08-21T20:00:18+00:00",
+ "uretim": "2026-08-21T20:07:26+00:00",
  "hedefler": [
   {
    "kimlik": "H-01",
@@ -9,40 +9,46 @@
    "oncelik": "yuksek",
    "acildi": "2026-08-21",
    "son_hareket": "2026-08-21",
-   "ilerleme": 0,
+   "ilerleme": 62,
    "varis": "Bir oyun fikrini hayata geçirirken görsel taraf beni durdurmayacak. İstediğim görünüşü makul sürede ve kendi içinde tutarlı biçimde üretebilecek, kod tarafı akarken grafikte tıkanmayacağım.",
    "neden": "Şu anda oyun yaparken darboğaz kod değil, grafik tasarım. İlerleme orada kesiliyor; bitmemiş görünen oyunlar ortaya çıkıyor.",
    "olcut": "Tek bir oyun için üç parçalık tutarlı bir görsel set — oynanan nesne/karakter, arka plan/sahne, arayüz — **bir hafta içinde** üretilmiş olacak ve oyunu daha önce görmemiş 3 kişiden en az 2'si \"bitmiş bir oyun gibi görünüyor\" diyecek.",
-   "durum_metni": "Yeni açıldı. Motor, darboğazın tam yeri ve hedef üslup henüz belirsiz — bu üçü netleşmeden araç araştırması dağınık kalır.",
-   "sonraki": "S1 ve S2'yi cevapla: hangi teknolojiyle çalıştığını ve tıkandığın anın tam olarak neresi olduğunu yaz.",
+   "durum_metni": "İlk araştırma turu yapıldı; beş sorudan beşi kapandı ve hedefin yönü değişti. Artık gerçekçilik değil **tutarlılık** peşindeyiz. Kalan iki soru (S1, S2) araştırmayla cevaplanamaz — kullanıcıdan gelmesi gerekiyor ve gelmeden araç seçimi yapılamaz.",
+   "sonraki": "S1 ve S2'yi cevapla. Sonra tek sayfalık sanat kılavuzunu yaz (palet, ışık yönü, çizgi kalınlığı, siluet kuralı, çözünürlük) — varlık üretimine girmeden önce.",
    "varsayimlar": [
     {
      "n": "V1",
      "metin": "Sorun yetenek eksikliği değil, yöntem ve araç hattı eksikliği",
-     "durum": "test edilmedi",
-     "dayanak": "—"
+     "durum": "destekleniyor",
+     "dayanak": "V-0003"
     },
     {
      "n": "V2",
      "metin": "Doğru hedef \"gerçekçilik\"",
-     "durum": "test edilmedi",
-     "dayanak": "—"
+     "durum": "çürütüldü",
+     "dayanak": "V-0001"
     },
     {
      "n": "V3",
      "metin": "Yapay zekâ ile üretilen görseller oyunda doğrudan kullanılabilir kalitede",
-     "durum": "test edilmedi",
-     "dayanak": "—"
+     "durum": "çürütüldü",
+     "dayanak": "V-0002"
     },
     {
      "n": "V4",
      "metin": "Darboğaz varlık üretiminde (asset), sanat yönünde değil",
-     "durum": "test edilmedi",
-     "dayanak": "—"
+     "durum": "kısmen",
+     "dayanak": "V-0003, S2 bekliyor"
     },
     {
      "n": "V5",
      "metin": "Hazır varlık paketleri kullanmak tutarlılığı bozar",
+     "durum": "destekleniyor",
+     "dayanak": "V-0001"
+    },
+    {
+     "n": "V6",
+     "metin": "Hedef üslup yordamsal kodla ifade edilebilir",
      "durum": "test edilmedi",
      "dayanak": "—"
     }
@@ -57,30 +63,444 @@
      "metin": "S2: Darboğaz tam olarak nerede — varlık üretimi mi, sanat yönü mü, teknik render mı?"
     },
     {
-     "cevaplandi": false,
-     "metin": "S3: Algılanan kaliteyi gerçekçilik mi yoksa tutarlı üslup mu daha çok artırıyor?"
+     "cevaplandi": true,
+     "metin": "S3: Algılanan kaliteyi gerçekçilik mi yoksa tutarlı üslup mu daha çok artırıyor? → tutarlılık (V-0001)"
+    },
+    {
+     "cevaplandi": true,
+     "metin": "S4: Tek kişilik geliştiriciler oyun görselini nasıl çözüyor, hangi üretim hattını kuruyorlar? → kılavuz + kilitli palet (V-0003)"
+    },
+    {
+     "cevaplandi": true,
+     "metin": "S5: Hazır varlık paketi kullanmak nereye kadar yol aldırır, nerede yetmez? → tek pakete bağlı kalındığı sürece; karıştırınca bozuluyor (V-0001)"
+    },
+    {
+     "cevaplandi": true,
+     "metin": "S6: Yapay zekâ görsel üretimi oyun varlığı için hangi noktada kırılıyor? → tohum, sürüm kayması, kare arası kimlik (V-0002)"
+    },
+    {
+     "cevaplandi": true,
+     "metin": "S7: Işıklandırma ve son işlem algılanan kaliteyi ne kadar yükseltiyor? → en ucuz kazanç, piksel sanatı hariç (V-0004)"
     },
     {
      "cevaplandi": false,
-     "metin": "S4: Tek kişilik geliştiriciler oyun görselini nasıl çözüyor, hangi üretim hattını kuruyorlar?"
+     "metin": "S8: Bu oyunun 4-6 renklik paleti ne olacak? Sanat kılavuzunu kim, ne zaman yazacak?"
     },
     {
      "cevaplandi": false,
-     "metin": "S5: Hazır varlık paketi kullanmak nereye kadar yol aldırır, nerede yetmez?"
+     "metin": "S9: Yordamsal kod üretimi pratikte nereye kadar gidiyor — aynı nesneyi kod ve görüntüyle üretip karşılaştır."
     },
     {
      "cevaplandi": false,
-     "metin": "S6: Yapay zekâ görsel üretimi oyun varlığı için hangi noktada kırılıyor (tutarlılık, çözünürlük, saydamlık, animasyon)?"
-    },
-    {
-     "cevaplandi": false,
-     "metin": "S7: Işıklandırma ve son işlem (post-processing) tek başına algılanan kaliteyi ne kadar yükseltiyor?"
+     "metin": "S10: \"Bitmiş görünüyor\" testini yapacak 3 kişi kim, ne zaman gösterilecek?"
     }
    ],
-   "veriler": []
+   "veriler": [
+    {
+     "kimlik": "V-0001",
+     "tur": "çürütür",
+     "etki": "\"Gerçekçilik doğru hedef\" varsayımını yıktı; değişken tutarlılık"
+    },
+    {
+     "kimlik": "V-0002",
+     "tur": "risk",
+     "etki": "Yapay zekâ görsellerinin doğrudan kullanılamayacağını gösterdi"
+    },
+    {
+     "kimlik": "V-0003",
+     "tur": "yöntem",
+     "etki": "Tutarlılığın mekanizmasını verdi: kılavuz + kilitli palet"
+    },
+    {
+     "kimlik": "V-0004",
+     "tur": "yöntem",
+     "etki": "En ucuz kalite kazancının son işlem olduğunu gösterdi"
+    },
+    {
+     "kimlik": "V-0005",
+     "tur": "fırsat",
+     "etki": "Darboğazın koda taşınabileceği bir yol açtı"
+    }
+   ]
   }
  ],
- "veriler": [],
+ "veriler": [
+  {
+   "kimlik": "V-0005",
+   "baslik": "Claude'dan görsel değil, görseli çizen kod istemek",
+   "tarih": "2026-08-21",
+   "kaynak_tipi": "otonom",
+   "guven": "dusuk",
+   "ozet": "Claude'un güçlü olduğu yer görüntü üretmek değil, görüntüyü üreten kodu yazmak: Canvas/SVG ile yordamsal sprite üretimi, tohumlanmış üreteçler, katmanlı paletler ve sprite sayfası dışa aktarımı. Bu yol V-0002'deki tutarlılık kırılmalarının çoğunu yapısal olarak ortadan kaldırıyor.",
+   "kaynaklar": [
+    {
+     "ad": "pixel-art-game-builder (LobeHub skill listesi)",
+     "url": "https://lobehub.com/skills/cooksaw-claude-skills-pixel-art-game-builder",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Pixel Art Sprites (Claude Code skill)",
+     "url": "https://claudemarketplaces.com/skills/absolutelyskilled/absolutelyskilled/pixel-art-sprites",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "How to Create SVGs with Claude AI: Artifacts, Code, and Limitations",
+     "url": "https://www.svggenie.com/blog/create-svg-with-claude-ai",
+     "erisim": "2026-08-21"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "Yordamsal sprite hattı kurulabiliyor: tohumlanmış üreteçler, katmanlı paletler, sprite sayfası dışa aktarımı",
+     "tip": "olgu",
+     "dogrulama": "K1 — beceri tanımı, bağımsız kullanım raporu yok"
+    },
+    {
+     "metin": "Claude'a oyun kısıtları öğretilebiliyor: 16x16/32x32 tuval, indeksli palet, sorunsuz karo kenarı, ton kaydırmalı renk rampası",
+     "tip": "olgu",
+     "dogrulama": "K2"
+    },
+    {
+     "metin": "Claude'un SVG üretiminde sınırları var; karmaşık işlerde ayrı bir SVG hattı daha iyi",
+     "tip": "yorum",
+     "dogrulama": "K3"
+    },
+    {
+     "metin": "Kod üretimi tutarlılık sorununu çözer çünkü tohum ve palet kodda sabittir",
+     "tip": "tahmin",
+     "dogrulama": "Çıkarım — hiçbir kaynak bunu doğrudan ölçmemiş"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "Görüntü üretiminde tutarlılık modelin çıktısına bağlı; kod üretiminde palet ve tohum kaynak dosyada sabit duruyor. Aynı kod her çalıştığında aynı sprite'ı veriyor — V-0002'deki rastgele tohum ve sürüm kayması sorunları yapısal olarak ortadan kalkıyor.",
+    "Kim yapıyor": "Claude Code beceri pazarlarında bu yönde hazır beceriler var; gerçek projelerde kullanıldığına dair bağımsız rapor bulunamadı.",
+    "Maliyet / şart": "Kod yazmayı gerektiriyor — kullanıcının zaten güçlü olduğu taraf. Sınırı, kodla ifade edilebilen görsel karmaşıklık.",
+    "Karşı görüş": "Yordamsal üretim organik ve elle çizilmiş hissi vermekte zayıf; karakter yüzü, dokulu arka plan gibi işlerde elle çizim ya da görüntü üretimi hâlâ üstün.",
+    "Ne zaman yanlış olur": "Hedef üslup yordamsal olarak ifade edilemiyorsa (suluboya, elle çizim hissi) bu yol tıkanır."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-01",
+     "tur": "yöntem",
+     "etki": "Darboğazın kullanıcının güçlü olduğu tarafa (kod) taşınabileceğini gösteriyor"
+    },
+    {
+     "hedef": "H-01",
+     "tur": "fırsat",
+     "etki": "V-0002'deki tutarlılık kırılmalarını araç değiştirerek değil, yaklaşım değiştirerek çözme yolu"
+    }
+   ],
+   "eylem": "Küçük bir deneme yap: tek bir nesneyi hem görüntü üretimiyle hem Canvas koduyla üret, ikisini yan yana koy. S9 bu denemeyle cevaplanır."
+  },
+  {
+   "kimlik": "V-0004",
+   "baslik": "Işık ve son işlem, en düşük emekle en yüksek algılanan kalite kazancı",
+   "tarih": "2026-08-21",
+   "kaynak_tipi": "otonom",
+   "guven": "orta",
+   "ozet": "Son işlem (post-processing) tek kişilik geliştiricinin en verimli kaldıracı: düşük poligonlu modellerin ve basit varlıkların sınırlarını örtüyor, varlığa dokunmadan sahnenin tamamını yükseltiyor.",
+   "kaynaklar": [
+    {
+     "ad": "The Importance of Post-Processing in Video Games (ByteTrending)",
+     "url": "https://bytetrending.com/2025/08/26/the-importance-of-post-processing-in-video-games/",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Unity: Easy Ways to Improve Graphics (umi studio)",
+     "url": "https://umistudioblog.com/en/unity-easy-ways-to-improve-graphics-settings-post-processing-lighting/",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Volumetric Lighting Explained",
+     "url": "https://game-developers.org/volumetric-lighting-explained",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Unity Post-Processing Effects (Wayline)",
+     "url": "https://www.wayline.io/blog/unity-post-processing-effects-enhancing-visuals",
+     "erisim": "2026-08-21"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "Son işlem, düşük poligonlu modeller gibi diğer alanlardaki sınırları maskeleyebiliyor",
+     "tip": "olgu",
+     "dogrulama": "K1"
+    },
+    {
+     "metin": "En yüksek getirili üç efekt: bloom, renk derecelendirme (hafif S eğrisi), hacimsel ışık",
+     "tip": "olgu",
+     "dogrulama": "K1, K2, K4"
+    },
+    {
+     "metin": "İyi ayarlanmış ekran uzayı hacimsel ışık geçişi, maliyetin %20'siyle görsel kalitenin %80'ini veriyor",
+     "tip": "tahmin",
+     "dogrulama": "K3 — kaynak sayısal veriyor ama ölçüm yöntemi yok"
+    },
+    {
+     "metin": "Son işlem bağımsız geliştiriciler tarafından hafife alınıyor",
+     "tip": "yorum",
+     "dogrulama": "K1"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "Son işlem sahnenin tamamına tek bir görsel imza basıyor; parçalar arası üslup farkları ortak bir renk ve ışık katmanının altında eriyor. Tutarsızlığı çözmüyor ama görünürlüğünü azaltıyor.",
+    "Kim yapıyor": "Unity ve Unreal'de hazır yığın olarak geliyor; web tarafında Three.js `EffectComposer` karşılığı var.",
+    "Maliyet / şart": "Varlık üretmeye kıyasla saatler değil dakikalar. Ancak çalışma zamanı maliyeti var; mobil ve düşük donanımda ayarlanması gerekiyor.",
+    "Karşı görüş": "Aşırı kullanımda ters teper — her şeyin parladığı, kontrastın kaybolduğu görüntü \"ucuz efekt\" olarak okunuyor. Kaynakların hiçbiri bunun eşiğini sayıyla vermiyor.",
+    "Ne zaman yanlış olur": "Piksel sanatında bloom ve derinlik alanı çoğu zaman zarar veriyor; net piksel kenarı üslubun kendisi."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-01",
+     "tur": "yöntem",
+     "etki": "S7'yi cevaplıyor: en ucuz kalite kazancı burada, varlık üretmeden önce denenmeli"
+    },
+    {
+     "hedef": "H-01",
+     "tur": "fırsat",
+     "etki": "Mevcut varlıkları değiştirmeden algılanan kaliteyi yükseltme yolu açıyor"
+    }
+   ],
+   "eylem": "Varlık üretimine girmeden önce mevcut sahnede bloom + renk derecelendirme dene; kazancı ölç. Piksel sanatı seçilirse bu kart geçersiz."
+  },
+  {
+   "kimlik": "V-0003",
+   "baslik": "Sanat kılavuzu ve kilitli palet — tutarlılığın somut mekanizması",
+   "tarih": "2026-08-21",
+   "kaynak_tipi": "otonom",
+   "guven": "orta",
+   "ozet": "Tutarlılık iyi niyetle değil, üretim öncesi yazılan bir sanat kılavuzuyla ve teknik olarak kilitlenen bir paletle sağlanıyor. Kılavuz varlık üretimi başlamadan **önce** yazılıyor.",
+   "kaynaklar": [
+    {
+     "ad": "Game Art Bible: The AAA Style Guide Studios Actually Use",
+     "url": "https://nastyrodent.com/game-art-bible/",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Pixel Art for Solo Indie Developers: Practical Tips (Ansimuz)",
+     "url": "https://medium.com/@ansimuz/pixel-art-for-solo-indie-developers-practical-tips-604aa4e57f3c",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Pixel Art Pipelines: Best Tools for 2026 (Relish Games)",
+     "url": "https://relishgames.com/journal/pixel-art-pipelines-best-tools-for-2026/",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "High-Performance Game Art Pipelines (ixiegaming)",
+     "url": "https://www.ixiegaming.com/blog/high-performance-game-art-pipelines-from-style-guide-to-engine-ready/",
+     "erisim": "2026-08-21"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "Sanat kılavuzu şunları tanımlar: renk paleti, üslup referansları, çizgi kalınlığı, ışık yönü, siluet ilkeleri, teknik kısıtlar",
+     "tip": "olgu",
+     "dogrulama": "K1, K4"
+    },
+    {
+     "metin": "Kılavuz, hiçbir varlık üretime girmeden önce yazılır",
+     "tip": "olgu",
+     "dogrulama": "K4"
+    },
+    {
+     "metin": "Piksel sanatında 16-32 renklik kısıtlı palet bir zayıflık değil güçtür; sonradan budamak yerine baştan bilinçli seçilmeli",
+     "tip": "olgu",
+     "dogrulama": "K3"
+    },
+    {
+     "metin": "Az seçenek yaratıcılığı artırır",
+     "tip": "yorum",
+     "dogrulama": "K2 — deneyim aktarımı"
+    },
+    {
+     "metin": "Kendi varlığını yeniden kullanmak (aynı karo/karakterin renk ya da küçük detay varyasyonları) tek kişilik üretimde en büyük zaman tasarrufu",
+     "tip": "olgu",
+     "dogrulama": "K2"
+    },
+    {
+     "metin": "Aseprite piksel sanatı için ilk başvurulacak araç: soğan zarı animasyon, palet kilidi, karo haritası, toplu işlem için Lua betikleri",
+     "tip": "olgu",
+     "dogrulama": "K3"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "Palet kilidi tutarlılığı istek meselesi olmaktan çıkarıp teknik kısıta çeviriyor — palet aktarımıyla her sprite aynı renkleri paylaşıyor, sapma fiziksel olarak mümkün olmuyor.",
+    "Kim yapıyor": "Kılavuz AAA stüdyolarının standardı; tek kişilik geliştiricide karşılığı tek sayfalık bir belge.",
+    "Maliyet / şart": "Kılavuz bir kereye mahsus; asıl şart üretime başlamadan yazılması. Sonradan yazılan kılavuz mevcut varlıkları kurtarmıyor.",
+    "Karşı görüş": "Bulunamadı — kaynakların hiçbiri kılavuzsuz çalışmayı savunmuyor. Bu, kaynakların tamamının üretim tarafından yazılmış olmasından da kaynaklanıyor olabilir.",
+    "Ne zaman yanlış olur": "Prototip aşamasında, üslup henüz aranırken erken kilitlenmek keşfi kısıtlayabilir."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-01",
+     "tur": "yöntem",
+     "etki": "S4'ü cevaplıyor: tek kişilik üretim hattının ilk adımı kılavuz, ikincisi kilitli palet"
+    },
+    {
+     "hedef": "H-01",
+     "tur": "doğrular",
+     "etki": "\"Sorun yöntem ve araç hattı eksikliği\" varsayımını (V1) destekliyor"
+    }
+   ],
+   "eylem": "Tek sayfalık sanat kılavuzu yaz: palet, ışık yönü, çizgi kalınlığı, siluet kuralı, çözünürlük. Varlık üretmeden önce."
+  },
+  {
+   "kimlik": "V-0002",
+   "baslik": "Yapay zekâ görsel üretiminin oyun varlığında kırıldığı dört nokta",
+   "tarih": "2026-08-21",
+   "kaynak_tipi": "otonom",
+   "guven": "orta",
+   "ozet": "Yapay zekâ ile üretilen görseller oyun varlığı olarak doğrudan kullanılamıyor; dört ayrı yerde kırılıyor. En sık ve en pahalısı aynı karakterin kareler arasında aynı kalmaması.",
+   "kaynaklar": [
+    {
+     "ad": "How to Create Consistent Game Assets with AI (seeles.ai)",
+     "url": "https://www.seeles.ai/resources/blogs/consistent-ai-game-assets-workflow",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Why AI Images Are Inconsistent & How to Fix It",
+     "url": "https://www.aiqnahub.com/ai-image-generation-inconsistent-same-prompt/",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "5 Mistakes Developers Make When Using AI for Game Generation",
+     "url": "https://ocnjdaily.com/news/2025/oct/23/5-mistakes-developers-make-when-using-ai-for-game-generation/",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Why AI 3D Models Look Bad — and How to Fix It (tripo3d)",
+     "url": "https://www.tripo3d.ai/blog/why-ai-3d-models-look-bad",
+     "erisim": "2026-08-21"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "Üslup kayması: bir nesne yağlı boya, diğeri piksel sanatı ya da 3B render gibi çıkıyor",
+     "tip": "olgu",
+     "dogrulama": "K1, K3"
+    },
+    {
+     "metin": "Aynı karakteri birden çok pozda aynı göstermek çoğu araçta başarısız oluyor; saatler tekrar üretimle harcanıyor",
+     "tip": "olgu",
+     "dogrulama": "K1, K2"
+    },
+    {
+     "metin": "Modeller varsayılan olarak rastgele tohum (seed) kullanır; her çalıştırma farklı gürültü örüntüsünden başlar",
+     "tip": "olgu",
+     "dogrulama": "K2 — teknik açıklama"
+    },
+    {
+     "metin": "Proje ortasında model sürümünün küçük bir güncellemesi bile aynı tohum ve istemle tutarlılığı tamamen bozuyor",
+     "tip": "olgu",
+     "dogrulama": "K2"
+    },
+    {
+     "metin": "Tutarlılık üretimden **önce** konan kısıtlardan gelir: \"istem sanat yönü değildir, sanat kılavuzu sanat yönüdür\"",
+     "tip": "yorum",
+     "dogrulama": "K1 — güçlü ifade, ölçüm yok"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "Difüzyon modelleri her üretimde rastgele bir gürültü tohumundan başlar; tohum sabitlense bile model ağırlıkları değişirse çıktı kayar. Tutarlılık modelin değil, kısıtın işi.",
+    "Kim yapıyor": "Profesyonel akış şu: toplu üret → her birini elle gözden geçir → tutmayanı at ya da yeniden üret. Yani yapay zekâ üretimi değil, ayıklamayı hızlandırıyor.",
+    "Maliyet / şart": "Kalite kontrol adımı atlanamıyor; kazanç üretim hızında, denetimde değil.",
+    "Karşı görüş": "PixelLab, Scenario, Sprixen gibi araçlar tutarlılık sorununu çözdüklerini iddia ediyor — bu iddialar satıcı kaynaklı, bağımsız doğrulama bulunamadı.",
+    "Ne zaman yanlış olur": "Tek seferlik arka plan, doku ya da kavramsal eskiz gibi kareler arası tutarlılık gerektirmeyen varlıklarda bu kırılmaların çoğu geçerli değil."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-01",
+     "tur": "risk",
+     "etki": "\"Yapay zekâ görselleri doğrudan kullanılabilir\" varsayımını (V3) kısmen çürütüyor: ancak ağır kısıt ve elle denetimle"
+    },
+    {
+     "hedef": "H-01",
+     "tur": "açık-soru",
+     "etki": "S6'yı cevaplıyor: kırılma noktaları tutarlılık, tohum, sürüm değişimi ve kare arası kimlik"
+    }
+   ],
+   "eylem": "Yapay zekâdan varlık istemeden önce sanat kılavuzunu yaz. Kareler arası tutarlılık gerektiren varlıklarda (karakter, animasyon) doğrudan üretime güvenme."
+  },
+  {
+   "kimlik": "V-0001",
+   "baslik": "Tek kişilik geliştiricide gerçekçilik kaynak sorunudur, yetenek sorunu değil",
+   "tarih": "2026-08-21",
+   "kaynak_tipi": "otonom",
+   "guven": "orta",
+   "ozet": "Tek başına çalışan bir geliştirici gerçekçi görsel denediğinde sonuç, bilinçli bir üsluplu yaklaşımdan neredeyse her zaman daha kötü çıkıyor. Kritik ayrım şu: üslup bir kısayol değil; başarısız olan üslup değil, **tutarsız** üslup.",
+   "kaynaklar": [
+    {
+     "ad": "Stylized Art Style vs. Realism (vsquad.art)",
+     "url": "https://vsquad.art/blog/stylized-art-style-vs-realism-the-art-of-pixels-in-games",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Mastering Indie Game Art Styles (vsquad.art)",
+     "url": "https://vsquad.art/blog/mastering-indie-game-art-styles-a-developers-guide",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "5 Indie Game Art Mistakes Killing Your Visuals",
+     "url": "https://game-developers.org/indie-game-art-mistakes-killing-your-visuals",
+     "erisim": "2026-08-21"
+    },
+    {
+     "ad": "Your Artsy Game Probably Sucks (itch.io tartışması)",
+     "url": "https://itch.io/t/154874/your-artsy-game-probably-sucks",
+     "erisim": "2026-08-21"
+    }
+   ],
+   "iddialar": [
+    {
+     "metin": "Gerçekçi görsel, üsluplu görselden çok daha yüksek kaynak gerektirir",
+     "tip": "olgu",
+     "dogrulama": "K1, K2 aynı yönde"
+    },
+    {
+     "metin": "Varlıkların yarısı gerçekçi yarısı düz gölgeli olduğunda oyuncunun beyni sahneyi \"bozuk\" olarak kaydeder, nedenini söyleyemese bile",
+     "tip": "olgu",
+     "dogrulama": "K3"
+    },
+    {
+     "metin": "Farklı varlık paketlerini karıştırmak, tek bir basit üsluba bağlı kalmaktan neredeyse her zaman daha kötü görünür — ışık modelleri tutmaz, oranlar farklıdır",
+     "tip": "olgu",
+     "dogrulama": "K2"
+    },
+    {
+     "metin": "Üslup, fotogerçekçilikten daha yavaş eskir; 10 yıl önceki üsluplu oyunlar hâlâ taze görünüyor",
+     "tip": "yorum",
+     "dogrulama": "K1 — ölçüm değil, gözlem"
+    },
+    {
+     "metin": "\"Bütçen yoksa üsluplu yap\" tavsiyesi tek başına yetersiz; kötü uygulanan üslup amatörlüğü gizlemez",
+     "tip": "yorum",
+     "dogrulama": "K4 — karşı görüş"
+    }
+   ],
+   "derinlesme": {
+    "Mekanizma": "Gerçekçilik oyuncunun günlük hayattan gelen referansıyla kıyaslanır; küçük sapmalar hemen fark edilir. Üslup kendi referansını kurar, kıyas dışarıdan gelmez — ama bu ancak kurulan referans kendi içinde tutarlıysa işler.",
+    "Kim yapıyor": "Darkest Dungeon ve Katana Zero, üsluplu yönün yüksek algılanan kaliteye çıktığı örnekler olarak gösteriliyor.",
+    "Maliyet / şart": "En ucuz tutarlılık aracı kısıtlı palet — 4-6 renk seçip oyunun tamamında kullanmak. Çizim becerisi gerektirmiyor.",
+    "Karşı görüş": "Üslup bir bütçe kısayolu olarak kullanıldığında sonuç \"sanatsal\" değil özensiz oluyor; eleştiri üsluba değil, güçlü sanat yönü olmadan seçilen üsluba.",
+    "Ne zaman yanlış olur": "Oyunun türü gerçekçiliğe bağlıysa (simülasyon, mimari görselleştirme) ya da hazır gerçekçi varlık kütüphanesi tek ve tutarlı bir kaynaktan geliyorsa bu tavsiye zayıflar."
+   },
+   "eslesmeler": [
+    {
+     "hedef": "H-01",
+     "tur": "çürütür",
+     "etki": "\"Gerçekçilik doğru hedef\" varsayımını (V2) yıkıyor: asıl değişken gerçekçilik değil tutarlılık"
+    },
+    {
+     "hedef": "H-01",
+     "tur": "doğrular",
+     "etki": "\"Hazır varlık paketleri tutarlılığı bozar\" varsayımını (V5) destekliyor"
+    }
+   ],
+   "eylem": "Hedefi gerçekçilikten tutarlılığa çevir. İlk somut adım: 4-6 renklik bir palet seç ve oyunun tamamında ona bağlı kal."
+  }
+ ],
  "arsiv": [],
  "raporlar": []
 }

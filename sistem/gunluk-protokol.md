@@ -24,6 +24,12 @@ tek bilgi kaynağı depodaki dosyalardır — önceki günün sohbeti hatırlanm
    dünkü veri görünür.
 9. Commit + push.
 
+**Ağ kısıtı:** Bu ortamda `WebFetch` çoğu alan adında `EGRESS_BLOCKED`
+döner; yalnızca `WebSearch` güvenilir biçimde çalışır. Yani derinleşme adımı
+arama özetleriyle sınırlı. Bunun sonucu: kaynak sayfasını doğrudan okuyamadığın
+bir iddiayı `güven: yüksek` işaretleme. Bir kaynağın tam metni gerçekten
+gerekliyse raporda kullanıcıdan yapıştırmasını iste.
+
 **Yeni bir şey bulunamazsa:** rapor doldurmak için zayıf bulguyu veri diye
 sunma. `sistem/arastirma-gunlugu.md` dosyasına "şu sorular arandı, yeni bir şey
 çıkmadı" satırı düş. 10:00 raporu bunu okuyup dürüstçe yazacak.
