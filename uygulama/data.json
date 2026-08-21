@@ -1,6 +1,85 @@
 {
- "uretim": "2026-08-20T20:30:05+00:00",
- "hedefler": [],
+ "uretim": "2026-08-21T20:00:18+00:00",
+ "hedefler": [
+  {
+   "kimlik": "H-01",
+   "baslik": "Oyunlarımın görseli ilerlemeyi durdurmasın",
+   "proje": "Oyun geliştirme",
+   "durum": "aktif",
+   "oncelik": "yuksek",
+   "acildi": "2026-08-21",
+   "son_hareket": "2026-08-21",
+   "ilerleme": 0,
+   "varis": "Bir oyun fikrini hayata geçirirken görsel taraf beni durdurmayacak. İstediğim görünüşü makul sürede ve kendi içinde tutarlı biçimde üretebilecek, kod tarafı akarken grafikte tıkanmayacağım.",
+   "neden": "Şu anda oyun yaparken darboğaz kod değil, grafik tasarım. İlerleme orada kesiliyor; bitmemiş görünen oyunlar ortaya çıkıyor.",
+   "olcut": "Tek bir oyun için üç parçalık tutarlı bir görsel set — oynanan nesne/karakter, arka plan/sahne, arayüz — **bir hafta içinde** üretilmiş olacak ve oyunu daha önce görmemiş 3 kişiden en az 2'si \"bitmiş bir oyun gibi görünüyor\" diyecek.",
+   "durum_metni": "Yeni açıldı. Motor, darboğazın tam yeri ve hedef üslup henüz belirsiz — bu üçü netleşmeden araç araştırması dağınık kalır.",
+   "sonraki": "S1 ve S2'yi cevapla: hangi teknolojiyle çalıştığını ve tıkandığın anın tam olarak neresi olduğunu yaz.",
+   "varsayimlar": [
+    {
+     "n": "V1",
+     "metin": "Sorun yetenek eksikliği değil, yöntem ve araç hattı eksikliği",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    },
+    {
+     "n": "V2",
+     "metin": "Doğru hedef \"gerçekçilik\"",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    },
+    {
+     "n": "V3",
+     "metin": "Yapay zekâ ile üretilen görseller oyunda doğrudan kullanılabilir kalitede",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    },
+    {
+     "n": "V4",
+     "metin": "Darboğaz varlık üretiminde (asset), sanat yönünde değil",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    },
+    {
+     "n": "V5",
+     "metin": "Hazır varlık paketleri kullanmak tutarlılığı bozar",
+     "durum": "test edilmedi",
+     "dayanak": "—"
+    }
+   ],
+   "sorular": [
+    {
+     "cevaplandi": false,
+     "metin": "S1: Hangi motor/teknoloji ile geliştiriyorum? Araç seçiminin tamamı buna bağlı."
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S2: Darboğaz tam olarak nerede — varlık üretimi mi, sanat yönü mü, teknik render mı?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S3: Algılanan kaliteyi gerçekçilik mi yoksa tutarlı üslup mu daha çok artırıyor?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S4: Tek kişilik geliştiriciler oyun görselini nasıl çözüyor, hangi üretim hattını kuruyorlar?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S5: Hazır varlık paketi kullanmak nereye kadar yol aldırır, nerede yetmez?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S6: Yapay zekâ görsel üretimi oyun varlığı için hangi noktada kırılıyor (tutarlılık, çözünürlük, saydamlık, animasyon)?"
+    },
+    {
+     "cevaplandi": false,
+     "metin": "S7: Işıklandırma ve son işlem (post-processing) tek başına algılanan kaliteyi ne kadar yükseltiyor?"
+    }
+   ],
+   "veriler": []
+  }
+ ],
  "veriler": [],
  "arsiv": [],
  "raporlar": []
