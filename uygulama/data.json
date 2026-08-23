@@ -1,11 +1,11 @@
 {
- "uretim": "2026-08-23T11:18:14+00:00",
+ "uretim": "2026-08-23T12:11:26+00:00",
  "hedefler": [
   {
    "kimlik": "H-01",
    "baslik": "Oyunlarımın görseli ilerlemeyi durdurmasın",
    "proje": "Oyun geliştirme",
-   "durum": "aktif",
+   "durum": "masada",
    "oncelik": "yuksek",
    "acildi": "2026-08-21",
    "son_hareket": "2026-08-21",
@@ -127,13 +127,76 @@
      "tur": "fırsat",
      "etki": "Darboğazın koda taşınabileceği bir yol açtı"
     }
+   ],
+   "problemler": [
+    {
+     "baslik": "Gerçekçi yapmaya çalışıyorum ama hep kötü çıkıyor",
+     "durum": "çözüldü",
+     "cozum": "Sorun yetenek değil, kaynak. Gerçekçilik oyuncunun her gün gördüğü dünyayla yarışır; küçük sapmalar bile görünür. Üslup kendi ölçüsünü kurar, kıyas dışarıdan gelmez.",
+     "kaynak": "V-0001",
+     "arac": ""
+    }
+   ],
+   "ogrenilenler": [
+    {
+     "metin": "Darboğazın kullanıcının güçlü olduğu tarafa (kod) taşınabileceğini gösteriyor",
+     "kaynak": "V-0005",
+     "tur": "yöntem"
+    },
+    {
+     "metin": "En ucuz kalite kazancının ışık ve son işlem olduğunu gösterdi",
+     "kaynak": "V-0004",
+     "tur": "yöntem"
+    },
+    {
+     "metin": "Mevcut varlıkları değiştirmeden algılanan kaliteyi yükseltme yolu açıyor",
+     "kaynak": "V-0004",
+     "tur": "fırsat"
+    },
+    {
+     "metin": "Tek kişilik üretim hattının ilk adımının kılavuz, ikincisinin kilitli palet olduğunu gösterdi",
+     "kaynak": "V-0003",
+     "tur": "yöntem"
+    },
+    {
+     "metin": "Sorunun yetenek değil yöntem eksikliği olduğunu doğruladı",
+     "kaynak": "V-0003",
+     "tur": "doğrular"
+    },
+    {
+     "metin": "Yapay zekâ görsellerinin doğrudan kullanılamayacağını gösterdi — ağır kısıt ve elle denetim şart",
+     "kaynak": "V-0002",
+     "tur": "risk"
+    },
+    {
+     "metin": "Yapay zekâ üretiminin nerede kırıldığını gösterdi: tohum, sürüm değişimi, kareler arası kimlik",
+     "kaynak": "V-0002",
+     "tur": "açık-soru"
+    },
+    {
+     "metin": "Gerçekçiliğin doğru hedef olmadığını gösterdi — asıl değişken tutarlılık",
+     "kaynak": "V-0001",
+     "tur": "çürütür"
+    },
+    {
+     "metin": "Farklı hazır paketleri karıştırmanın tutarlılığı bozduğunu doğruladı",
+     "kaynak": "V-0001",
+     "tur": "doğrular"
+    }
+   ],
+   "oneriler": [
+    "Küçük bir deneme yap: tek bir nesneyi hem görüntü üretimiyle hem Canvas koduyla üret, ikisini yan yana koy. S9 bu denemeyle cevaplanır.",
+    "Varlık üretimine girmeden önce mevcut sahnede bloom + renk derecelendirme dene; kazancı ölç. Piksel sanatı seçilirse bu kart geçersiz.",
+    "Tek sayfalık sanat kılavuzu yaz: palet, ışık yönü, çizgi kalınlığı, siluet kuralı, çözünürlük. Varlık üretmeden önce.",
+    "Yapay zekâdan varlık istemeden önce sanat kılavuzunu yaz. Kareler arası tutarlılık gerektiren varlıklarda (karakter, animasyon) doğrudan üretime güvenme.",
+    "Hedefi gerçekçilikten tutarlılığa çevir. İlk somut adım: 4-6 renklik bir palet seç ve oyunun tamamında ona bağlı kal."
    ]
   },
   {
    "kimlik": "H-02",
    "baslik": "Görsel yön kilitlensin",
    "proje": "Oyun geliştirme",
-   "durum": "aktif",
+   "durum": "masada",
    "oncelik": "yuksek",
    "acildi": "2026-08-21",
    "son_hareket": "2026-08-21",
@@ -213,13 +276,61 @@
      "tur": "açık-soru",
      "etki": "Üslup sorusunu cevapladı: düz geometrik vektör"
     }
+   ],
+   "problemler": [
+    {
+     "baslik": "Parçalar bir araya gelince birbirini tutmuyor",
+     "durum": "çözüldü",
+     "cozum": "Palet tek bir ana tondan türetilip kodda sabitleniyor. Gölge mora, aydınlık sarıya kaydırılıyor; sadece koyulaştırıp açmak cansız sonuç veriyor. Sapmak teknik olarak imkânsız hâle geliyor.",
+     "kaynak": "V-0003",
+     "arac": "Palet üretici — üreticideki \"Yeni palet\" düğmesi"
+    },
+    {
+     "baslik": "Hangi üslubu seçeceğimi bilmiyorum",
+     "durum": "çözüldü",
+     "cozum": "Düz geometrik vektör. En düşük varlık maliyeti, çizim becerisi yerine karar gerektiriyor, web'de canvas/SVG ile doğal üretiliyor. Piksel sanatı kolay görünüyor ama her animasyon üretim süresini biriktirerek artırıyor.",
+     "kaynak": "V-0009",
+     "arac": ""
+    }
+   ],
+   "ogrenilenler": [
+    {
+     "metin": "Düz geometrik vektörün bu duruma en uygun üslup olduğunu gösterdi",
+     "kaynak": "V-0009",
+     "tur": "açık-soru"
+    },
+    {
+     "metin": "Tutarlı palet + güçlü kontrast + temiz şeklin render becerisini yendiğini doğruluyor",
+     "kaynak": "V-0009",
+     "tur": "doğrular"
+    },
+    {
+     "metin": "Piksel sanatı görünürde kolay ama birikimli animasyon maliyeti taşıyor",
+     "kaynak": "V-0009",
+     "tur": "risk"
+    },
+    {
+     "metin": "Kılavuzun tam içeriğini ve üretimden önce yazılması gerektiğini veriyor",
+     "kaynak": "V-0003",
+     "tur": "yöntem"
+    },
+    {
+     "metin": "Kısıtlı paletin çizim becerisi olmadan tutarlılık verdiğini gösterdi",
+     "kaynak": "V-0001",
+     "tur": "doğrular"
+    }
+   ],
+   "oneriler": [
+    "Düz geometrik vektör üslubunu seç. Piksel sanatına, oyunda animasyon miktarı gerçekten azsa yönel.",
+    "Tek sayfalık sanat kılavuzu yaz: palet, ışık yönü, çizgi kalınlığı, siluet kuralı, çözünürlük. Varlık üretmeden önce.",
+    "Hedefi gerçekçilikten tutarlılığa çevir. İlk somut adım: 4-6 renklik bir palet seç ve oyunun tamamında ona bağlı kal."
    ]
   },
   {
    "kimlik": "H-03",
    "baslik": "Web için varlık üretim hattı kurulsun",
    "proje": "Oyun geliştirme",
-   "durum": "aktif",
+   "durum": "masada",
    "oncelik": "yuksek",
    "acildi": "2026-08-21",
    "son_hareket": "2026-08-21",
@@ -319,6 +430,78 @@
      "tur": "açık-soru",
      "etki": "2B/3B sorusunu cevapladı ve kararın gerçek eksenini gösterdi"
     }
+   ],
+   "problemler": [
+    {
+     "baslik": "Varlık üretmek çok uzun sürüyor",
+     "durum": "çözüldü",
+     "cozum": "Çizmiyorsun, tohum veriyorsun. Rastgelelik tohuma bağlı ve tohum kaynak dosyada; aynı tohum her zaman aynı varlığı veriyor. On iki varlık yedi milisaniyede üretiliyor, indirilen dosya sıfır.",
+     "kaynak": "V-0005, V-0006",
+     "arac": "Varlık üretici — çalışan sürüm"
+    },
+    {
+     "baslik": "2B mi 3B mi yapmalıyım bilmiyorum",
+     "durum": "çözüldü",
+     "cozum": "2B. Ama karar boyutta değil yeniden kullanımda: 2B'de maliyet eylem × yön × varyant diye çarpılır, 3B'de model bir kez ödenir. 3B'nin on üç aşamalı hattı, varlık üretimi zaten darboğaz olan biri için yeni bir darboğaz demek.",
+     "kaynak": "V-0008",
+     "arac": ""
+    },
+    {
+     "baslik": "Kodla üretim nereye kadar gidiyor, bilmiyorum",
+     "durum": "araştırılıyor",
+     "cozum": "",
+     "kaynak": "V-0005",
+     "arac": ""
+    }
+   ],
+   "ogrenilenler": [
+    {
+     "metin": "Varsayılanın 2B olduğunu, ama kararın boyutta değil yeniden kullanımda olduğunu gösterdi",
+     "kaynak": "V-0008",
+     "tur": "açık-soru"
+    },
+    {
+     "metin": "3B'nin 13 aşamalı hattı, varlık üretimi zaten darboğaz olan biri için yeni darboğaz demek",
+     "kaynak": "V-0008",
+     "tur": "risk"
+    },
+    {
+     "metin": "Ücretli yolun neye benzediğini ve kaça mal olduğunu veriyor",
+     "kaynak": "V-0007",
+     "tur": "yöntem"
+    },
+    {
+     "metin": "Kaynakların satıcı olması nedeniyle maliyet iddiası doğrulanmamış",
+     "kaynak": "V-0007",
+     "tur": "risk"
+    },
+    {
+     "metin": "\"Kod mu görüntü mü\" sorusunu karar kuralına çeviriyor: dolgu → kod, detay → görüntü",
+     "kaynak": "V-0006",
+     "tur": "yöntem"
+    },
+    {
+     "metin": "Tek bir yöntemin yetmediğini gösterdi — oyununu bitirenler kod ve görüntüyü harmanlıyor",
+     "kaynak": "V-0006",
+     "tur": "çürütür"
+    },
+    {
+     "metin": "Hattın kod tarafını kurma yolunu açıyor; web'de canvas/SVG zaten doğal",
+     "kaynak": "V-0005",
+     "tur": "fırsat"
+    },
+    {
+     "metin": "Üretim hattının görüntü tarafına güvenilemeyeceğini gösteriyor",
+     "kaynak": "V-0002",
+     "tur": "risk"
+    }
+   ],
+   "oneriler": [
+    "2B ile git. Ama önce şunu say: kaç ayrı animasyonlu karakter ve her biri için kaç eylem olacak? Bu sayı büyükse karar yeniden açılmalı.",
+    "Araç satın almadan önce S3 denemesini yap. Yordamsal yol tutarsa bu yığının çoğu gereksiz.",
+    "Oyundaki varlıkları iki kovaya ayır: basit dolgu (koda gider) ve detaylı (görüntüye gider). Hattı iki kovaya göre kur, tek yöntem arama.",
+    "Küçük bir deneme yap: tek bir nesneyi hem görüntü üretimiyle hem Canvas koduyla üret, ikisini yan yana koy. S9 bu denemeyle cevaplanır.",
+    "Yapay zekâdan varlık istemeden önce sanat kılavuzunu yaz. Kareler arası tutarlılık gerektiren varlıklarda (karakter, animasyon) doğrudan üretime güvenme."
    ]
   }
  ],
@@ -400,7 +583,7 @@
     {
      "hedef": "H-02",
      "tur": "açık-soru",
-     "etki": "S2'yi cevaplıyor: düz/geometrik vektör bu duruma en uygun üslup"
+     "etki": "Düz geometrik vektörün bu duruma en uygun üslup olduğunu gösterdi"
     },
     {
      "hedef": "H-02",
@@ -492,7 +675,7 @@
     {
      "hedef": "H-03",
      "tur": "açık-soru",
-     "etki": "S1'i cevaplıyor: varsayılan 2B, ama karar boyutta değil yeniden kullanımda"
+     "etki": "Varsayılanın 2B olduğunu, ama kararın boyutta değil yeniden kullanımda olduğunu gösterdi"
     },
     {
      "hedef": "H-03",
@@ -651,7 +834,7 @@
     {
      "hedef": "H-03",
      "tur": "çürütür",
-     "etki": "\"Tek bir yöntem yeter\" varsayımını yıkıyor; harman standart"
+     "etki": "Tek bir yöntemin yetmediğini gösterdi — oyununu bitirenler kod ve görüntüyü harmanlıyor"
     }
    ],
    "eylem": "Oyundaki varlıkları iki kovaya ayır: basit dolgu (koda gider) ve detaylı (görüntüye gider). Hattı iki kovaya göre kur, tek yöntem arama."
@@ -785,7 +968,7 @@
     {
      "hedef": "H-01",
      "tur": "yöntem",
-     "etki": "S7'yi cevaplıyor: en ucuz kalite kazancı burada, varlık üretmeden önce denenmeli"
+     "etki": "En ucuz kalite kazancının ışık ve son işlem olduğunu gösterdi"
     },
     {
      "hedef": "H-01",
@@ -867,12 +1050,12 @@
     {
      "hedef": "H-01",
      "tur": "yöntem",
-     "etki": "S4'ü cevaplıyor: tek kişilik üretim hattının ilk adımı kılavuz, ikincisi kilitli palet"
+     "etki": "Tek kişilik üretim hattının ilk adımının kılavuz, ikincisinin kilitli palet olduğunu gösterdi"
     },
     {
      "hedef": "H-01",
      "tur": "doğrular",
-     "etki": "\"Sorun yöntem ve araç hattı eksikliği\" varsayımını (V1) destekliyor"
+     "etki": "Sorunun yetenek değil yöntem eksikliği olduğunu doğruladı"
     },
     {
      "hedef": "H-02",
@@ -949,12 +1132,12 @@
     {
      "hedef": "H-01",
      "tur": "risk",
-     "etki": "\"Yapay zekâ görselleri doğrudan kullanılabilir\" varsayımını (V3) kısmen çürütüyor: ancak ağır kısıt ve elle denetimle"
+     "etki": "Yapay zekâ görsellerinin doğrudan kullanılamayacağını gösterdi — ağır kısıt ve elle denetim şart"
     },
     {
      "hedef": "H-01",
      "tur": "açık-soru",
-     "etki": "S6'yı cevaplıyor: kırılma noktaları tutarlılık, tohum, sürüm değişimi ve kare arası kimlik"
+     "etki": "Yapay zekâ üretiminin nerede kırıldığını gösterdi: tohum, sürüm değişimi, kareler arası kimlik"
     },
     {
      "hedef": "H-03",
@@ -1031,17 +1214,17 @@
     {
      "hedef": "H-01",
      "tur": "çürütür",
-     "etki": "\"Gerçekçilik doğru hedef\" varsayımını (V2) yıkıyor: asıl değişken gerçekçilik değil tutarlılık"
+     "etki": "Gerçekçiliğin doğru hedef olmadığını gösterdi — asıl değişken tutarlılık"
     },
     {
      "hedef": "H-01",
      "tur": "doğrular",
-     "etki": "\"Hazır varlık paketleri tutarlılığı bozar\" varsayımını (V5) destekliyor"
+     "etki": "Farklı hazır paketleri karıştırmanın tutarlılığı bozduğunu doğruladı"
     },
     {
      "hedef": "H-02",
      "tur": "doğrular",
-     "etki": "Kısıtlı paletin çizim becerisi olmadan tutarlılık verdiğini gösteriyor (V1)"
+     "etki": "Kısıtlı paletin çizim becerisi olmadan tutarlılık verdiğini gösterdi"
     }
    ],
    "eylem": "Hedefi gerçekçilikten tutarlılığa çevir. İlk somut adım: 4-6 renklik bir palet seç ve oyunun tamamında ona bağlı kal."

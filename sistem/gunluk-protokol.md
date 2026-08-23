@@ -10,7 +10,8 @@ yazılmayan iş yok sayılır.
 ## 09:00 — Araştırma turu
 
 1. `CLAUDE.md` + tüm `hedefler/*.md` dosyalarını oku.
-2. `durum: aktif` hedefleri al. Her biri için bir açık soru ya da
+2. **Yalnızca `durum: masada` hedefleri al.** Arşivdekilere dokunma.
+   Her biri için önce **açık problemlere** bak, yoksa açık soru ya da
    doğrulanmamış varsayım seç. Öncelik sırası:
    - cevabı hedefi en çok değiştirecek soru,
    - en uzun süredir `son_hareket` almamış hedef.

@@ -61,10 +61,12 @@ Kullanıcı bir şey öğrendiğini söylediğinde (link, not, fikir, sohbet ç�
 6. `veri/indeks.md` ve `sistem/kaynak-defteri.md` satırlarını ekle.
 
 ### Mod C — Her gün 09:00, otonom araştırma
-Kendi başına internetten veri toplama turu. Rastgele arama yapma — **hedef
-kartlarındaki açık sorulardan ve varsayımlardan** yürü:
+Kendi başına internetten veri toplama turu. Rastgele arama yapma — hedefin
+**problemlerinden**, açık sorularından ve varsayımlarından yürü:
 
-1. Tüm hedefleri oku, `durum: aktif` olanları al.
+1. Tüm hedefleri oku, **yalnızca `durum: masada` olanları al.**
+   `durum: arsivde` olan hedefe dokunma — kullanıcı onu çalışma masasından
+   kaldırdıysa araştırması bilerek durdurulmuştur.
 2. Her aktif hedef için en az bir açık soru veya doğrulanmamış varsayım seç.
    Öncelik: (a) cevabı hedefi en çok değiştirecek soru, (b) en uzun süredir
    dokunulmamış hedef.
@@ -117,7 +119,40 @@ hedef kimliği, tür, ve **tek cümlede ne değiştirdiği**.
 
 ---
 
-## 3.5. Uygulama verisi
+## 3.4. Çalışma masası
+
+Her hedef kartının `durum` alanı iki değer alır:
+
+| Değer | Anlamı |
+|---|---|
+| `masada` | Kullanıcı bu hedefi çalışma masasına koydu. 09:00 turu bunun üstünde çalışır. |
+| `arsivde` | Masadan kaldırıldı. **Araştırma durur.** Kart silinmez, veriler durur. |
+
+Kullanıcı uygulamadan masaya alıp kaldırabilir ama uygulama depoya yazamaz;
+değişiklikleri kopyalayıp sana verir. Böyle bir liste geldiğinde ilgili
+kartların `durum` alanını güncelle.
+
+## 3.5. Problemler
+
+Kullanıcı hedefin altına **problem** ekler — yaşadığı somut sıkıntı. Açık
+sorular senin araştırma aracın, problemler onun dili. Uygulamada problemler
+görünür, açık sorular görünmez.
+
+Her problem hedef kartında `## Problemler` altında şu biçimde durur:
+
+```markdown
+### Karakter animasyonu takılıyor
+**Durum:** çözüldü
+**Çözüm:** <tek paragraf, kod ve numara olmadan>
+**Kaynak:** V-0012
+**Araç:** <varsa çalışan bir şey>
+```
+
+Bir problemi çözerken **öğüt verme.** "Paleti kilitle" çözüm değil; kilitleyen
+kodu vermek çözümdür. Çıktı ya çalışan bir araç, ya kopyalanabilir kod, ya da
+ölçülmüş somut bir karşılaştırma olsun.
+
+## 3.6. Uygulama verisi
 
 Markdown kartları tek gerçek kaynaktır. Mobil uygulama onları doğrudan okumaz —
 `araclar/derle.py` kartları `uygulama/data.json` dosyasına çevirir.
@@ -134,7 +169,7 @@ oraya bak.
 
 ---
 
-## 3.6. Depo herkese açık
+## 3.7. Depo herkese açık
 
 `srknklmz/Research` **public** bir depodur ve bu bilinçli bir tercihtir.
 Uygulama da açık bir adreste yayınlanır. Buraya yazılan her şey — hedef

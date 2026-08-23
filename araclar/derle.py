@@ -78,6 +78,38 @@ def duzmetin(metin):
     return " ".join(satirlar).strip()
 
 
+def problemler(govde):
+    """## Problemler altındaki '### baslik' bloklarını okur.
+
+    Her blok '**Anahtar:** değer' satırlarıyla tanımlanır. Kullanıcıya kimlik
+    numarası gösterilmediği için problemler numaralandırılmaz; sıra dosyadaki
+    sıradır.
+    """
+    m = re.search(r"^##\s+Problemler\s*$(.*?)(?=^##\s|\Z)", govde, re.M | re.S)
+    if not m:
+        return []
+    cikti = []
+    for blok in re.split(r"^###\s+", m.group(1), flags=re.M)[1:]:
+        satirlar = blok.strip().split("\n")
+        kayit = {"baslik": satirlar[0].strip(), "durum": "araştırılıyor",
+                 "cozum": "", "kaynak": "", "arac": ""}
+        for satir in satirlar[1:]:
+            a = re.match(r"^\*\*(.+?):\*\*\s*(.+?)\s*$", satir.strip())
+            if not a:
+                continue
+            anahtar, deger = a.group(1).strip().lower(), a.group(2).strip()
+            if anahtar.startswith("durum"):
+                kayit["durum"] = deger
+            elif anahtar.startswith("çözüm") or anahtar.startswith("cozum"):
+                kayit["cozum"] = deger
+            elif anahtar.startswith("kaynak"):
+                kayit["kaynak"] = deger
+            elif anahtar.startswith("araç") or anahtar.startswith("arac"):
+                kayit["arac"] = deger
+        cikti.append(kayit)
+    return cikti
+
+
 def oku(yol):
     with open(yol, encoding="utf-8") as f:
         return f.read()
@@ -112,7 +144,7 @@ def hedef_kartlari():
             "kimlik": on.get("kimlik", ad[:-3]),
             "baslik": on.get("baslik") or re.sub(r"^H-\S+\s*—\s*", "", (b.get("__ad__") or ad[:-3])),
             "proje": on.get("proje", ""),
-            "durum": on.get("durum", "aktif"),
+            "durum": on.get("durum", "masada"),
             "oncelik": on.get("oncelik", "orta"),
             "acildi": on.get("acildi", ""),
             "son_hareket": on.get("son_hareket", ""),
@@ -125,6 +157,7 @@ def hedef_kartlari():
             "varsayimlar": varsayimlar,
             "sorular": sorular,
             "veriler": veriler,
+            "problemler": problemler(govde),
         })
     return cikti
 
@@ -198,9 +231,26 @@ def raporlar():
     return cikti
 
 
+def onerileri_bagla(hedefler, veriler):
+    """Her hedefe, ona bağlı veri kartlarındaki eylem cümlelerini iliştirir."""
+    for h in hedefler:
+        h["ogrenilenler"] = []
+        h["oneriler"] = []
+        for v in veriler:
+            for e in v.get("eslesmeler", []):
+                if e.get("hedef") != h["kimlik"]:
+                    continue
+                h["ogrenilenler"].append({"metin": e.get("etki", ""), "kaynak": v["kimlik"],
+                                          "tur": e.get("tur", "")})
+                eylem = v.get("eylem", "")
+                if eylem and eylem.lower() not in ("yok", "—") and eylem not in h["oneriler"]:
+                    h["oneriler"].append(eylem)
+
+
 def main():
     hedefler = hedef_kartlari()
     veriler = veri_kartlari("veri")
+    onerileri_bagla(hedefler, veriler)
     data = {
         "uretim": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "hedefler": hedefler,

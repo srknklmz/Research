@@ -1,7 +1,24 @@
-# Uygulama — Cetvel
+# Uygulama
 
 Beyin sisteminin mobil arayüzü. Kurulabilir bir PWA'dır; telefonda ana ekrana
 eklenir ve tam ekran açılır.
+
+## Yapı
+
+İki sekme ve bir detay sayfası:
+
+| Ekran | Ne var |
+|---|---|
+| **Hedefler** | Masadakiler üstte, arşivdekiler altta ve soluk |
+| **Hedef sayfası** | Masa/arşiv anahtarı · problemler ve çözümleri · öğrenilenler · öneriler |
+| **Çalışma masası** | Araştırılan hedefler, her birinin sırada bekleyen problemi |
+
+**Çalışma masası mekaniği:** Bir hedefi masaya koyduğunda sabah turu onun açık
+problemlerini araştırır. Arşive kaldırdığında araştırma durur — kart ve veriler
+silinmez, sadece dokunulmaz.
+
+Uygulama depoya yazamadığı için masa değişiklikleri ve eklenen problemler
+`localStorage`'da bekler; **Değişiklikleri kopyala** ile alınıp Claude'a verilir.
 
 ## Nasıl çalışır
 
