@@ -26,4 +26,13 @@ işlenmişse yeni kart açılmaz — mevcut veri kartı güncellenir.
 | 2026-08-21 | claudemarketplaces.com — Pixel Art Sprites skill | evet | V-0005 |
 | 2026-08-21 | svggenie.com — Claude SVG limitations | evet | V-0005 |
 
+| 2026-08-23 | redappletechnologies.medium.com — 2D vs 3D Costs | evet | V-0008 |
+| 2026-08-23 | soonlab.ai — 2D vs 3D First Project | evet | V-0008 |
+| 2026-08-23 | gamedevdairy.substack.com — Should solo devs do 3D | evet | V-0008 |
+| 2026-08-23 | itch.io — low poly asset packs | evet | V-0008 |
+| 2026-08-23 | gamedev.net — pixel art vs low poly cost | evet | V-0009 |
+| 2026-08-23 | inlingogames.com — Indie art styles guide | evet | V-0009 |
+| 2026-08-23 | bugnet.io — Good game art when you can't draw | evet | V-0009 |
+| 2026-08-23 | magnaludumcreatives.com — Indie art styles | evet | V-0009 |
+
 Sonuç: `V-XXXX` (veri oldu) / `arsiv` (eşleşmedi) / `atlandi` (kalitesiz)
