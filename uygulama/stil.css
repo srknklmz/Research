@@ -124,6 +124,9 @@ main{max-width:480px;margin:0 auto;padding:0 18px calc(40px + env(safe-area-inse
   padding:14px 16px;border-radius:var(--r);border:1px solid var(--line);
   background:var(--card);margin-top:10px}
 .dugme.dolu{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+a.dugme{text-decoration:none;color:inherit}
+a.dugme.dolu{color:var(--bg)}
+.oneri .kaynak{font-size:12px;color:var(--ink-3);margin-top:3px}
 .dugme small{display:block;font-weight:400;font-size:13px;opacity:.62;margin-top:3px}
 
 /* ---- boş durum ---- */

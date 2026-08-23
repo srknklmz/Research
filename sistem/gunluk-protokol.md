@@ -9,7 +9,10 @@ yazılmayan iş yok sayılır.
 
 ## 09:00 — Araştırma turu
 
-1. `CLAUDE.md` + tüm `hedefler/*.md` dosyalarını oku.
+1. **Açık GitHub konularını oku** (`list_issues`, `state: OPEN`). Yeni problem
+   ve masa değişikliklerini kartlara işle, konuyu kapat. Ayrıntı `CLAUDE.md`
+   bölüm 3.4.1'de.
+2. `CLAUDE.md` + tüm `hedefler/*.md` dosyalarını oku.
 2. **Yalnızca `durum: masada` hedefleri al.** Arşivdekilere dokunma.
    Her biri için önce **açık problemlere** bak, yoksa açık soru ya da
    doğrulanmamış varsayım seç. Öncelik sırası:

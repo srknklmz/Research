@@ -5,6 +5,8 @@
 "use strict";
 
 const ANAHTAR = "beyin-v2";
+const DEPO = "srknklmz/Research";
+const URL_SINIRI = 7000;   // uzun gövde tarayıcıda kırpılabilir; üstündeyse panoya düşeriz
 let D = { hedefler: [], veriler: [], raporlar: [] };
 let Y = { masa: {}, yeniProblemler: [], acikProblem: null };
 let aktif = "hedefler";
@@ -103,15 +105,31 @@ function cizMasa() {
     }
   }
 
-  const bek = bekleyenler();
-  if (bek.length) {
-    g += `<div class="bolum">Claude'a bildirilmeyi bekliyor</div>`;
-    g += bek.map(h => `<div class="oneri"><p>${esc(h.baslik)} →
-      ${Y.masa[h.kimlik] ? "masaya alındı" : "arşive kaldırıldı"}</p></div>`).join("");
-    g += `<button class="dugme dolu" data-eylem="disa">Değişiklikleri kopyala
-      <small>Claude'a yapıştır, kartlara işlensin</small></button>`;
-  }
+  g += gonderBlogu();
   $("#v-masa").innerHTML = g;
+}
+
+function gonderBlogu() {
+  if (!bekleyenSayisi()) return "";
+  let g = `<div class="bolum">Claude'a gönderilmeyi bekliyor</div>`;
+  g += Y.yeniProblemler.map(p => {
+    const h = D.hedefler.find(x => x.kimlik === p.hedef);
+    return `<div class="oneri"><p>${esc(p.metin)}</p>
+      <div class="kaynak">${esc(h ? h.baslik : p.hedef)}</div></div>`;
+  }).join("");
+  g += bekleyenler().map(h => `<div class="oneri"><p>${esc(h.baslik)} →
+    ${Y.masa[h.kimlik] ? "masaya alındı" : "arşive kaldırıldı"}</p></div>`).join("");
+
+  const bag = konuBagi();
+  g += bag
+    ? `<a class="dugme dolu" href="${esc(bag)}" target="_blank" rel="noopener"
+         data-eylem="gonderildi-isaretle">Claude'a gönder
+       <small>GitHub açılır, hazır doldurulmuş — tek dokunuşla gönder</small></a>`
+    : `<button class="dugme dolu" data-eylem="disa">Kopyala
+       <small>Liste uzun olduğu için bağlantıya sığmadı; kopyalayıp yapıştır</small></button>`;
+  g += `<button class="dugme" data-eylem="temizle">Gönderdim, listeyi temizle
+    <small>Yerel bekleyenleri siler — kartlar Claude tarafından güncellenir</small></button>`;
+  return g;
 }
 
 /* ------------------------------------------------------ hedef sayfası */
@@ -178,6 +196,7 @@ function sayfaAc(kimlik) {
     g += on.map(o => `<div class="oneri"><p>${esc(o)}</p></div>`).join("");
   }
 
+  g += gonderBlogu();
   g += `</div></div>`;
   $("#sayfa").innerHTML = g;
   document.body.style.overflow = "hidden";
@@ -206,14 +225,29 @@ function problemFormu(kimlik) {
 
 function disaAktar() {
   const parcalar = [];
-  for (const h of bekleyenler()) {
-    parcalar.push(`${h.kimlik} — ${h.baslik}\n  durum: ${Y.masa[h.kimlik] ? "masada" : "arsivde"}`);
-  }
   for (const p of Y.yeniProblemler) {
     const h = D.hedefler.find(x => x.kimlik === p.hedef);
-    parcalar.push(`${p.hedef} — yeni problem\n  ${p.metin}` + (h ? `\n  (hedef: ${h.baslik})` : ""));
+    parcalar.push(`## Yeni problem\nhedef: ${p.hedef}${h ? ` (${h.baslik})` : ""}\n\n${p.metin}`);
+  }
+  for (const h of bekleyenler()) {
+    parcalar.push(`## Masa değişikliği\nhedef: ${h.kimlik} (${h.baslik})\ndurum: ${Y.masa[h.kimlik] ? "masada" : "arsivde"}`);
   }
   return parcalar.join("\n\n");
+}
+
+function bekleyenSayisi() {
+  return Y.yeniProblemler.length + bekleyenler().length;
+}
+
+function konuBagi() {
+  const govde = disaAktar();
+  const tekProblem = Y.yeniProblemler.length === 1 && !bekleyenler().length;
+  const baslik = tekProblem
+    ? Y.yeniProblemler[0].metin.slice(0, 70)
+    : `Beyin sistemi — ${bekleyenSayisi()} değişiklik`;
+  const bag = `https://github.com/${DEPO}/issues/new`
+    + `?title=${encodeURIComponent(baslik)}&body=${encodeURIComponent(govde)}`;
+  return bag.length > URL_SINIRI ? null : bag;
 }
 
 /* ------------------------------------------------------ olaylar */
@@ -269,6 +303,15 @@ document.addEventListener("click", async e => {
     $("#katman").innerHTML = "";
     bildir("eklendi — Claude'a göndermeyi unutma");
     return sayfaAc(kay.dataset.kaydet);
+  }
+
+  if (t.closest("[data-eylem='temizle']")) {
+    Y.yeniProblemler = []; Y.masa = {};
+    kaydet();
+    bildir("liste temizlendi");
+    const acikSayfa = $(".sayfa [data-yeni-problem]");
+    if (acikSayfa) return sayfaAc(acikSayfa.dataset.yeniProblem);
+    return ciz();
   }
 
   if (t.closest("[data-eylem='disa']")) {
