@@ -20,3 +20,12 @@ satıcı kaynaklı olan V-0005'inki `düşük`.
 **Bu kısıt 09:00 turları için de geçerli.** Derinleşme adımı arama özetleriyle
 sınırlı kalacak; kaynak sayfası okumak gerekiyorsa kullanıcıdan içeriği
 yapıştırması istenmeli.
+
+## 2026-08-22 ve 2026-08-23 — kayıp turlar
+
+Dört tur tetiklendi (22 Ağu 06:06 ve 07:03, 23 Ağu 06:05 ve 07:04 UTC),
+hiçbiri depoya yazmadı. Sebep: tetikleyicinin açtığı oturuma depo yazma
+yetkisiyle bağlanmıyordu. Ayrıntı `sistem/gunluk-protokol.md` içinde.
+
+Bu iki günde araştırma yapılmadı. H-02 ve H-03'ün açık soruları dokunulmadan
+duruyor.

@@ -1,7 +1,11 @@
 # Günlük Protokol
 
-İki otomatik oturum var. İkisi de bu depoyu klonlayarak sıfırdan başlar, yani
-tek bilgi kaynağı depodaki dosyalardır — önceki günün sohbeti hatırlanmaz.
+İki otomatik tur var. İkisi de **kalıcı bir oturuma bağlı** çalışır; depo o
+oturumda zaten bağlıdır ve yazma yetkisi vardır.
+
+Yine de tek güvenilir bilgi kaynağı **depodaki dosyalardır**. Oturum bağlamı
+bir gün kaybolabilir (kapsayıcı yenilenir, oturum arşivlenir); dosyaya
+yazılmayan iş yok sayılır.
 
 ## 09:00 — Araştırma turu
 
@@ -57,17 +61,39 @@ Saat dilimi: **Türkiye (UTC+3)**. Cron ifadeleri UTC yazılır.
 
 | Tur | Yerel saat | Cron (UTC) | Tetikleyici kimliği | Bildirim |
 |---|---|---|---|---|
-| Otonom araştırma | 09:00 | `0 6 * * *` | `trig_014zRw1RXTanDpwWUe1GAc1Y` | yok (sessiz) |
-| Günlük rapor | 10:00 | `0 7 * * *` | `trig_01NiMgsEFCPLdCNQybTLrz5c` | telefon bildirimi |
+| Otonom araştırma | 09:00 | `0 6 * * *` | `trig_01PRJ5djsYqoyoZmDckZeYUv` | yok |
+| Günlük rapor | 10:00 | `0 7 * * *` | `trig_01E4ysakB92xzbP9DKAM7SCX` | yok (aşağıya bak) |
 
-Her tur **yeni bir oturum** açar ve depoyu `main` branch'inden sıfırdan klonlar.
-Bu yüzden:
+İkisi de `persistent_session_id` ile kalıcı bir oturuma bağlıdır.
 
-- Önceki günün sohbeti hatırlanmaz. Tek hafıza bu depodaki dosyalardır.
-- Her tur işini `main`'e commit'leyip push'lamak **zorundadır**. Push edilmeyen iş
-  ertesi gün yok sayılır.
-- Sistem dosyaları `main`'de durmalı. Başka bir branch'te kalırsa otomatik
-  turlar onları göremez.
+Kurallar:
 
-Tetikleyicileri değiştirmek için: saatler için `update_trigger`, kapatmak için
-`enabled: false`, silmek için `delete_trigger`.
+- Her tur işini `main`'e commit'leyip push'lamak **zorundadır**. Push edilmeyen
+  iş ertesi gün yok sayılır.
+- Sistem dosyaları `main`'de durmalı.
+
+## Neden kalıcı oturum — 2026-08-23 arızası
+
+İlk kurulumda turlar `create_new_session_on_fire` ile her sabah **yeni bir
+oturum** açıyordu. 22 ve 23 Ağustos'ta dört tur tetiklendi, **hiçbiri depoya
+tek satır yazamadı.**
+
+Sebep: tetikleyicinin açtığı oturuma depo bir kaynak olarak bağlanmıyor.
+Oturumun `session_context` alanında `sources` yok — yani depoyu yazma
+yetkisiyle görmüyor. Elle ateşlenen bir test turu 7,5 dakika çalıştı, 1,64
+dolar harcadı ve çıktısı buharlaştı.
+
+Çözüm: turlar depo bağlı, push yetkisi kanıtlı bir oturuma bağlandı.
+
+**Bunun bedeli:** Kalıcı oturuma bağlı tetikleyiciler telefon bildirimi
+gönderemiyor (sunucu `notifications` alanını reddediyor). Rapor artık bağlı
+oturuma düşüyor.
+
+**Bildirimi geri açmak için:** claude.ai/code'da bu ortama (`env_017mKQ…`)
+`srknklmz/Research` deposunu bağla. O zaman yeni oturumlar depoyu hazır bulur;
+tetikleyiciler `create_new_session_on_fire: true` + `notifications: {push:true}`
+ile yeniden kurulabilir.
+
+Tetikleyicileri değiştirmek için: saat/prompt için `update_trigger`, kapatmak
+için `enabled: false`, silmek için `delete_trigger`. Hedef oturumu değiştirmek
+`update_trigger` ile yapılamaz — silip yeniden kurmak gerekir.
