@@ -1,0 +1,237 @@
+// İrsaliye–Fatura eşleştirme, onay ve müşavire gönderim sistemi
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  SANTIYE // irsaliye/fatura girer, eşleştirir
+  IDARI_MUDUR // şantiyede kontrol edip imzalar
+  MERKEZ // merkezde onaylayıp müşavire iletir
+  YONETICI // her şeyi görür, kullanıcı yönetir
+}
+
+enum FaturaDurum {
+  YENI // girildi, eşleştirilmedi
+  ESLESTI // irsaliye(ler)le eşleşti ya da "irsaliyesiz" işaretlendi
+  IMZALANDI // idari müdür imzaladı
+  REDDEDILDI // idari müdür ya da merkez geri gönderdi
+  MERKEZ_ONAYLI // merkez onayladı, gönderime hazır
+  GONDERILDI // müşavire iletildi
+  IPTAL
+}
+
+enum OnayTip {
+  IMZA // idari müdür imzası
+  RED // idari müdür reddi
+  MERKEZ_ONAY
+  MERKEZ_RED
+}
+
+model Kullanici {
+  id         Int      @id @default(autoincrement())
+  eposta     String   @unique
+  ad         String
+  parolaHash String
+  rol        Rol
+  aktif      Boolean  @default(true)
+  olusturmaT DateTime @default(now())
+
+  girdigiIrsaliyeler Irsaliye[]  @relation("IrsaliyeGiren")
+  girdigiFaturalar   Fatura[]    @relation("FaturaGiren")
+  kurduguEslesmeler  Eslesme[]
+  onaylar            Onay[]
+  gonderimler        Gonderim[]
+  yukledigiBelgeler  Belge[]
+  islemler           Islem[]
+}
+
+model Firma {
+  id      Int     @id @default(autoincrement())
+  ad      String  @unique
+  vergiNo String?
+  telefon String?
+  not     String?
+  aktif   Boolean @default(true)
+
+  irsaliyeler Irsaliye[]
+  faturalar   Fatura[]
+}
+
+/// Açılır listelerin tek kaynağı. grup: BIRIM, TUR, MALZEME, CARI,
+/// IRSALIYE_KATEGORI, FATURA_KATEGORI, ODEME
+model Secenek {
+  id    Int     @id @default(autoincrement())
+  grup  String
+  deger String
+  sira  Int     @default(0)
+  aktif Boolean @default(true)
+
+  @@unique([grup, deger])
+  @@index([grup, aktif])
+}
+
+model Belge {
+  id         Int      @id @default(autoincrement())
+  ad         String
+  yol        String
+  mimeTur    String
+  boyut      Int
+  sha256     String
+  yukleyenId Int?
+  olusturmaT DateTime @default(now())
+
+  yukleyen   Kullanici? @relation(fields: [yukleyenId], references: [id])
+  irsaliyeler Irsaliye[]
+  faturalar   Fatura[]
+}
+
+model Irsaliye {
+  id         Int      @id @default(autoincrement())
+  no         String? // "irsaliye no yok" durumları için boş bırakılabilir
+  tarih      DateTime @db.Date
+  firmaId    Int
+  cari       String? // taşeron / hesap
+  aciklama   String?
+  belgeId    Int?
+  girenId    Int?
+  olusturmaT DateTime @default(now())
+  guncellemeT DateTime @updatedAt
+
+  firma      Firma           @relation(fields: [firmaId], references: [id])
+  belge      Belge?          @relation(fields: [belgeId], references: [id])
+  giren      Kullanici?      @relation("IrsaliyeGiren", fields: [girenId], references: [id])
+  kalemler   IrsaliyeKalem[]
+  eslesmeler Eslesme[]
+
+  @@unique([firmaId, no])
+  @@index([tarih])
+  @@index([firmaId])
+}
+
+model IrsaliyeKalem {
+  id         Int      @id @default(autoincrement())
+  irsaliyeId Int
+  sira       Int      @default(0)
+  kategori   String?
+  tur        String?
+  malzeme    String
+  miktar     Decimal  @db.Decimal(14, 3)
+  birim      String
+  birimFiyat Decimal? @db.Decimal(14, 2)
+  toplam     Decimal? @db.Decimal(14, 2)
+
+  irsaliye Irsaliye @relation(fields: [irsaliyeId], references: [id], onDelete: Cascade)
+
+  @@index([irsaliyeId])
+}
+
+model Fatura {
+  id          Int         @id @default(autoincrement())
+  no          String
+  tarih       DateTime    @db.Date
+  firmaId     Int
+  tutar       Decimal     @db.Decimal(14, 2)
+  kategori    String?
+  aciklama    String?
+  odeme       String? // BEKLEMEDE, ÖDEME YAPILDI, ...
+  irsaliyesiz Boolean     @default(false) // yemek, konaklama gibi irsaliyesi olmayan faturalar
+  durum       FaturaDurum @default(YENI)
+  belgeId     Int?
+  girenId     Int?
+  gonderimId  Int?
+  olusturmaT  DateTime    @default(now())
+  guncellemeT DateTime    @updatedAt
+
+  firma      Firma      @relation(fields: [firmaId], references: [id])
+  belge      Belge?     @relation(fields: [belgeId], references: [id])
+  giren      Kullanici? @relation("FaturaGiren", fields: [girenId], references: [id])
+  gonderim   Gonderim?  @relation(fields: [gonderimId], references: [id])
+  eslesmeler Eslesme[]
+  onaylar    Onay[]
+
+  @@unique([firmaId, no])
+  @@index([durum])
+  @@index([tarih])
+}
+
+/// Fatura ile irsaliye arasındaki bağ. Bir fatura birden çok irsaliyeyi
+/// kapsayabilir; bir irsaliye de birden çok faturaya bölünebilir.
+model Eslesme {
+  id         Int      @id @default(autoincrement())
+  faturaId   Int
+  irsaliyeId Int
+  kuranId    Int?
+  not        String?
+  olusturmaT DateTime @default(now())
+
+  fatura   Fatura     @relation(fields: [faturaId], references: [id], onDelete: Cascade)
+  irsaliye Irsaliye   @relation(fields: [irsaliyeId], references: [id], onDelete: Cascade)
+  kuran    Kullanici? @relation(fields: [kuranId], references: [id])
+
+  @@unique([faturaId, irsaliyeId])
+  @@index([irsaliyeId])
+}
+
+/// İmza ve onay kayıtları. Silinmez, değiştirilmez: her kayıt o anki
+/// eşleşmenin özetini (anlik) ve onun sha256 parmak izini saklar.
+model Onay {
+  id             Int      @id @default(autoincrement())
+  faturaId       Int
+  tip            OnayTip
+  kullaniciId    Int?
+  kullaniciAd    String
+  kullaniciEposta String
+  kullaniciRol   Rol
+  tarih          DateTime @default(now())
+  ip             String?
+  tarayici       String?
+  ozet           String // anlik'in sha256'sı
+  anlik          Json // imzalandığı andaki fatura + irsaliye görüntüsü
+  not            String?
+
+  fatura    Fatura     @relation(fields: [faturaId], references: [id], onDelete: Cascade)
+  kullanici Kullanici? @relation(fields: [kullaniciId], references: [id])
+
+  @@index([faturaId])
+  @@index([tip])
+}
+
+/// Müşavire iletilen fatura paketi
+model Gonderim {
+  id         Int      @id @default(autoincrement())
+  no         String   @unique // 2026-001
+  tarih      DateTime @default(now())
+  musavir    String?
+  not        String?
+  olusturanId Int?
+
+  olusturan Kullanici? @relation(fields: [olusturanId], references: [id])
+  faturalar Fatura[]
+}
+
+/// Genel işlem günlüğü
+model Islem {
+  id          Int      @id @default(autoincrement())
+  kullaniciId Int?
+  tur         String
+  nesne       String
+  nesneId     Int?
+  detay       Json?
+  ip          String?
+  tarih       DateTime @default(now())
+
+  kullanici Kullanici? @relation(fields: [kullaniciId], references: [id])
+
+  @@index([tarih])
+  @@index([nesne, nesneId])
+}
+
+model Ayar {
+  anahtar String @id
+  deger   String
+}

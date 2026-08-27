@@ -1,0 +1,55 @@
+# Çalışma notları
+
+Şantiye irsaliye–fatura akışı için Next.js uygulaması. İşleyiş ve kurulum
+için `README.md`.
+
+## Yığın
+
+Next.js 15 (App Router) · TypeScript · Prisma + PostgreSQL · Tailwind v4.
+Mutasyonlar **server action** ile yapılır; ayrı bir REST katmanı yoktur.
+Tek istisna belge okuma ucu (`app/api/oku`), çünkü tarayıcıdan `fetch` ile
+çağrılıyor.
+
+## Dil
+
+Kod, değişken adları, tablo/sütun adları ve arayüz Türkçedir. Yeni kod da
+Türkçe yazılır — `fatura`, `irsaliye`, `eslesme`, `onay`, `gonderim`.
+İngilizce/Türkçe karışımı yapılmaz.
+
+## Kurallar
+
+- **Yetki her eylemde kontrol edilir.** Her server action `gerekliKullanici(...)`
+  ile başlar; sayfa seviyesindeki kontrole güvenilmez.
+- **İmzalı kayıt değişmez.** `IMZALANDI`, `MERKEZ_ONAYLI`, `GONDERILDI`
+  durumundaki fatura ve ona bağlı irsaliyeler düzenlenemez/silinemez. Yeni
+  bir yazma yolu eklenirse bu kontrol de eklenmelidir.
+- **Onay kaydı silinmez.** `Onay` tablosuna yalnızca eklenir. Her kayıt o
+  anki görüntüyü (`anlik`) ve sha256 özetini (`ozet`) taşır; `lib/akis.ts`
+  içindeki `anlikGoruntu` üretir.
+- **Durum geçişleri tek yerden.** `faturaDurumTazele` yalnızca `YENI`,
+  `ESLESTI`, `REDDEDILDI` durumlarına dokunur; imzalı akışı imza/merkez
+  eylemleri yürütür.
+- **Para `Decimal`.** Prisma `Decimal` alanları `Number()`'a çevrilmeden
+  toplanmaz; biçimlendirme `lib/bicim.ts` üzerinden yapılır.
+- **Tarihler gün bazlıdır** (`@db.Date`), UTC gece yarısı olarak yazılır:
+  `new Date(\`${g.tarih}T00:00:00Z\`)`. Yerel saat kaymasına dikkat.
+- **Açılır listeler `Secenek` tablosunda.** Serbest girilen yeni değer
+  `secenekEkle` ile listeye eklenir; enum kullanılmaz.
+
+## Stil
+
+Tailwind v4. Renkler `app/globals.css` içindeki `@theme` altında token
+olarak tanımlı (`bg-vurgu`, `text-soluk`, `border-cizgi`…). `@apply` ile
+özel sınıf uygulanamaz — yalnızca token'lardan üretilen yardımcı sınıflar
+kullanılır. Ortak sınıflar: `kart`, `dugme-birincil`, `alan`, `tablo`,
+`rozet`.
+
+Yazdırma: `.yazdirma-gizle` ekranda görünür, çıktıda gizlenir;
+`.kagit-sayfa` A4 sayfa sonu verir.
+
+## Doğrulama
+
+```bash
+npx tsc --noEmit          # tip denetimi
+npx next build --no-lint  # derleme
+```
