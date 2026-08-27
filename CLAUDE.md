@@ -38,6 +38,8 @@ Türkçe yazılır — `fatura`, `irsaliye`, `eslesme`, `onay`, `gonderim`.
 - **Dosya sistemine doğrudan dokunulmaz.** Belge okuma/yazma yalnızca
   `lib/depo.ts` üzerinden yapılır; `DEPO` değişkeni yerel diski mi Supabase
   Storage'ı mı kullanacağını belirler.
+- **Belge yalnızca PDF.** `lib/belge.ts` içinde ilk baytlar (`%PDF-`)
+  kontrol edilir; MIME türü ve uzantı güvenilir sayılmaz.
 
 ## Stil
 

@@ -1,27 +1,30 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { extname } from 'node:path'
 import { db } from './db'
 import { depoyaYaz } from './depo'
 
-const IZINLI = new Set([
-  'application/pdf',
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/heic',
-])
 const AZAMI_BOYUT = 20 * 1024 * 1024 // 20 MB
+
+/**
+ * Yalnızca PDF kabul edilir. Uzantıya ya da tarayıcının bildirdiği türe
+ * güvenilmez; dosyanın ilk baytları okunur.
+ */
+function pdfMi(veri: Buffer): boolean {
+  return veri.subarray(0, 5).toString('latin1') === '%PDF-'
+}
 
 /** Yüklenen dosyayı depoya yazar ve Belge kaydını döndürür. */
 export async function belgeKaydet(dosya: File, yukleyenId?: number) {
-  if (!IZINLI.has(dosya.type)) {
-    throw new Error(`Desteklenmeyen dosya türü: ${dosya.type || 'bilinmiyor'}`)
-  }
   if (dosya.size > AZAMI_BOYUT) {
     throw new Error('Dosya 20 MB sınırını aşıyor.')
   }
 
   const veri = Buffer.from(await dosya.arrayBuffer())
+  if (!pdfMi(veri)) {
+    throw new Error(
+      `Yalnızca PDF yüklenebilir. "${dosya.name}" bir PDF dosyası değil.`,
+    )
+  }
+
   const sha256 = createHash('sha256').update(veri).digest('hex')
 
   // Aynı dosya daha önce yüklendiyse yeniden yazma.
@@ -32,16 +35,16 @@ export async function belgeKaydet(dosya: File, yukleyenId?: number) {
   const yol = [
     String(bugun.getFullYear()),
     String(bugun.getMonth() + 1).padStart(2, '0'),
-    `${randomUUID()}${extname(dosya.name) || ''}`,
+    `${randomUUID()}.pdf`,
   ].join('/')
 
-  await depoyaYaz(yol, veri, dosya.type)
+  await depoyaYaz(yol, veri, 'application/pdf')
 
   return db.belge.create({
     data: {
       ad: dosya.name,
       yol,
-      mimeTur: dosya.type,
+      mimeTur: 'application/pdf',
       boyut: dosya.size,
       sha256,
       yukleyenId,

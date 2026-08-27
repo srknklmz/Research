@@ -99,8 +99,8 @@ adını girin — şirket adı çıktıların başlığında görünür.
 İki yol var:
 
 1. **Elle** — İrsaliye formu çok kalemli; her satırın miktarı, birimi ve
-   birim fiyatı ayrı girilir, tutar kendiliğinden hesaplanır. Belgenin
-   kendisi (PDF ya da fotoğraf) kayda eklenir ve her ekrandan açılabilir.
+   birim fiyatı ayrı girilir, tutar kendiliğinden hesaplanır. İrsaliyenin
+   ya da faturanın **PDF'i** kayda eklenir ve her ekrandan açılabilir.
 2. **Toplu içe aktarma** — CSV ya da XLSX. Notion dışa aktarımı doğrudan
    çalışır: aynı firma + irsaliye no + tarih taşıyan satırlar tek
    irsaliyenin kalemleri olarak birleştirilir. Aktarma önce önizlenir,
@@ -141,8 +141,10 @@ kaydedilir.
 
 ## Belge depolama
 
-İrsaliye ve faturaların taranmış hali `Belge` kaydına bağlanır; aynı dosya
-iki kez yüklenirse (sha256 aynıysa) tekrar yazılmaz.
+İrsaliye ve faturaların taranmış hali `Belge` kaydına bağlanır. **Yalnızca
+PDF kabul edilir** (en çok 20 MB): dosyanın uzantısına ya da tarayıcının
+bildirdiği türe güvenilmez, ilk baytları okunup gerçekten PDF olduğu
+doğrulanır. Aynı dosya iki kez yüklenirse (sha256 aynıysa) tekrar yazılmaz.
 
 İki sürücü var, `DEPO` ile seçilir:
 

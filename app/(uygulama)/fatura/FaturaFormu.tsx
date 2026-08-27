@@ -190,13 +190,13 @@ export function FaturaFormu({
 
       <section className="kart p-4">
         <label className="etiket" htmlFor={`${kimlik}-belge`}>
-          Fatura belgesi (PDF ya da fotoğraf)
+          Fatura belgesi (PDF)
         </label>
         <input
           id={`${kimlik}-belge`}
           name="belge"
           type="file"
-          accept="application/pdf,image/*"
+          accept=".pdf,application/pdf"
           className="alan"
         />
         {baslangic.belgeId ? (

@@ -346,13 +346,13 @@ export function IrsaliyeFormu({
 
       <section className="kart p-4">
         <label className="etiket" htmlFor={`${kimlik}-belge`}>
-          İrsaliye belgesi (PDF ya da fotoğraf)
+          İrsaliye belgesi (PDF)
         </label>
         <input
           id={`${kimlik}-belge`}
           name="belge"
           type="file"
-          accept="application/pdf,image/*"
+          accept=".pdf,application/pdf"
           className="alan"
         />
         {baslangic.belgeId ? (
