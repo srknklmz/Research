@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
@@ -88,4 +89,56 @@ export async function depodanSil(yol: string) {
     return
   }
   await unlink(join(yerelDizin(), yol)).catch(() => {})
+}
+
+/** Yeni bir belge için `2026/08/<uuid>.pdf` biçiminde yol üretir. */
+export function yeniBelgeYolu(): string {
+  const bugun = new Date()
+  return [
+    String(bugun.getFullYear()),
+    String(bugun.getMonth() + 1).padStart(2, '0'),
+    `${randomUUID()}.pdf`,
+  ].join('/')
+}
+
+export type YuklemeSlotu = { yol: string; imzaliUrl: string }
+
+/**
+ * Tarayıcının dosyayı doğrudan Supabase'e yükleyebilmesi için imzalı bir
+ * yükleme adresi açar (2 saat geçerli). Vercel'de istek gövdesi 4,5 MB ile
+ * sınırlı olduğundan büyük PDF'ler sunucuya uğramadan yüklenir.
+ * Yerel depoda null döner; orada dosya form ile sunucuya gelir.
+ */
+export async function yuklemeSlotuAc(): Promise<YuklemeSlotu | null> {
+  if (depoTuru() !== 'supabase') return null
+
+  const yol = yeniBelgeYolu()
+  const { data, error } = await supabase()
+    .storage.from(kova())
+    .createSignedUploadUrl(yol)
+
+  if (error || !data) {
+    throw new Error(
+      `Yükleme adresi alınamadı: ${error?.message ?? 'bilinmiyor'}`,
+    )
+  }
+  return { yol, imzaliUrl: data.signedUrl }
+}
+
+/** Depoda dosya var mı? Doğrudan yükleme sonrası doğrulama için. */
+export async function depodaVarMi(yol: string): Promise<boolean> {
+  if (depoTuru() !== 'supabase') {
+    try {
+      await readFile(join(yerelDizin(), yol))
+      return true
+    } catch {
+      return false
+    }
+  }
+  const dizin = yol.split('/').slice(0, -1).join('/')
+  const ad = yol.split('/').pop()!
+  const { data } = await supabase()
+    .storage.from(kova())
+    .list(dizin, { search: ad, limit: 1 })
+  return Boolean(data?.some((d) => d.name === ad))
 }

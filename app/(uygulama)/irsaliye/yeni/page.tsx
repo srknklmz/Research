@@ -1,5 +1,6 @@
 import { Baslik } from '@/components/Baslik'
 import { girdiTarihi } from '@/lib/bicim'
+import { dogrudanYuklenir } from '@/lib/belge'
 import { gerekliKullanici } from '@/lib/oturum'
 import { firmalar, secenekler } from '@/lib/secenek'
 import { GIRIS_YAPABILIR } from '@/lib/yetki'
@@ -26,6 +27,7 @@ export default async function YeniIrsaliye() {
       />
       <div className="p-6">
         <IrsaliyeFormu
+          dogrudan={dogrudanYuklenir()}
           eylem={irsaliyeOlustur}
           etiket="İrsaliyeyi kaydet"
           firmalar={liste}

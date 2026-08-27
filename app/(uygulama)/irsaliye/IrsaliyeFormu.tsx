@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useActionState, useId, useMemo, useState } from 'react'
 import { useFormStatus } from 'react-dom'
+import { BelgeAlani } from '@/components/BelgeAlani'
+import { yuklemeSlotu } from '../belge-eylemleri'
 import { para, sayiya } from '@/lib/bicim'
 import type { FormEylemi } from '@/lib/eylem'
 
@@ -50,6 +52,7 @@ export function IrsaliyeFormu({
   listeler,
   etiket = 'Kaydet',
   iptalYolu = '/irsaliye',
+  dogrudan = false,
 }: {
   eylem: FormEylemi
   baslangic: IrsaliyeBaslangic
@@ -63,6 +66,7 @@ export function IrsaliyeFormu({
   }
   etiket?: string
   iptalYolu?: string
+  dogrudan?: boolean
 }) {
   const [hata, calistir] = useActionState(eylem, null)
   const [kalemler, setKalemler] = useState<Kalem[]>(
@@ -344,32 +348,12 @@ export function IrsaliyeFormu({
         </datalist>
       </section>
 
-      <section className="kart p-4">
-        <label className="etiket" htmlFor={`${kimlik}-belge`}>
-          İrsaliye belgesi (PDF)
-        </label>
-        <input
-          id={`${kimlik}-belge`}
-          name="belge"
-          type="file"
-          accept=".pdf,application/pdf"
-          className="alan"
-        />
-        {baslangic.belgeId ? (
-          <p className="mt-2 text-xs text-soluk">
-            Yüklü belge var.{' '}
-            <a
-              className="text-vurgu underline"
-              href={`/belge/${baslangic.belgeId}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Görüntüle
-            </a>{' '}
-            — yeni dosya seçerseniz değiştirilir.
-          </p>
-        ) : null}
-      </section>
+      <BelgeAlani
+        etiket="İrsaliye belgesi (PDF)"
+        dogrudan={dogrudan}
+        slotAc={yuklemeSlotu}
+        mevcutBelgeId={baslangic.belgeId}
+      />
 
       {hata ? (
         <p className="rounded-md bg-red-zemin px-3 py-2 text-sm text-red">{hata}</p>

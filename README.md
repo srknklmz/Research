@@ -73,7 +73,8 @@ npm run dev
 
 | Değişken | Zorunlu | Ne işe yarar |
 |---|---|---|
-| `DATABASE_URL` | evet | PostgreSQL bağlantısı |
+| `DATABASE_URL` | evet | Çalışma anı bağlantısı. Supabase'de havuzlanmış adres (port 6543) + `?pgbouncer=true` |
+| `DIRECT_URL` | evet | Şema işlemleri için doğrudan bağlantı (port 5432) |
 | `OTURUM_ANAHTARI` | evet | Oturum çerezini imzalar. En az 32 karakter: `openssl rand -base64 48` |
 | `DEPO` | hayır | Belge deposu: `yerel` (varsayılan) ya da `supabase` |
 | `YUKLEME_DIZINI` | hayır | `DEPO=yerel` iken dosyaların dizini (varsayılan `./yuklemeler`) |
@@ -151,18 +152,80 @@ doğrulanır. Aynı dosya iki kez yüklenirse (sha256 aynıysa) tekrar yazılmaz
 - **`yerel`** — dosyalar `YUKLEME_DIZINI` altına yazılır. Kalıcı diski olan
   bir sunucuda (VPS, kendi makineniz) çalışır. **Vercel gibi sunucusuz
   ortamlarda kullanmayın:** disk her dağıtımda sıfırlanır.
-- **`supabase`** — dosyalar Supabase Storage'a yazılır. Belge açılırken
-  uygulama önce yetkiyi kontrol eder, sonra kısa ömürlü (120 sn) imzalı bir
-  bağlantıya yönlendirir. Kova **private** olmalı; `service_role` anahtarı
-  yalnızca sunucuda kalır.
+- **`supabase`** — dosyalar Supabase Storage'a yazılır. Kova **private**
+  olmalı; `service_role` anahtarı yalnızca sunucuda kalır.
+  - **Yükleme** tarayıcıdan doğrudan depoya yapılır: sunucu imzalı bir
+    yükleme adresi açar (2 saat geçerli), dosya oraya gider, forma yalnızca
+    yol bilgisi girer. Böylece **Vercel'in 4,5 MB istek gövdesi sınırı**
+    devreye girmez — o sınır altyapı seviyesinde olup ayarla aşılamaz.
+  - **Görüntüleme** sırasında uygulama önce yetkiyi kontrol eder, sonra kısa
+    ömürlü (120 sn) imzalı bağlantıya yönlendirir.
+  - Dosya sunucuya bir kez indirilip PDF olduğu doğrulanır ve sha256'sı
+    hesaplanır; aynı içerik zaten varsa yeni nesne silinip mevcut kayıt
+    kullanılır.
 
-Supabase kurulumu: projede Storage → New bucket → adı `belgeler`, *Public
-bucket* kapalı. Sonra `.env` içine `DEPO=supabase`, `SUPABASE_URL`,
-`SUPABASE_SERVIS_ANAHTARI` (Settings → API → `service_role`) yazın.
+> **Depo değiştirirken:** `DEPO` değerini sonradan değiştirirseniz eski
+> `Belge` kayıtları eski depodaki dosyaları gösterir. Geçişte mevcut
+> dosyaları yeni depoya aynı yollarla (`YYYY/AA/<uuid>.pdf`) kopyalayın.
 
 Başka bir sağlayıcı (Cloudflare R2, S3, MinIO) gerekirse `lib/depo.ts`
 içine aynı arayüzü uygulayan bir sürücü eklemek yeterli; uygulamanın geri
 kalanı depolamayı bilmez.
+
+## Vercel + Supabase'e kurulum
+
+### 1. Supabase projesi
+
+Yeni proje açın — **bölge olarak Frankfurt (eu-central-1)** seçin; Vercel
+tarafını da Frankfurt'a alacağız, veritabanı gidiş-dönüşü kısalır.
+
+**Storage:** Storage → New bucket → ad `belgeler`, *Public bucket* **kapalı**.
+
+**Bağlantı adresleri** (Project Settings → Database → Connection string):
+
+- *Transaction pooler* (port 6543) → `DATABASE_URL`, sonuna `?pgbouncer=true`
+- *Direct connection* (port 5432) → `DIRECT_URL`
+
+**Anahtar** (Project Settings → API): `service_role` → `SUPABASE_SERVIS_ANAHTARI`.
+Bu anahtar tüm yetkilere sahiptir; yalnızca sunucu ortam değişkeni olarak
+kullanılır, istemciye verilmez.
+
+### 2. Şemayı ve tohum verisini yükleyin
+
+Kendi makinenizden, `.env` dosyanızda Supabase adresleri yazılıyken:
+
+```bash
+npx prisma db push   # tabloları oluşturur
+npm run db:seed      # 192 firma, listeler, 4 kullanıcı
+```
+
+### 3. Vercel projesi
+
+Depoyu Vercel'e bağlayın (Add New → Project → GitHub deposunu seçin).
+Framework kendiliğinden Next.js olarak algılanır; build komutu
+`prisma generate && next build` zaten `package.json` içinde. Bölge
+`vercel.json` ile `fra1` sabitlenmiştir.
+
+**Environment Variables** olarak şunları girin:
+
+| Değişken | Değer |
+|---|---|
+| `DATABASE_URL` | havuzlanmış adres + `?pgbouncer=true` |
+| `DIRECT_URL` | doğrudan adres (5432) |
+| `OTURUM_ANAHTARI` | `openssl rand -base64 48` çıktısı |
+| `DEPO` | `supabase` |
+| `SUPABASE_URL` | `https://<proje>.supabase.co` |
+| `SUPABASE_SERVIS_ANAHTARI` | `service_role` anahtarı |
+| `SUPABASE_KOVA` | `belgeler` |
+
+Deploy edin. Açılan adrese girip **ilk iş olarak dört varsayılan kullanıcının
+parolasını değiştirin** ve Ayarlar'dan şirket/şantiye adını girin.
+
+### Sonraki dağıtımlar
+
+`main` dalına her push kendiliğinden dağıtılır. Şema değiştiyse dağıtımdan
+önce kendi makinenizden `npx prisma db push` çalıştırın — Vercel derlemesi
+şemayı veritabanına uygulamaz, yalnızca istemciyi üretir.
 
 ## Dizin yapısı
 

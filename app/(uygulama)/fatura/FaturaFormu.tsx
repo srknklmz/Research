@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useActionState, useId, useState } from 'react'
 import { useFormStatus } from 'react-dom'
+import { BelgeAlani } from '@/components/BelgeAlani'
+import { yuklemeSlotu } from '../belge-eylemleri'
 import type { FormEylemi } from '@/lib/eylem'
 
 export type FaturaBaslangic = {
@@ -33,6 +35,7 @@ export function FaturaFormu({
   listeler,
   etiket = 'Kaydet',
   iptalYolu = '/fatura',
+  dogrudan = false,
 }: {
   eylem: FormEylemi
   baslangic: FaturaBaslangic
@@ -40,6 +43,7 @@ export function FaturaFormu({
   listeler: { kategori: string[]; odeme: string[] }
   etiket?: string
   iptalYolu?: string
+  dogrudan?: boolean
 }) {
   const [hata, calistir] = useActionState(eylem, null)
   const [d, setD] = useState(baslangic)
@@ -188,32 +192,12 @@ export function FaturaFormu({
         </label>
       </section>
 
-      <section className="kart p-4">
-        <label className="etiket" htmlFor={`${kimlik}-belge`}>
-          Fatura belgesi (PDF)
-        </label>
-        <input
-          id={`${kimlik}-belge`}
-          name="belge"
-          type="file"
-          accept=".pdf,application/pdf"
-          className="alan"
-        />
-        {baslangic.belgeId ? (
-          <p className="mt-2 text-xs text-soluk">
-            Yüklü belge var.{' '}
-            <a
-              className="text-vurgu underline"
-              href={`/belge/${baslangic.belgeId}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Görüntüle
-            </a>{' '}
-            — yeni dosya seçerseniz değiştirilir.
-          </p>
-        ) : null}
-      </section>
+      <BelgeAlani
+        etiket="Fatura belgesi (PDF)"
+        dogrudan={dogrudan}
+        slotAc={yuklemeSlotu}
+        mevcutBelgeId={baslangic.belgeId}
+      />
 
       {hata ? (
         <p className="rounded-md bg-red-zemin px-3 py-2 text-sm text-red">{hata}</p>

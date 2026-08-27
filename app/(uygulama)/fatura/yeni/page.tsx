@@ -1,5 +1,6 @@
 import { Baslik } from '@/components/Baslik'
 import { girdiTarihi } from '@/lib/bicim'
+import { dogrudanYuklenir } from '@/lib/belge'
 import { gerekliKullanici } from '@/lib/oturum'
 import { firmalar, secenekler } from '@/lib/secenek'
 import { GIRIS_YAPABILIR } from '@/lib/yetki'
@@ -19,6 +20,7 @@ export default async function YeniFatura() {
       <Baslik baslik="Yeni fatura" aciklama="Gelen faturayı kaydedin" />
       <div className="p-6">
         <FaturaFormu
+          dogrudan={dogrudanYuklenir()}
           eylem={faturaOlustur}
           etiket="Faturayı kaydet"
           firmalar={liste}

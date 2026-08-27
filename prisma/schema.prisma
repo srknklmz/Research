@@ -5,7 +5,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Çalışma anı: havuzlanmış bağlantı (Supabase 6543, pgbouncer=true).
+  // Sunucusuz ortamda her çağrı yeni bağlantı açtığı için havuz şart.
+  url = env("DATABASE_URL")
+  // Şema işlemleri (db push / migrate): doğrudan bağlantı (5432).
+  directUrl = env("DIRECT_URL")
 }
 
 enum Rol {

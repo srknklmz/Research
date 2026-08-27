@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { Baslik } from '@/components/Baslik'
 import { girdiTarihi } from '@/lib/bicim'
 import { db } from '@/lib/db'
+import { dogrudanYuklenir } from '@/lib/belge'
 import { gerekliKullanici } from '@/lib/oturum'
 import { firmalar, secenekler } from '@/lib/secenek'
 import { GIRIS_YAPABILIR } from '@/lib/yetki'
@@ -29,6 +30,7 @@ export default async function FaturaDuzenle({
       <Baslik baslik={`Fatura ${fatura.no} düzenle`} />
       <div className="p-6">
         <FaturaFormu
+          dogrudan={dogrudanYuklenir()}
           eylem={faturaGuncelle.bind(null, fatura.id)}
           etiket="Değişiklikleri kaydet"
           iptalYolu={`/fatura/${fatura.id}`}
