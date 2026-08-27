@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdir, writeFile } from 'node:fs/promises'
-import { extname, join } from 'node:path'
+import { extname } from 'node:path'
 import { db } from './db'
+import { depoyaYaz } from './depo'
 
 const IZINLI = new Set([
   'application/pdf',
@@ -12,11 +12,7 @@ const IZINLI = new Set([
 ])
 const AZAMI_BOYUT = 20 * 1024 * 1024 // 20 MB
 
-export function yuklemeDizini(): string {
-  return process.env.YUKLEME_DIZINI ?? './yuklemeler'
-}
-
-/** Yüklenen dosyayı diske yazar ve Belge kaydını döndürür. */
+/** Yüklenen dosyayı depoya yazar ve Belge kaydını döndürür. */
 export async function belgeKaydet(dosya: File, yukleyenId?: number) {
   if (!IZINLI.has(dosya.type)) {
     throw new Error(`Desteklenmeyen dosya türü: ${dosya.type || 'bilinmiyor'}`)
@@ -33,20 +29,18 @@ export async function belgeKaydet(dosya: File, yukleyenId?: number) {
   if (mevcut) return mevcut
 
   const bugun = new Date()
-  const altDizin = join(
+  const yol = [
     String(bugun.getFullYear()),
     String(bugun.getMonth() + 1).padStart(2, '0'),
-  )
-  const dosyaAdi = `${randomUUID()}${extname(dosya.name) || ''}`
-  const goreliYol = join(altDizin, dosyaAdi)
+    `${randomUUID()}${extname(dosya.name) || ''}`,
+  ].join('/')
 
-  await mkdir(join(yuklemeDizini(), altDizin), { recursive: true })
-  await writeFile(join(yuklemeDizini(), goreliYol), veri)
+  await depoyaYaz(yol, veri, dosya.type)
 
   return db.belge.create({
     data: {
       ad: dosya.name,
-      yol: goreliYol,
+      yol,
       mimeTur: dosya.type,
       boyut: dosya.size,
       sha256,

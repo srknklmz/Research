@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useActionState, useId, useState } from 'react'
 import { useFormStatus } from 'react-dom'
-import { BelgeOkuyucu, type OkunanFatura } from '@/components/BelgeOkuyucu'
 import type { FormEylemi } from '@/lib/eylem'
 
 export type FaturaBaslangic = {
@@ -46,25 +45,9 @@ export function FaturaFormu({
   const [d, setD] = useState(baslangic)
   const kimlik = useId()
 
-  function okunanUygula(o: OkunanFatura) {
-    setD((s) => ({
-      ...s,
-      no: o.no ?? s.no,
-      tarih: o.tarih ?? s.tarih,
-      tutar: o.tutar != null ? String(o.tutar) : s.tutar,
-      aciklama: o.aciklama ?? s.aciklama,
-      firmaId:
-        firmalar.find(
-          (f) =>
-            f.ad.toLocaleUpperCase('tr') === (o.firma ?? '').toLocaleUpperCase('tr'),
-        )?.id.toString() ?? s.firmaId,
-    }))
-  }
 
   return (
     <form action={calistir} className="flex max-w-3xl flex-col gap-4">
-      <BelgeOkuyucu tur="fatura" onOkundu={okunanUygula} />
-
       <section className="kart p-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <div>

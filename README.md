@@ -75,8 +75,9 @@ npm run dev
 |---|---|---|
 | `DATABASE_URL` | evet | PostgreSQL bağlantısı |
 | `OTURUM_ANAHTARI` | evet | Oturum çerezini imzalar. En az 32 karakter: `openssl rand -base64 48` |
-| `YUKLEME_DIZINI` | hayır | Yüklenen PDF/fotoğrafların dizini (varsayılan `./yuklemeler`) |
-| `ANTHROPIC_API_KEY` | hayır | Belgeden otomatik alan doldurma. Boşsa uygulama çalışır, yalnızca bu özellik kapalı olur. |
+| `DEPO` | hayır | Belge deposu: `yerel` (varsayılan) ya da `supabase` |
+| `YUKLEME_DIZINI` | hayır | `DEPO=yerel` iken dosyaların dizini (varsayılan `./yuklemeler`) |
+| `SUPABASE_URL` · `SUPABASE_SERVIS_ANAHTARI` · `SUPABASE_KOVA` | `DEPO=supabase` ise | Supabase projesi, `service_role` anahtarı ve kova adı |
 
 ### İlk giriş
 
@@ -95,14 +96,12 @@ adını girin — şirket adı çıktıların başlığında görünür.
 
 ## Veri girişi
 
-Üç yol var:
+İki yol var:
 
 1. **Elle** — İrsaliye formu çok kalemli; her satırın miktarı, birimi ve
-   birim fiyatı ayrı girilir, tutar kendiliğinden hesaplanır.
-2. **Belgeden okutarak** — İrsaliye ya da faturanın PDF'i / fotoğrafı
-   yüklenir, alanlar Claude ile okunup forma yazılır. Kaydetmeden önce
-   kontrol edilir. `ANTHROPIC_API_KEY` gerekir.
-3. **Toplu içe aktarma** — CSV ya da XLSX. Notion dışa aktarımı doğrudan
+   birim fiyatı ayrı girilir, tutar kendiliğinden hesaplanır. Belgenin
+   kendisi (PDF ya da fotoğraf) kayda eklenir ve her ekrandan açılabilir.
+2. **Toplu içe aktarma** — CSV ya da XLSX. Notion dışa aktarımı doğrudan
    çalışır: aynı firma + irsaliye no + tarih taşıyan satırlar tek
    irsaliyenin kalemleri olarak birleştirilir. Aktarma önce önizlenir,
    sorunlu satırlar tek tek listelenir. Aynı kayıt ikinci kez
@@ -140,15 +139,38 @@ imzaya düşer.
 Her ikisi de A4 için sayfalanır; tarayıcıdan yazdırılır ya da PDF'e
 kaydedilir.
 
+## Belge depolama
+
+İrsaliye ve faturaların taranmış hali `Belge` kaydına bağlanır; aynı dosya
+iki kez yüklenirse (sha256 aynıysa) tekrar yazılmaz.
+
+İki sürücü var, `DEPO` ile seçilir:
+
+- **`yerel`** — dosyalar `YUKLEME_DIZINI` altına yazılır. Kalıcı diski olan
+  bir sunucuda (VPS, kendi makineniz) çalışır. **Vercel gibi sunucusuz
+  ortamlarda kullanmayın:** disk her dağıtımda sıfırlanır.
+- **`supabase`** — dosyalar Supabase Storage'a yazılır. Belge açılırken
+  uygulama önce yetkiyi kontrol eder, sonra kısa ömürlü (120 sn) imzalı bir
+  bağlantıya yönlendirir. Kova **private** olmalı; `service_role` anahtarı
+  yalnızca sunucuda kalır.
+
+Supabase kurulumu: projede Storage → New bucket → adı `belgeler`, *Public
+bucket* kapalı. Sonra `.env` içine `DEPO=supabase`, `SUPABASE_URL`,
+`SUPABASE_SERVIS_ANAHTARI` (Settings → API → `service_role`) yazın.
+
+Başka bir sağlayıcı (Cloudflare R2, S3, MinIO) gerekirse `lib/depo.ts`
+içine aynı arayüzü uygulayan bir sürücü eklemek yeterli; uygulamanın geri
+kalanı depolamayı bilmez.
+
 ## Dizin yapısı
 
 | Dizin | İçerik |
 |---|---|
 | `app/(uygulama)/` | Oturum gerektiren ekranlar (pano, irsaliye, fatura, eşleştirme, imza, merkez, aktarma, ayarlar) |
 | `app/cikti/` | Yazdırılabilir föyler |
-| `app/giris/`, `app/belge/`, `app/api/oku/` | Giriş, belge sunumu, belge okuma ucu |
+| `app/giris/`, `app/belge/` | Giriş ve belge sunumu |
 | `components/` | Ortak arayüz parçaları |
-| `lib/` | Veritabanı, oturum, yetki, akış, eşleştirme önerisi, içe aktarma, biçimlendirme |
+| `lib/` | Veritabanı, oturum, yetki, akış, eşleştirme önerisi, içe aktarma, depolama, biçimlendirme |
 | `prisma/` | Şema ve tohum verisi (192 firma, 1206 malzeme, birim/kategori listeleri) |
 
 ## Komutlar

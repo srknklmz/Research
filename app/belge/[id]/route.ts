@@ -1,8 +1,6 @@
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
 import { NextResponse } from 'next/server'
-import { yuklemeDizini } from '@/lib/belge'
 import { db } from '@/lib/db'
+import { depodanOku, imzaliBaglanti } from '@/lib/depo'
 import { oturumKullanici } from '@/lib/oturum'
 
 export async function GET(
@@ -18,7 +16,12 @@ export async function GET(
   if (!belge) return new NextResponse('Belge bulunamadı', { status: 404 })
 
   try {
-    const veri = await readFile(join(yuklemeDizini(), belge.yol))
+    // Uzak depoda dosya, kısa ömürlü imzalı bağlantıyla doğrudan sunulur;
+    // yetki kontrolü bu yönlendirmeden önce yapılmış olur.
+    const baglanti = await imzaliBaglanti(belge.yol)
+    if (baglanti) return NextResponse.redirect(baglanti)
+
+    const veri = await depodanOku(belge.yol)
     return new NextResponse(new Uint8Array(veri), {
       headers: {
         'Content-Type': belge.mimeTur,
@@ -26,7 +29,8 @@ export async function GET(
         'Cache-Control': 'private, max-age=3600',
       },
     })
-  } catch {
-    return new NextResponse('Dosya diskte bulunamadı', { status: 404 })
+  } catch (e) {
+    console.error('belge sunumu:', e)
+    return new NextResponse('Belge okunamadı', { status: 502 })
   }
 }

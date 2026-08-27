@@ -7,8 +7,8 @@ için `README.md`.
 
 Next.js 15 (App Router) · TypeScript · Prisma + PostgreSQL · Tailwind v4.
 Mutasyonlar **server action** ile yapılır; ayrı bir REST katmanı yoktur.
-Tek istisna belge okuma ucu (`app/api/oku`), çünkü tarayıcıdan `fetch` ile
-çağrılıyor.
+Tek istisna belge sunma ucu (`app/belge/[id]`), çünkü dosya akışı ve
+yönlendirme gerekiyor.
 
 ## Dil
 
@@ -35,6 +35,9 @@ Türkçe yazılır — `fatura`, `irsaliye`, `eslesme`, `onay`, `gonderim`.
   `new Date(\`${g.tarih}T00:00:00Z\`)`. Yerel saat kaymasına dikkat.
 - **Açılır listeler `Secenek` tablosunda.** Serbest girilen yeni değer
   `secenekEkle` ile listeye eklenir; enum kullanılmaz.
+- **Dosya sistemine doğrudan dokunulmaz.** Belge okuma/yazma yalnızca
+  `lib/depo.ts` üzerinden yapılır; `DEPO` değişkeni yerel diski mi Supabase
+  Storage'ı mı kullanacağını belirler.
 
 ## Stil
 

@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useActionState, useId, useMemo, useState } from 'react'
 import { useFormStatus } from 'react-dom'
-import { BelgeOkuyucu, type OkunanIrsaliye } from '@/components/BelgeOkuyucu'
 import { para, sayiya } from '@/lib/bicim'
 import type { FormEylemi } from '@/lib/eylem'
 
@@ -91,29 +90,6 @@ export function IrsaliyeFormu({
     setKalemler((k) => k.map((s, j) => (j === i ? { ...s, [alan]: deger } : s)))
   }
 
-  function okunanUygula(o: OkunanIrsaliye) {
-    setBaslik((b) => ({
-      ...b,
-      no: o.no ?? b.no,
-      tarih: o.tarih ?? b.tarih,
-      firmaId:
-        firmalar.find(
-          (f) => f.ad.toLocaleUpperCase('tr') === (o.firma ?? '').toLocaleUpperCase('tr'),
-        )?.id.toString() ?? b.firmaId,
-    }))
-    if (o.kalemler?.length) {
-      setKalemler(
-        o.kalemler.map((k) => ({
-          kategori: '',
-          tur: '',
-          malzeme: k.malzeme ?? '',
-          miktar: k.miktar != null ? String(k.miktar) : '',
-          birim: k.birim ?? '',
-          birimFiyat: k.birimFiyat != null ? String(k.birimFiyat) : '',
-        })),
-      )
-    }
-  }
 
   return (
     <form action={calistir} className="flex flex-col gap-4">
@@ -133,8 +109,6 @@ export function IrsaliyeFormu({
             })),
         )}
       />
-
-      <BelgeOkuyucu tur="irsaliye" onOkundu={okunanUygula} />
 
       <section className="kart p-4">
         <h2 className="mb-3 text-sm font-semibold">İrsaliye bilgileri</h2>
