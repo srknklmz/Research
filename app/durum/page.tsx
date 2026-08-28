@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import { depoTuru, yuklemeSlotuAc } from '@/lib/depo'
+import { depoTuru, kovaDurumu } from '@/lib/depo'
 import {
   oturumAnahtari,
   oturumAnahtariTuretildi,
@@ -77,18 +77,37 @@ async function depo(): Promise<Sonuc> {
     }
   }
   try {
-    await yuklemeSlotuAc()
-    return {
-      ad: 'Belge deposu',
-      hal: 'iyi',
-      not: 'Supabase Storage erişilebilir, kova bulundu',
+    const d = await kovaDurumu()
+    if (d.hal === 'tamam') {
+      return {
+        ad: 'Belge deposu',
+        hal: 'iyi',
+        not: `Supabase Storage tamam · "${d.kova}" kovası yazılabilir`,
+      }
     }
-  } catch (e) {
+    if (d.hal === 'erisim-yok') {
+      return {
+        ad: 'Belge deposu',
+        hal: 'kotu',
+        not: `Supabase reddetti — SUPABASE_SERVIS_ANAHTARI yanlış ya da eksik olabilir (${d.mesaj})`,
+      }
+    }
+    if (d.hal === 'kova-yok') {
+      return {
+        ad: 'Belge deposu',
+        hal: 'kotu',
+        not: `"${d.kova}" adlı kova yok. Supabase'de bulunanlar: ${
+          d.mevcutlar.length ? d.mevcutlar.join(', ') : '(hiç kova yok)'
+        }`,
+      }
+    }
     return {
       ad: 'Belge deposu',
       hal: 'kotu',
-      not: hataMetni(e),
+      not: `"${d.kova}" kovasına yazılamıyor: ${d.mesaj}`,
     }
+  } catch (e) {
+    return { ad: 'Belge deposu', hal: 'kotu', not: hataMetni(e) }
   }
 }
 

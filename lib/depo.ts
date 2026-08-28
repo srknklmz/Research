@@ -151,3 +151,41 @@ export async function depodaVarMi(yol: string): Promise<boolean> {
     .list(dizin, { search: ad, limit: 1 })
   return Boolean(data?.some((d) => d.name === ad))
 }
+
+export type KovaDurumu =
+  | { hal: 'tamam'; kova: string }
+  | { hal: 'erisim-yok'; mesaj: string }
+  | { hal: 'kova-yok'; kova: string; mevcutlar: string[] }
+  | { hal: 'yazilamiyor'; kova: string; mesaj: string }
+
+/**
+ * Depo sorunlarını ayrıştırır: anahtar mı geçersiz, kova mı yok, yoksa
+ * yazma izni mi yok. Tek bir "erişilemedi" mesajı yerine ne yapılacağını
+ * söyleyebilmek için.
+ */
+export async function kovaDurumu(): Promise<KovaDurumu> {
+  const ad = kova()
+
+  const { data: kovalar, error: listeHatasi } = await supabase()
+    .storage.listBuckets()
+
+  if (listeHatasi) {
+    return { hal: 'erisim-yok', mesaj: listeHatasi.message }
+  }
+
+  const adlar = (kovalar ?? []).map((k) => k.name)
+  if (!adlar.includes(ad)) {
+    return { hal: 'kova-yok', kova: ad, mevcutlar: adlar }
+  }
+
+  try {
+    await yuklemeSlotuAc()
+    return { hal: 'tamam', kova: ad }
+  } catch (e) {
+    return {
+      hal: 'yazilamiyor',
+      kova: ad,
+      mesaj: e instanceof Error ? e.message : 'bilinmiyor',
+    }
+  }
+}
