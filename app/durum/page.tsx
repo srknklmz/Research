@@ -3,7 +3,13 @@ import { depoTuru, yuklemeSlotuAc } from '@/lib/depo'
 
 export const dynamic = 'force-dynamic'
 
-type Sonuc = { ad: string; iyi: boolean; not: string }
+type Hal = 'iyi' | 'kotu' | 'gereksiz'
+type Sonuc = { ad: string; hal: Hal; not: string }
+
+const SIMGE: Record<Hal, string> = { iyi: '✅', kotu: '❌', gereksiz: '➖' }
+
+/** Koşula göre iyi/kötü. */
+const halj = (kosul: boolean): Hal => (kosul ? 'iyi' : 'kotu')
 
 /**
  * Hata mesajından okunabilir tek satır çıkarır. Prisma mesajları boş satırla
@@ -35,7 +41,7 @@ async function veritabani(): Promise<Sonuc> {
     const n = await db.kullanici.count()
     return {
       ad: 'Veritabanı',
-      iyi: n > 0,
+      hal: halj(n > 0),
       not:
         n > 0
           ? `bağlantı tamam · ${n} kullanıcı kayıtlı`
@@ -44,7 +50,7 @@ async function veritabani(): Promise<Sonuc> {
   } catch (e) {
     return {
       ad: 'Veritabanı',
-      iyi: false,
+      hal: 'kotu',
       not: hataMetni(e),
     }
   }
@@ -58,7 +64,7 @@ async function depo(): Promise<Sonuc> {
   if (tur === 'yerel') {
     return {
       ad: 'Belge deposu',
-      iyi: !sunucusuz,
+      hal: halj(!sunucusuz),
       not: sunucusuz
         ? 'DEPO=yerel — sunucusuz ortamda dosyalar kalıcı olmaz, "supabase" olmalı'
         : 'DEPO=yerel — yerel diskte, bu ortam için uygun',
@@ -66,11 +72,15 @@ async function depo(): Promise<Sonuc> {
   }
   try {
     await yuklemeSlotuAc()
-    return { ad: 'Belge deposu', iyi: true, not: 'Supabase Storage erişilebilir, kova bulundu' }
+    return {
+      ad: 'Belge deposu',
+      hal: 'iyi',
+      not: 'Supabase Storage erişilebilir, kova bulundu',
+    }
   } catch (e) {
     return {
       ad: 'Belge deposu',
-      iyi: false,
+      hal: 'kotu',
       not: hataMetni(e),
     }
   }
@@ -83,7 +93,7 @@ export default async function Durum() {
   const kontroller: Sonuc[] = [
     {
       ad: 'OTURUM_ANAHTARI',
-      iyi: Boolean(anahtar && anahtar.length >= 32),
+      hal: halj(Boolean(anahtar && anahtar.length >= 32)),
       not: !anahtar
         ? 'tanımlı değil'
         : anahtar.length < 32
@@ -93,7 +103,7 @@ export default async function Durum() {
     {
       ad: 'DATABASE_URL',
       // pgbouncer uyarısı yalnızca havuz adresi kullanılıyorsa anlamlı.
-      iyi: Boolean(veri && (!havuzMu(veri) || veri.includes('pgbouncer=true'))),
+      hal: halj(Boolean(veri && (!havuzMu(veri) || veri.includes('pgbouncer=true')))),
       not: !veri
         ? 'tanımlı değil'
         : !havuzMu(veri)
@@ -104,29 +114,37 @@ export default async function Durum() {
     },
     {
       ad: 'DIRECT_URL',
-      iyi: Boolean(varMi('DIRECT_URL')),
+      hal: varMi('DIRECT_URL') ? 'iyi' : 'gereksiz',
       not: varMi('DIRECT_URL') ? 'tanımlı' : 'tanımlı değil (yalnızca şema işlemleri için gerekir)',
     },
     {
       ad: 'DEPO',
-      iyi: depoTuru() === 'supabase' || !sunucusuz,
+      hal: halj(depoTuru() === 'supabase' || !sunucusuz),
       not: depoTuru(),
     },
     {
       ad: 'SUPABASE_URL',
-      iyi: Boolean(varMi('SUPABASE_URL')) || depoTuru() !== 'supabase',
+      hal: varMi('SUPABASE_URL')
+        ? 'iyi'
+        : depoTuru() === 'supabase'
+          ? 'kotu'
+          : 'gereksiz',
       not: varMi('SUPABASE_URL') ? 'tanımlı' : 'tanımlı değil',
     },
     {
       ad: 'SUPABASE_SERVIS_ANAHTARI',
-      iyi: Boolean(varMi('SUPABASE_SERVIS_ANAHTARI')) || depoTuru() !== 'supabase',
+      hal: varMi('SUPABASE_SERVIS_ANAHTARI')
+        ? 'iyi'
+        : depoTuru() === 'supabase'
+          ? 'kotu'
+          : 'gereksiz',
       not: varMi('SUPABASE_SERVIS_ANAHTARI') ? 'tanımlı' : 'tanımlı değil',
     },
     await veritabani(),
     await depo(),
   ]
 
-  const sorunlu = kontroller.filter((k) => !k.iyi)
+  const sorunlu = kontroller.filter((k) => k.hal === 'kotu')
   const hicbiriYok = !anahtar && !veri && !varMi('SUPABASE_URL')
 
   return (
@@ -154,7 +172,7 @@ export default async function Durum() {
           <tbody>
             {kontroller.map((k) => (
               <tr key={k.ad}>
-                <td className="w-8 text-center">{k.iyi ? '✅' : '❌'}</td>
+                <td className="w-8 text-center">{SIMGE[k.hal]}</td>
                 <td className="w-56 font-medium">{k.ad}</td>
                 <td className="text-soluk">{k.not}</td>
               </tr>
