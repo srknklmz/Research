@@ -2,12 +2,21 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { supabaseAdresi } from './yapilandirma'
 
 export type DepoTuru = 'yerel' | 'supabase'
 
-/** Hangi depolama sürücüsü kullanılıyor. */
+/**
+ * Hangi depolama sürücüsü kullanılıyor. DEPO açıkça verilmemişse, Supabase
+ * adresi ve servis anahtarı varsa Supabase seçilir — böylece tek bir ayar
+ * daha elle girilmek zorunda kalmaz.
+ */
 export function depoTuru(): DepoTuru {
-  return process.env.DEPO === 'supabase' ? 'supabase' : 'yerel'
+  const acik = process.env.DEPO?.trim()
+  if (acik) return acik === 'supabase' ? 'supabase' : 'yerel'
+
+  const hazir = Boolean(supabaseAdresi() && process.env.SUPABASE_SERVIS_ANAHTARI)
+  return hazir ? 'supabase' : 'yerel'
 }
 
 export function yerelDizin(): string {
@@ -23,11 +32,11 @@ let istemci: SupabaseClient | null = null
 function supabase(): SupabaseClient {
   if (istemci) return istemci
 
-  const url = process.env.SUPABASE_URL
+  const url = supabaseAdresi()
   const anahtar = process.env.SUPABASE_SERVIS_ANAHTARI
   if (!url || !anahtar) {
     throw new Error(
-      'DEPO=supabase seçili ama SUPABASE_URL ya da SUPABASE_SERVIS_ANAHTARI tanımlı değil.',
+      'Supabase deposu seçili ama proje adresi ya da SUPABASE_SERVIS_ANAHTARI yok.',
     )
   }
 

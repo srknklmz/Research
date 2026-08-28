@@ -1,5 +1,11 @@
 import { db } from '@/lib/db'
 import { depoTuru, yuklemeSlotuAc } from '@/lib/depo'
+import {
+  oturumAnahtari,
+  oturumAnahtariTuretildi,
+  supabaseAdresi,
+  supabaseAdresiTuretildi,
+} from '@/lib/yapilandirma'
 
 export const dynamic = 'force-dynamic'
 
@@ -93,12 +99,12 @@ export default async function Durum() {
   const kontroller: Sonuc[] = [
     {
       ad: 'OTURUM_ANAHTARI',
-      hal: halj(Boolean(anahtar && anahtar.length >= 32)),
-      not: !anahtar
-        ? 'tanımlı değil'
-        : anahtar.length < 32
-          ? `çok kısa (${anahtar.length} karakter, en az 32 olmalı)`
-          : 'tanımlı',
+      hal: halj(Boolean(oturumAnahtari())),
+      not: anahtar && anahtar.length >= 32
+        ? 'tanımlı'
+        : oturumAnahtariTuretildi()
+          ? "verilmemiş — DATABASE_URL'den türetildi (çalışır, ama açıkça vermek daha iyi)"
+          : 'tanımlı değil ve türetilemiyor (DATABASE_URL de yok)',
     },
     {
       ad: 'DATABASE_URL',
@@ -120,16 +126,18 @@ export default async function Durum() {
     {
       ad: 'DEPO',
       hal: halj(depoTuru() === 'supabase' || !sunucusuz),
-      not: depoTuru(),
+      not: varMi('DEPO')
+        ? depoTuru()
+        : `${depoTuru()} (verilmemiş, kendiliğinden seçildi)`,
     },
     {
       ad: 'SUPABASE_URL',
-      hal: varMi('SUPABASE_URL')
-        ? 'iyi'
-        : depoTuru() === 'supabase'
-          ? 'kotu'
-          : 'gereksiz',
-      not: varMi('SUPABASE_URL') ? 'tanımlı' : 'tanımlı değil',
+      hal: supabaseAdresi() ? 'iyi' : depoTuru() === 'supabase' ? 'kotu' : 'gereksiz',
+      not: varMi('SUPABASE_URL')
+        ? 'tanımlı'
+        : supabaseAdresiTuretildi()
+          ? `verilmemiş — DATABASE_URL'den türetildi: ${supabaseAdresi()}`
+          : 'tanımlı değil',
     },
     {
       ad: 'SUPABASE_SERVIS_ANAHTARI',

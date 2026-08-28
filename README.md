@@ -215,17 +215,24 @@ Framework kendiliğinden Next.js olarak algılanır; build komutu
 `prisma generate && next build` zaten `package.json` içinde. Bölge
 `vercel.json` ile `fra1` sabitlenmiştir.
 
-**Environment Variables** olarak şunları girin:
+**Environment Variables** olarak en az şu ikisini girin:
 
 | Değişken | Değer |
 |---|---|
 | `DATABASE_URL` | havuzlanmış adres + `?pgbouncer=true` |
-| `DIRECT_URL` | doğrudan adres (5432) |
-| `OTURUM_ANAHTARI` | `openssl rand -base64 48` çıktısı |
-| `DEPO` | `supabase` |
-| `SUPABASE_URL` | `https://<proje>.supabase.co` |
 | `SUPABASE_SERVIS_ANAHTARI` | `service_role` anahtarı |
-| `SUPABASE_KOVA` | `belgeler` |
+
+Geri kalanı bu ikisinden türetilir: proje adresi (`SUPABASE_URL`) bağlantı
+adresindeki proje kodundan çıkarılır, kova adı `belgeler` varsayılır, depo
+türü Supabase seçilir, oturum anahtarı `DATABASE_URL`'den üretilir.
+
+İsterseniz açıkça da verebilirsiniz — verilen değer türetilene göre önceliklidir:
+
+| Değişken | Ne zaman |
+|---|---|
+| `OTURUM_ANAHTARI` | Önerilir. Verilmezse `DATABASE_URL`'den üretilir; adres değişirse herkesin oturumu düşer. |
+| `SUPABASE_URL` · `SUPABASE_KOVA` · `DEPO` | Varsayılandan farklı bir kurulum kullanıyorsanız |
+| `DIRECT_URL` | Yalnızca `prisma db push` gibi şema işlemleri için |
 
 Deploy edin. Açılan adrese girip **ilk iş olarak dört varsayılan kullanıcının
 parolasını değiştirin** ve Ayarlar'dan şirket/şantiye adını girin.

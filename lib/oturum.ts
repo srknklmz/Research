@@ -4,14 +4,17 @@ import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import type { Rol } from '@prisma/client'
 import { db } from './db'
+import { oturumAnahtari } from './yapilandirma'
 
 const COOKIE = 'oturum'
 const SURE_MS = 12 * 60 * 60 * 1000 // 12 saat
 
 function anahtar(): string {
-  const a = process.env.OTURUM_ANAHTARI
-  if (!a || a.length < 32) {
-    throw new Error('OTURUM_ANAHTARI tanımlı değil ya da 32 karakterden kısa.')
+  const a = oturumAnahtari()
+  if (!a) {
+    throw new Error(
+      'OTURUM_ANAHTARI tanımlı değil ve DATABASE_URL olmadığı için türetilemiyor.',
+    )
   }
   return a
 }
