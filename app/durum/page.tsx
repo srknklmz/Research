@@ -111,7 +111,7 @@ async function depo(): Promise<Sonuc> {
   }
 }
 
-export default async function Durum() {
+async function Icerik() {
   const anahtar = varMi('OTURUM_ANAHTARI')
   const veri = varMi('DATABASE_URL')
 
@@ -214,4 +214,28 @@ export default async function Durum() {
       </p>
     </div>
   )
+}
+
+/**
+ * Teşhis sayfasının kendisi çökerse hiçbir işe yaramaz. Ne olursa olsun
+ * hatayı ekrana basar.
+ */
+export default async function Durum() {
+  try {
+    return await Icerik()
+  } catch (e) {
+    const mesaj =
+      e instanceof Error ? `${e.name}: ${e.message}` : String(e)
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <h1 className="text-lg font-semibold tracking-tight">Kurulum durumu</h1>
+        <p className="mt-1 text-sm text-soluk">
+          Durum sayfası çalışırken hata oluştu. Ham mesaj:
+        </p>
+        <pre className="kart mt-4 overflow-x-auto p-4 text-xs whitespace-pre-wrap">
+          {mesaj}
+        </pre>
+      </div>
+    )
+  }
 }
