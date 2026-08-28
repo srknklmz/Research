@@ -40,6 +40,18 @@ function supabase(): SupabaseClient {
     )
   }
 
+  // Anahtar HTTP başlığına yazılıyor; ASCII dışı karakter varsa istek daha
+  // kurulurken patlar ve mesajı anlaşılmaz olur. Panelde gizlenmiş hâli
+  // (nokta nokta görünen) kopyalandığında tam olarak bu oluyor.
+  const bozuk = [...anahtar].find((c) => c.charCodeAt(0) > 126)
+  if (bozuk) {
+    throw new Error(
+      `SUPABASE_SERVIS_ANAHTARI içinde geçersiz karakter var ("${bozuk}"). ` +
+        'Supabase panelinde anahtarın gizlenmiş hâli kopyalanmış olabilir — ' +
+        'önce göz simgesiyle görünür yapıp ya da kopyala düğmesiyle alın.',
+    )
+  }
+
   istemci = createClient(url, anahtar, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
