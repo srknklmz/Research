@@ -52,6 +52,14 @@ kullanılır. Ortak sınıflar: `kart`, `dugme-birincil`, `alan`, `tablo`,
 Yazdırma: `.yazdirma-gizle` ekranda görünür, çıktıda gizlenir;
 `.kagit-sayfa` A4 sayfa sonu verir.
 
+## Kullanıcıya sunum
+
+- **SQL dosyalarının içeriği sohbette metin olarak verilir.** Kullanıcı `.sql`
+  dosyalarını açamıyor; kopyala-yapıştır yapabilmesi için içeriği kod bloğu
+  hâlinde yaz, yalnızca dosyayı göndermekle yetinme. Bu, `prisma/kurulum.sql`
+  ve sonradan üretilecek bütün SQL çıktıları için geçerlidir.
+- Uzun SQL'i mantıklı parçalara böl (şema / tohum) ki tek tek kopyalanabilsin.
+
 ## Doğrulama
 
 ```bash

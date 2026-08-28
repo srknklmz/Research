@@ -30,18 +30,40 @@ const PAROLA = process.env.TOHUM_PAROLA ?? 'degistir123'
 
 const q = (d: string) => `'${d.replace(/'/g, "''")}'`
 
-/** Uzun listeleri okunabilir parçalara böler. */
-function ekle(tablo: string, sutunlar: string[], satirlar: string[][], cakisma: string) {
-  const parcalar: string[] = []
-  for (let i = 0; i < satirlar.length; i += 400) {
-    const dilim = satirlar.slice(i, i + 400)
-    parcalar.push(
-      `INSERT INTO "${tablo}" (${sutunlar.map((s) => `"${s}"`).join(', ')}) VALUES\n` +
-        dilim.map((s) => `  (${s.join(', ')})`).join(',\n') +
-        `\nON CONFLICT (${cakisma}) DO NOTHING;`,
-    )
+/** Tek sütunlu uzun listeler: unnest ile derli toplu yazılır. */
+function listeEkle(
+  tablo: string,
+  sutun: string,
+  degerler: string[],
+  cakisma: string,
+  sabitler: [string, string][] = [],
+  siraSutunu?: string,
+) {
+  const onEk = sabitler.map(([, d]) => d).join(', ')
+  const sutunlar = [...sabitler.map(([s]) => `"${s}"`), `"${sutun}"`]
+  if (siraSutunu) sutunlar.push(`"${siraSutunu}"`)
+
+  const govde: string[] = []
+  for (let i = 0; i < degerler.length; i += 12) {
+    govde.push('  ' + degerler.slice(i, i + 12).map(q).join(', '))
   }
-  return parcalar.join('\n\n')
+
+  return (
+    `INSERT INTO "${tablo}" (${sutunlar.join(', ')})\n` +
+    `SELECT ${onEk ? onEk + ', ' : ''}d${siraSutunu ? ', i - 1' : ''} FROM unnest(ARRAY[\n` +
+    govde.join(',\n') +
+    `\n]) ${siraSutunu ? 'WITH ORDINALITY AS t(d, i)' : 'AS t(d)'}\n` +
+    `ON CONFLICT (${cakisma}) DO NOTHING;`
+  )
+}
+
+/** Az sayıda, çok sütunlu kayıtlar. */
+function ekle(tablo: string, sutunlar: string[], satirlar: string[][], cakisma: string) {
+  return (
+    `INSERT INTO "${tablo}" (${sutunlar.map((s) => `"${s}"`).join(', ')}) VALUES\n` +
+    satirlar.map((s) => `  (${s.join(', ')})`).join(',\n') +
+    `\nON CONFLICT (${cakisma}) DO NOTHING;`
+  )
 }
 
 function sema(): string {
@@ -67,16 +89,17 @@ function tohumVerisi(): string {
     ['ODEME', ODEME],
   ]
 
-  const secenekSatirlari = gruplar.flatMap(([grup, degerler]) =>
-    degerler.map((d, i) => [q(grup), q(d), String(i)]),
-  )
+  const toplamSecenek = gruplar.reduce((t, [, d]) => t + d.length, 0)
 
   return [
     `-- ${firmalar.length} firma`,
-    ekle('Firma', ['ad'], firmalar.map((f) => [q(f)]), '"ad"'),
+    listeEkle('Firma', 'ad', firmalar, '"ad"'),
     '',
-    `-- ${secenekSatirlari.length} açılır liste değeri`,
-    ekle('Secenek', ['grup', 'deger', 'sira'], secenekSatirlari, '"grup", "deger"'),
+    `-- ${toplamSecenek} açılır liste değeri`,
+    ...gruplar.map(([grup, degerler]) =>
+      `-- ${grup} (${degerler.length})\n` +
+      listeEkle('Secenek', 'deger', degerler, '"grup", "deger"', [['grup', q(grup)]], 'sira'),
+    ),
     '',
     `-- Kullanıcılar (parola: ${PAROLA})`,
     ekle(
