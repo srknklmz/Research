@@ -112,25 +112,22 @@ export default async function Durum() {
       iyi: depoTuru() === 'supabase' || !sunucusuz,
       not: depoTuru(),
     },
-    ...(depoTuru() === 'supabase'
-      ? [
-          {
-            ad: 'SUPABASE_URL',
-            iyi: Boolean(varMi('SUPABASE_URL')),
-            not: varMi('SUPABASE_URL') ? 'tanımlı' : 'tanımlı değil',
-          },
-          {
-            ad: 'SUPABASE_SERVIS_ANAHTARI',
-            iyi: Boolean(varMi('SUPABASE_SERVIS_ANAHTARI')),
-            not: varMi('SUPABASE_SERVIS_ANAHTARI') ? 'tanımlı' : 'tanımlı değil',
-          },
-        ]
-      : []),
+    {
+      ad: 'SUPABASE_URL',
+      iyi: Boolean(varMi('SUPABASE_URL')) || depoTuru() !== 'supabase',
+      not: varMi('SUPABASE_URL') ? 'tanımlı' : 'tanımlı değil',
+    },
+    {
+      ad: 'SUPABASE_SERVIS_ANAHTARI',
+      iyi: Boolean(varMi('SUPABASE_SERVIS_ANAHTARI')) || depoTuru() !== 'supabase',
+      not: varMi('SUPABASE_SERVIS_ANAHTARI') ? 'tanımlı' : 'tanımlı değil',
+    },
     await veritabani(),
     await depo(),
   ]
 
   const sorunlu = kontroller.filter((k) => !k.iyi)
+  const hicbiriYok = !anahtar && !veri && !varMi('SUPABASE_URL')
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
@@ -142,6 +139,15 @@ export default async function Durum() {
         Bu sayfa yalnızca ayarların tanımlı olup olmadığını gösterir, değerlerini
         göstermez.
       </p>
+
+      {hicbiriYok ? (
+        <p className="mt-4 rounded-md bg-bekliyor-zemin px-4 py-3 text-sm text-bekliyor">
+          <strong>Hiçbir ortam değişkeni okunmuyor.</strong> Büyük ihtimalle ya
+          Vercel'de <em>Settings → Environment Variables</em> altına
+          eklenmediler, ya da eklendi ama sonrasında <em>Redeploy</em>
+          yapılmadı — Vercel bu değerleri yalnızca dağıtım anında okur.
+        </p>
+      ) : null}
 
       <div className="kart mt-5 overflow-hidden">
         <table className="tablo">
