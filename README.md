@@ -192,7 +192,16 @@ kullanılır, istemciye verilmez.
 
 ### 2. Şemayı ve tohum verisini yükleyin
 
-Kendi makinenizden, `.env` dosyanızda Supabase adresleri yazılıyken:
+**En kolayı — tarayıcıdan, hiçbir kurulum gerekmeden:** depodaki
+[`prisma/kurulum.sql`](prisma/kurulum.sql) dosyasının tamamını kopyalayın,
+Supabase panelinde **SQL Editor → New query** içine yapıştırın ve **Run**
+deyin. Tabloları oluşturur, 192 firmayı, açılır liste değerlerini ve dört
+kullanıcıyı ekler. Boş veritabanında bir kez çalıştırın.
+
+Şema değişirse dosyayı `npm run db:sql` ile yeniden üretin.
+
+**Alternatif — kendi makinenizden**, `.env` dosyanızda Supabase adresleri
+yazılıyken:
 
 ```bash
 npx prisma db push   # tabloları oluşturur
@@ -236,7 +245,7 @@ parolasını değiştirin** ve Ayarlar'dan şirket/şantiye adını girin.
 | `app/giris/`, `app/belge/` | Giriş ve belge sunumu |
 | `components/` | Ortak arayüz parçaları |
 | `lib/` | Veritabanı, oturum, yetki, akış, eşleştirme önerisi, içe aktarma, depolama, biçimlendirme |
-| `prisma/` | Şema ve tohum verisi (192 firma, 1206 malzeme, birim/kategori listeleri) |
+| `prisma/` | Şema, tohum verisi (192 firma, 1206 malzeme, listeler) ve `kurulum.sql` |
 
 ## Komutlar
 
@@ -246,5 +255,6 @@ npm run build      # üretim derlemesi
 npm start          # üretim sunucusu
 npm run db:push    # şemayı veritabanına uygula
 npm run db:seed    # tohum verisi
+npm run db:sql     # tek dosyalık kurulum SQL'ini yeniden üret
 npm run db:studio  # veritabanı arayüzü
 ```
