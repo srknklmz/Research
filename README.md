@@ -38,12 +38,23 @@ verilebilir.
 
 ## Geliştirme
 
+Gerekenler: Node.js 20+ ve git.
+
 ```bash
+git clone https://github.com/srknklmz/Research.git
+cd Research
+git checkout claude/kind-tesla-08stg6
 npm install
-npm run dev     # http://localhost:5173
+npm run dev     # http://localhost:5173 — kaydedince ekran anında yenilenir
 npm test        # tarih hesapları
 npm run build
 ```
+
+**Claude Code masaüstü uygulamasında:** klasörü açın; `.claude/launch.json` sayesinde
+uygulama önizleme panelinde kendiliğinden çalışır, Claude kodu değiştirdikçe ekran yenilenir.
+
+Geliştirme sunucusu da **canlı veritabanına** bağlanır: denemede eklenen imalatlar şantiyelere de
+görünür. Deneme kayıtlarını işiniz bitince silin.
 
 Şema değişikliği: `supabase/imalat.sql` dosyasını güncelleyip Supabase SQL Editor'de çalıştırın
 (dosya tekrar çalıştırılabilir; mevcut veriye dokunmaz).
