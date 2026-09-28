@@ -1,9 +1,21 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { Fragment, useEffect, useState, type FormEvent } from 'react'
 import { api, type Degisiklik, type Kalem } from './api'
-import { AdAlani, Hata, Modal, useAd, useIslem } from './ortak'
-import { degisiklikYaz, durum, gunFarki, gunYaz, kalanYaz, kayma, sonuc, tarihYaz, zamanYaz } from './tarih'
+import { AdAlani, Cipler, Hata, Modal, useAd, useIslem } from './ortak'
+import {
+  ayEkle,
+  degisiklikYaz,
+  durum,
+  gunEkle,
+  gunFarki,
+  gunYaz,
+  kalanYaz,
+  kayma,
+  sonuc,
+  tarihYaz,
+  zamanYaz,
+} from './tarih'
 
-type Mod = 'bak' | 'tarih' | 'bitir' | 'duzenle' | 'sil'
+type Mod = 'bak' | 'tarih' | 'bitir' | 'duzenle' | 'sil' | 'geri_ac'
 
 interface Props {
   k: Kalem
@@ -14,10 +26,20 @@ interface Props {
   yenile: () => Promise<void>
 }
 
+const HAZIR_NEDENLER = [
+  'Malzeme gecikti',
+  'Hava koşulları',
+  'Ekip / taşeron eksik',
+  'Önceki iş gecikti',
+  'Proje değişikliği',
+  'Onay bekleniyor',
+]
+
 export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
   const [mod, setMod] = useState<Mod>('bak')
   const [gecmis, setGecmis] = useState<Degisiklik[] | null>(null)
   const [gecmisHata, setGecmisHata] = useState<string | null>(null)
+  const islem = useIslem()
 
   // İmalat her güncellendiğinde (yeni veri geldiğinde) geçmişi tazele.
   const surum = `${k.hedef}|${k.durum}|${k.ad}|${k.konum}|${k.erteleme}`
@@ -31,28 +53,124 @@ export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
       .catch((e) => setGecmisHata(e.message))
   }, [k.id, surum])
 
-  async function bitti() {
-    await yenile()
-    setMod('bak')
+  async function kaydet(is: () => Promise<unknown>) {
+    if (await islem.calistir(is)) {
+      await yenile()
+      setMod('bak')
+    }
   }
 
   const kay = kayma(k)
   const d = durum(k, bugun)
   const silinebilir = merkez || k.erteleme === 0
+  const vazgec = (
+    <button type="button" onClick={() => setMod('bak')} disabled={islem.bekliyor}>
+      Vazgeç
+    </button>
+  )
+  const gonderDugmesi = (form: string, yazi: string, sinif = 'ana-dugme') => (
+    <button type="submit" form={form} className={sinif} disabled={islem.bekliyor}>
+      {islem.bekliyor ? 'Kaydediliyor…' : yazi}
+    </button>
+  )
+
+  // Her mod kendi düğmelerini yeni DOM düğümleriyle çizer (key=mod). Aksi halde
+  // React "Bitti" düğmesini yerinde "Bitti olarak kaydet" gönder düğmesine
+  // çevirir ve aynı tıklama formu hemen gönderir.
+  const altlar = {
+    bak:
+      k.durum === 'devam' ? (
+        <>
+          <button type="button" className="ana-dugme" onClick={() => setMod('tarih')}>
+            Tarihi değiştir
+          </button>
+          <button type="button" className="yesil-dugme" onClick={() => setMod('bitir')}>
+            Bitti
+          </button>
+        </>
+      ) : (
+        <button type="button" className="ana-dugme" onClick={() => setMod('geri_ac')}>
+          Yeniden aç
+        </button>
+      ),
+    tarih: (
+      <>
+        {vazgec}
+        {gonderDugmesi('f-tarih', 'Yeni tarihi kaydet')}
+      </>
+    ),
+    bitir: (
+      <>
+        {vazgec}
+        {gonderDugmesi('f-bitir', 'Bitti olarak kaydet', 'yesil-dugme')}
+      </>
+    ),
+    duzenle: (
+      <>
+        {vazgec}
+        {gonderDugmesi('f-duzenle', 'Kaydet')}
+      </>
+    ),
+    geri_ac: (
+      <>
+        {vazgec}
+        {gonderDugmesi('f-geri-ac', 'Yeniden aç')}
+      </>
+    ),
+    sil: (
+      <>
+        {vazgec}
+        <button
+          type="button"
+          className="tehlike dolu"
+          disabled={islem.bekliyor}
+          onClick={async () => {
+            if (await islem.calistir(() => api.sil(k.id))) {
+              kapat()
+              await yenile()
+            }
+          }}
+        >
+          {islem.bekliyor ? 'Siliniyor…' : 'Evet, sil'}
+        </button>
+      </>
+    ),
+  }
+  const alt = <Fragment key={mod}>{altlar[mod]}</Fragment>
 
   return (
-    <Modal baslik={k.ad} kapat={kapat}>
+    <Modal baslik={k.ad} kapat={kapat} alt={alt}>
+      <div className={`durum-serit d-${d}`}>
+        {k.durum === 'devam' ? (
+          <>
+            <strong>{kalanYaz(k.hedef, bugun)}</strong>
+            <span>Hedef {tarihYaz(k.hedef, bugun)}</span>
+          </>
+        ) : (
+          <>
+            <strong>
+              {
+                {
+                  ilk_hedefte: 'İlk hedefte bitti',
+                  revize_hedefte: 'Revize hedefte bitti',
+                  gec: `${gunFarki(k.hedef, k.bitis!)} gün geç bitti`,
+                }[sonuc(k)]
+              }
+            </strong>
+            <span>Bitiş {tarihYaz(k.bitis!, bugun)}</span>
+          </>
+        )}
+      </div>
+
       <dl className="bilgi">
         <div>
           <dt>Şantiye</dt>
           <dd>{santiye}</dd>
         </div>
-        {k.konum && (
-          <div>
-            <dt>Konum</dt>
-            <dd>{k.konum}</dd>
-          </div>
-        )}
+        <div>
+          <dt>Konum</dt>
+          <dd>{k.konum ?? '—'}</dd>
+        </div>
         <div>
           <dt>İlk hedef</dt>
           <dd>{tarihYaz(k.ilk_hedef, bugun)}</dd>
@@ -64,69 +182,38 @@ export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
             {kay !== 0 && <span className="kayma"> ({gunYaz(kay)})</span>}
           </dd>
         </div>
-        {k.durum === 'devam' ? (
-          <div>
-            <dt>Durum</dt>
-            <dd className={d === 'gecikti' ? 'r-kirmizi-yazi' : d === 'yakin' ? 'r-sari-yazi' : ''}>
-              {kalanYaz(k.hedef, bugun)}
-            </dd>
-          </div>
-        ) : (
-          <div>
-            <dt>Bitiş</dt>
-            <dd>
-              {tarihYaz(k.bitis!, bugun)} ·{' '}
-              {{
-                ilk_hedefte: 'ilk hedefte bitti',
-                revize_hedefte: 'revize hedefte bitti',
-                gec: `${gunFarki(k.hedef, k.bitis!)} gün geç bitti`,
-              }[sonuc(k)]}
-            </dd>
-          </div>
-        )}
-        <div>
-          <dt>Tarih değişikliği</dt>
-          <dd>{k.erteleme === 0 ? 'Yok' : `${k.erteleme} kez`}</dd>
-        </div>
       </dl>
 
+      {mod === 'tarih' && <TarihFormu k={k} bugun={bugun} kaydet={kaydet} />}
+      {mod === 'bitir' && <BitirFormu k={k} bugun={bugun} kaydet={kaydet} />}
+      {mod === 'duzenle' && <DuzenleFormu k={k} kaydet={kaydet} />}
+      {mod === 'geri_ac' && <GeriAcFormu k={k} kaydet={kaydet} />}
+      {mod === 'sil' && (
+        <p className="form">
+          <span>
+            <strong>{k.ad}</strong> ve bütün geçmişi kalıcı olarak silinecek. Yanlış girilmiş
+            kayıtlar içindir; biten imalatı silmek yerine “Bitti” olarak işaretleyin.
+          </span>
+        </p>
+      )}
+      <Hata mesaj={islem.hata} />
+
       {mod === 'bak' && (
-        <div className="eylemler">
-          {k.durum === 'devam' ? (
-            <>
-              <button className="ana-dugme" onClick={() => setMod('tarih')}>
-                Tarihi değiştir
-              </button>
-              <button className="yesil-dugme" onClick={() => setMod('bitir')}>
-                Bitti
-              </button>
-            </>
-          ) : (
-            <GeriAc k={k} bitti={bitti} />
-          )}
-          <button onClick={() => setMod('duzenle')}>Düzenle</button>
+        <div className="ikincil-eylemler">
+          <button type="button" className="baglanti" onClick={() => setMod('duzenle')}>
+            Düzenle
+          </button>
           {silinebilir && (
-            <button className="tehlike" onClick={() => setMod('sil')}>
+            <button type="button" className="baglanti tehlike" onClick={() => setMod('sil')}>
               Sil
             </button>
           )}
         </div>
       )}
-      {mod === 'tarih' && <TarihFormu k={k} bugun={bugun} vazgec={() => setMod('bak')} bitti={bitti} />}
-      {mod === 'bitir' && <BitirFormu k={k} bugun={bugun} vazgec={() => setMod('bak')} bitti={bitti} />}
-      {mod === 'duzenle' && <DuzenleFormu k={k} vazgec={() => setMod('bak')} bitti={bitti} />}
-      {mod === 'sil' && (
-        <SilOnayi
-          k={k}
-          vazgec={() => setMod('bak')}
-          bitti={async () => {
-            kapat()
-            await yenile()
-          }}
-        />
-      )}
 
-      <h3 className="alt-baslik">Geçmiş</h3>
+      <h3 className="alt-baslik">
+        Geçmiş{k.erteleme > 0 && <span className="soluk"> · tarih {k.erteleme} kez değişti</span>}
+      </h3>
       <Hata mesaj={gecmisHata} />
       {gecmis === null ? (
         !gecmisHata && <p className="soluk">Yükleniyor…</p>
@@ -153,136 +240,131 @@ export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
 
 interface FormProps {
   k: Kalem
-  vazgec: () => void
-  bitti: () => Promise<void>
+  kaydet: (is: () => Promise<unknown>) => Promise<void>
 }
 
-function TarihFormu({ k, bugun, vazgec, bitti }: FormProps & { bugun: string }) {
-  const [ad, setAd] = useAd()
+function TarihFormu({ k, bugun, kaydet }: FormProps & { bugun: string }) {
+  const [ad] = useAd()
   const [yeni, setYeni] = useState(k.hedef)
   const [neden, setNeden] = useState('')
-  const { bekliyor, hata, calistir } = useIslem()
   const fark = yeni ? gunFarki(k.hedef, yeni) : 0
+  const hizli = [
+    { deger: gunEkle(k.hedef, 3), ad: '+3 gün' },
+    { deger: gunEkle(k.hedef, 7), ad: '+1 hafta' },
+    { deger: gunEkle(k.hedef, 14), ad: '+2 hafta' },
+    { deger: ayEkle(k.hedef, 1), ad: '+1 ay' },
+  ]
 
-  async function gonder(e: FormEvent) {
+  function gonder(e: FormEvent) {
     e.preventDefault()
-    if (await calistir(() => api.tarih(k.id, yeni, neden, ad))) await bitti()
+    kaydet(() => api.tarih(k.id, yeni, neden, ad))
   }
 
   return (
-    <form className="form" onSubmit={gonder}>
-      <label className="alan">
+    <form id="f-tarih" className="form" onSubmit={gonder}>
+      <div className="alan">
         <span>Yeni hedef tarih</span>
-        <input type="date" value={yeni} onChange={(e) => setYeni(e.target.value)} required />
+        <Cipler etiket="Hızlı seçim" secenekler={hizli} deger={yeni} sec={setYeni} />
+        <input
+          type="date"
+          value={yeni}
+          onChange={(e) => setYeni(e.target.value)}
+          required
+          aria-label="Yeni hedef tarih"
+        />
         {fark !== 0 && (
           <small className={fark > 0 ? 'r-kirmizi-yazi' : 'r-yesil-yazi'}>
-            Mevcut hedefe göre {gunYaz(fark)}
+            {tarihYaz(k.hedef, bugun)} → {tarihYaz(yeni, bugun)} ({gunYaz(fark)})
             {gunFarki(bugun, yeni) < 0 && ' · geçmiş bir tarih'}
           </small>
         )}
-      </label>
-      <label className="alan">
+      </div>
+      <div className="alan">
         <span>Neden değişiyor?</span>
+        <Cipler
+          etiket="Hazır nedenler"
+          secenekler={HAZIR_NEDENLER.map((n) => ({ deger: n, ad: n }))}
+          deger={neden}
+          sec={setNeden}
+        />
         <textarea
           value={neden}
           onChange={(e) => setNeden(e.target.value)}
-          placeholder="Örn. malzeme gecikti, yağmur, taşeron değişti"
+          placeholder="Seçin ya da kısaca yazın"
           required
           minLength={3}
           rows={2}
+          aria-label="Neden değişiyor?"
         />
-      </label>
-      <AdAlani ad={ad} setAd={setAd} />
-      <Hata mesaj={hata} />
-      <div className="eylemler">
-        <button className="ana-dugme" disabled={bekliyor}>
-          {bekliyor ? 'Kaydediliyor…' : 'Kaydet'}
-        </button>
-        <button type="button" onClick={vazgec}>
-          Vazgeç
-        </button>
       </div>
+      <AdAlani />
     </form>
   )
 }
 
-function BitirFormu({ k, bugun, vazgec, bitti }: FormProps & { bugun: string }) {
-  const [ad, setAd] = useAd()
+function BitirFormu({ k, bugun, kaydet }: FormProps & { bugun: string }) {
+  const [ad] = useAd()
   const [tarih, setTarih] = useState(bugun)
-  const { bekliyor, hata, calistir } = useIslem()
+  const hizli = [
+    { deger: bugun, ad: 'Bugün' },
+    { deger: gunEkle(bugun, -1), ad: 'Dün' },
+  ]
 
-  async function gonder(e: FormEvent) {
+  function gonder(e: FormEvent) {
     e.preventDefault()
-    if (await calistir(() => api.bitir(k.id, tarih, ad))) await bitti()
+    kaydet(() => api.bitir(k.id, tarih, ad))
   }
 
   return (
-    <form className="form" onSubmit={gonder}>
-      <label className="alan">
-        <span>Bitiş tarihi</span>
-        <input type="date" value={tarih} max={bugun} onChange={(e) => setTarih(e.target.value)} required />
-      </label>
-      <AdAlani ad={ad} setAd={setAd} />
-      <Hata mesaj={hata} />
-      <div className="eylemler">
-        <button className="yesil-dugme" disabled={bekliyor}>
-          {bekliyor ? 'Kaydediliyor…' : 'Bitti olarak kaydet'}
-        </button>
-        <button type="button" onClick={vazgec}>
-          Vazgeç
-        </button>
+    <form id="f-bitir" className="form" onSubmit={gonder}>
+      <div className="alan">
+        <span>Ne zaman bitti?</span>
+        <Cipler etiket="Hızlı seçim" secenekler={hizli} deger={tarih} sec={setTarih} />
+        <input
+          type="date"
+          value={tarih}
+          max={bugun}
+          onChange={(e) => setTarih(e.target.value)}
+          required
+          aria-label="Bitiş tarihi"
+        />
       </div>
+      <AdAlani />
     </form>
   )
 }
 
-function GeriAc({ k, bitti }: { k: Kalem; bitti: () => Promise<void> }) {
-  const [ad, setAd] = useAd()
-  const [acik, setAcik] = useState(false)
-  const { bekliyor, hata, calistir } = useIslem()
-
-  if (!acik) return <button onClick={() => setAcik(true)}>Yeniden aç</button>
+function GeriAcFormu({ k, kaydet }: FormProps) {
+  const [ad] = useAd()
   return (
     <form
-      className="form tam"
-      onSubmit={async (e) => {
+      id="f-geri-ac"
+      className="form"
+      onSubmit={(e) => {
         e.preventDefault()
-        if (await calistir(() => api.geriAc(k.id, ad))) await bitti()
+        kaydet(() => api.geriAc(k.id, ad))
       }}
     >
       <p>İmalat yeniden “devam ediyor” olacak.</p>
-      <AdAlani ad={ad} setAd={setAd} />
-      <Hata mesaj={hata} />
-      <div className="eylemler">
-        <button className="ana-dugme" disabled={bekliyor}>
-          Yeniden aç
-        </button>
-        <button type="button" onClick={() => setAcik(false)}>
-          Vazgeç
-        </button>
-      </div>
+      <AdAlani />
     </form>
   )
 }
 
-function DuzenleFormu({ k, vazgec, bitti }: FormProps) {
-  const [ad, setAd] = useAd()
+function DuzenleFormu({ k, kaydet }: FormProps) {
+  const [ad] = useAd()
   const [isim, setIsim] = useState(k.ad)
   const [konum, setKonum] = useState(k.konum ?? '')
   const [hedef, setHedef] = useState(k.hedef)
-  const { bekliyor, hata, calistir } = useIslem()
   const tarihDuzeltilebilir = k.erteleme === 0 && k.durum === 'devam'
 
-  async function gonder(e: FormEvent) {
+  function gonder(e: FormEvent) {
     e.preventDefault()
-    const ok = await calistir(() =>
-      api.duzenle(k.id, isim, konum, tarihDuzeltilebilir ? hedef : null, ad),
-    )
-    if (ok) await bitti()
+    kaydet(() => api.duzenle(k.id, isim, konum, tarihDuzeltilebilir ? hedef : null, ad))
   }
 
   return (
-    <form className="form" onSubmit={gonder}>
+    <form id="f-duzenle" className="form" onSubmit={gonder}>
       <label className="alan">
         <span>İmalat</span>
         <input value={isim} onChange={(e) => setIsim(e.target.value)} required maxLength={200} />
@@ -295,9 +377,7 @@ function DuzenleFormu({ k, vazgec, bitti }: FormProps) {
         <label className="alan">
           <span>Hedef tarih (yanlış girildiyse)</span>
           <input type="date" value={hedef} onChange={(e) => setHedef(e.target.value)} required />
-          <small className="soluk">
-            Henüz ertelenmediği için ilk hedef de birlikte düzeltilir.
-          </small>
+          <small className="soluk">Henüz ertelenmediği için ilk hedef de birlikte düzeltilir.</small>
         </label>
       ) : (
         k.durum === 'devam' && (
@@ -306,43 +386,7 @@ function DuzenleFormu({ k, vazgec, bitti }: FormProps) {
           </p>
         )
       )}
-      <AdAlani ad={ad} setAd={setAd} />
-      <Hata mesaj={hata} />
-      <div className="eylemler">
-        <button className="ana-dugme" disabled={bekliyor}>
-          {bekliyor ? 'Kaydediliyor…' : 'Kaydet'}
-        </button>
-        <button type="button" onClick={vazgec}>
-          Vazgeç
-        </button>
-      </div>
+      <AdAlani />
     </form>
-  )
-}
-
-function SilOnayi({ k, vazgec, bitti }: FormProps) {
-  const { bekliyor, hata, calistir } = useIslem()
-  return (
-    <div className="form">
-      <p>
-        <strong>{k.ad}</strong> ve bütün geçmişi kalıcı olarak silinecek. Yanlış girilmiş
-        kayıtlar içindir; biten imalatı silmek yerine “Bitti” olarak işaretleyin.
-      </p>
-      <Hata mesaj={hata} />
-      <div className="eylemler">
-        <button
-          className="tehlike dolu"
-          disabled={bekliyor}
-          onClick={async () => {
-            if (await calistir(() => api.sil(k.id))) await bitti()
-          }}
-        >
-          {bekliyor ? 'Siliniyor…' : 'Evet, sil'}
-        </button>
-        <button type="button" onClick={vazgec}>
-          Vazgeç
-        </button>
-      </div>
-    </div>
   )
 }

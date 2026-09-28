@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { durum, gunEkle, gunFarki, kalanYaz, kayma, sonuc, tarihYaz, zamanYaz } from './tarih'
+import { ayEkle, durum, gunEkle, gunFarki, kalanYaz, kayma, sonuc, tarihYaz, zamanYaz } from './tarih'
 
 describe('tarih', () => {
   it('gün farkını ay ve yıl geçişinde doğru sayar', () => {
@@ -7,6 +7,8 @@ describe('tarih', () => {
     expect(gunFarki('2026-12-31', '2027-01-01')).toBe(1)
     expect(gunFarki('2026-10-08', '2026-09-28')).toBe(-10)
     expect(gunEkle('2026-03-28', 3)).toBe('2026-03-31')
+    expect(ayEkle('2026-01-31', 1)).toBe('2026-02-28')
+    expect(ayEkle('2026-11-15', 2)).toBe('2027-01-15')
   })
 
   it('durumu hedefe göre belirler', () => {

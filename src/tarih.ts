@@ -118,3 +118,10 @@ export function degisiklikYaz(
         : 'Bilgiler düzeltildi'
   }
 }
+
+/** Takvim ayı ekler; ayın son gününü aşarsa ayın son gününe oturur (31 Oca + 1 ay = 28 Şub). */
+export function ayEkle(tarih: string, ay: number): string {
+  const [y, a, g] = tarih.split('-').map(Number)
+  const son = new Date(Date.UTC(y, a - 1 + ay + 1, 0)).getUTCDate()
+  return new Date(Date.UTC(y, a - 1 + ay, Math.min(g, son))).toISOString().slice(0, 10)
+}

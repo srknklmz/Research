@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { api, type Santiye } from './api'
-import { AdAlani, Hata, Modal, useAd, useIslem } from './ortak'
-import { gunFarki } from './tarih'
+import { AdAlani, Cipler, Hata, Modal, useAd, useIslem } from './ortak'
+import { ayEkle, gunEkle, gunFarki, tarihYaz } from './tarih'
 
 interface Props {
   santiyeler: Santiye[]
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function YeniKalem({ santiyeler, varsayilanSantiye, merkez, bugun, kapat, yenile }: Props) {
-  const [ad, setAd] = useAd()
+  const [ad] = useAd()
   const [santiye, setSantiye] = useState<number | null>(varsayilanSantiye)
   const [isim, setIsim] = useState('')
   const [konum, setKonum] = useState('')
@@ -21,12 +21,22 @@ export function YeniKalem({ santiyeler, varsayilanSantiye, merkez, bugun, kapat,
   const [devamEt, setDevamEt] = useState(false)
   const [eklenen, setEklenen] = useState<string[]>([])
   const { bekliyor, hata, calistir } = useIslem()
+  const santiyeSor = merkez && santiyeler.length > 1
+
+  const hizli = [
+    { deger: gunEkle(bugun, 7), ad: '1 hafta' },
+    { deger: gunEkle(bugun, 14), ad: '2 hafta' },
+    { deger: ayEkle(bugun, 1), ad: '1 ay' },
+    { deger: ayEkle(bugun, 2), ad: '2 ay' },
+    { deger: ayEkle(bugun, 3), ad: '3 ay' },
+  ]
 
   async function gonder(e: FormEvent) {
     e.preventDefault()
-    const ok = await calistir(() =>
-      api.ekle({ santiye: merkez ? santiye : null, ad: isim, konum, hedef, yapan: ad }),
-    )
+    const ok = await calistir(async () => {
+      if (santiyeSor && santiye === null) throw new Error('Önce şantiyeyi seçin.')
+      await api.ekle({ santiye: merkez ? santiye : null, ad: isim, konum, hedef, yapan: ad })
+    })
     if (!ok) return
     await yenile()
     if (devamEt) {
@@ -39,24 +49,31 @@ export function YeniKalem({ santiyeler, varsayilanSantiye, merkez, bugun, kapat,
   }
 
   return (
-    <Modal baslik="Yeni imalat" kapat={kapat}>
-      <form className="form" onSubmit={gonder}>
-        {merkez && santiyeler.length > 1 && (
-          <label className="alan">
+    <Modal
+      baslik="Yeni imalat"
+      kapat={kapat}
+      alt={
+        <>
+          <button type="button" onClick={kapat}>
+            {eklenen.length ? 'Kapat' : 'Vazgeç'}
+          </button>
+          <button type="submit" form="f-yeni" className="ana-dugme" disabled={bekliyor}>
+            {bekliyor ? 'Kaydediliyor…' : 'Kaydet'}
+          </button>
+        </>
+      }
+    >
+      <form id="f-yeni" className="form" onSubmit={gonder}>
+        {santiyeSor && (
+          <div className="alan">
             <span>Şantiye</span>
-            <select
-              value={santiye ?? ''}
-              onChange={(e) => setSantiye(e.target.value ? Number(e.target.value) : null)}
-              required
-            >
-              <option value="">Seçin</option>
-              {santiyeler.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.ad}
-                </option>
-              ))}
-            </select>
-          </label>
+            <Cipler
+              etiket="Şantiye"
+              secenekler={santiyeler.map((s) => ({ deger: s.id, ad: s.ad }))}
+              deger={santiye}
+              sec={setSantiye}
+            />
+          </div>
         )}
         <label className="alan">
           <span>İmalat</span>
@@ -66,7 +83,7 @@ export function YeniKalem({ santiyeler, varsayilanSantiye, merkez, bugun, kapat,
             placeholder="Örn. İç sıva, çatı izolasyonu"
             required
             maxLength={200}
-            autoFocus
+            enterKeyHint="next"
           />
         </label>
         <label className="alan">
@@ -76,30 +93,34 @@ export function YeniKalem({ santiyeler, varsayilanSantiye, merkez, bugun, kapat,
             onChange={(e) => setKonum(e.target.value)}
             placeholder="Örn. A blok 3. kat"
             maxLength={200}
+            enterKeyHint="next"
           />
         </label>
-        <label className="alan">
+        <div className="alan">
           <span>Hedef bitiş tarihi</span>
-          <input type="date" value={hedef} onChange={(e) => setHedef(e.target.value)} required />
-          {hedef && gunFarki(bugun, hedef) < 0 && (
-            <small className="r-kirmizi-yazi">Bu tarih geçmişte; imalat gecikmiş görünecek.</small>
+          <Cipler etiket="Hızlı seçim" secenekler={hizli} deger={hedef} sec={setHedef} />
+          <input
+            type="date"
+            value={hedef}
+            onChange={(e) => setHedef(e.target.value)}
+            required
+            aria-label="Hedef bitiş tarihi"
+          />
+          {hedef && (
+            <small className={gunFarki(bugun, hedef) < 0 ? 'r-kirmizi-yazi' : 'soluk'}>
+              {gunFarki(bugun, hedef) < 0
+                ? 'Bu tarih geçmişte; imalat gecikmiş görünecek.'
+                : `${tarihYaz(hedef, bugun)} · ${gunFarki(bugun, hedef)} gün sonra`}
+            </small>
           )}
-        </label>
-        <AdAlani ad={ad} setAd={setAd} />
+        </div>
+        <AdAlani />
         <label className="kutu">
           <input type="checkbox" checked={devamEt} onChange={(e) => setDevamEt(e.target.checked)} />
           Kaydettikten sonra yenisini gir
         </label>
         {eklenen.length > 0 && <p className="r-yesil-yazi kucuk">Eklendi: {eklenen.join(', ')}</p>}
         <Hata mesaj={hata} />
-        <div className="eylemler">
-          <button className="ana-dugme" disabled={bekliyor}>
-            {bekliyor ? 'Kaydediliyor…' : 'Kaydet'}
-          </button>
-          <button type="button" onClick={kapat}>
-            {eklenen.length ? 'Kapat' : 'Vazgeç'}
-          </button>
-        </div>
       </form>
     </Modal>
   )

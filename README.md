@@ -8,6 +8,13 @@
 - İlk hedef hiç kaybolmaz; her tarih değişikliği eski/yeni tarih, neden, yapan kişi ve zamanla saklanır.
   Biten imalat için "ilk hedefte / revize hedefte / geç" sonucu görünür.
 
+## Telefonda
+
+Uygulama telefon için tasarlandı: altta İmalatlar / Değişiklikler / Hesap menüsü, sağ altta
+"Yeni imalat" düğmesi, tarih için "+1 hafta", "+2 hafta" gibi hızlı seçimler ve hazır gecikme
+nedenleri. Tarayıcıda açıp **Ana ekrana ekle** denince kendi simgesiyle, tam ekran açılır
+(iPhone: Safari → Paylaş → Ana Ekrana Ekle; Android: Chrome → ⋮ → Uygulamayı yükle).
+
 ## Giriş
 
 Şantiye başına bir ortak şifre ve merkez için bir şifre vardır. Kaydı kimin yaptığı, formlardaki
@@ -18,7 +25,7 @@
 
 | Parça | Nerede |
 |---|---|
-| Arayüz | Vite + React + TypeScript, `src/` — Vercel'de statik site |
+| Arayüz | Vite + React + TypeScript, `src/` — Vercel'de statik site; telefonda ana ekrana eklenebilir (PWA) |
 | Veri | Supabase **santiye-personel** projesi, `imalat_` önekli tablolar — şema ve fonksiyonlar `supabase/imalat.sql` |
 
 Tarayıcı tablolara doğrudan erişemez; her okuma/yazma `imalat_*` fonksiyonlarından geçer ve her
