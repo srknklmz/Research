@@ -82,7 +82,7 @@ export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
       k.durum === 'devam' ? (
         <>
           <button type="button" className="ana-dugme" onClick={() => setMod('tarih')}>
-            Tarihi değiştir
+            {k.hedef ? 'Tarihi değiştir' : 'Hedef tarih ver'}
           </button>
           <button type="button" className="yesil-dugme" onClick={() => setMod('bitir')}>
             Bitti
@@ -96,7 +96,7 @@ export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
     tarih: (
       <>
         {vazgec}
-        {gonderDugmesi('f-tarih', 'Yeni tarihi kaydet')}
+        {gonderDugmesi('f-tarih', k.hedef ? 'Yeni tarihi kaydet' : 'Tarihi kaydet')}
       </>
     ),
     bitir: (
@@ -141,10 +141,15 @@ export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
   return (
     <Modal baslik={k.ad} kapat={kapat} alt={alt}>
       <div className={`durum-serit d-${d}`}>
-        {k.durum === 'devam' ? (
+        {k.durum === 'devam' && k.hedef ? (
           <>
             <strong>{kalanYaz(k.hedef, bugun)}</strong>
             <span>Hedef {tarihYaz(k.hedef, bugun)}</span>
+          </>
+        ) : k.durum === 'devam' ? (
+          <>
+            <strong>Hedef tarih yok</strong>
+            <span>Tarih verilince takibe girer</span>
           </>
         ) : (
           <>
@@ -153,7 +158,8 @@ export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
                 {
                   ilk_hedefte: 'İlk hedefte bitti',
                   revize_hedefte: 'Revize hedefte bitti',
-                  gec: `${gunFarki(k.hedef, k.bitis!)} gün geç bitti`,
+                  gec: `${gunFarki(k.hedef!, k.bitis!)} gün geç bitti`,
+                  hedefsiz: 'Bitti',
                 }[sonuc(k)]
               }
             </strong>
@@ -173,12 +179,12 @@ export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
         </div>
         <div>
           <dt>İlk hedef</dt>
-          <dd>{tarihYaz(k.ilk_hedef, bugun)}</dd>
+          <dd>{k.ilk_hedef ? tarihYaz(k.ilk_hedef, bugun) : '—'}</dd>
         </div>
         <div>
           <dt>Güncel hedef</dt>
           <dd>
-            {tarihYaz(k.hedef, bugun)}
+            {k.hedef ? tarihYaz(k.hedef, bugun) : '—'}
             {kay !== 0 && <span className="kayma"> ({gunYaz(kay)})</span>}
           </dd>
         </div>
@@ -224,7 +230,9 @@ export function Detay({ k, bugun, merkez, santiye, kapat, yenile }: Props) {
               <span className={`nokta tur-${g.tur}`} aria-hidden />
               <div>
                 <div>{degisiklikYaz(g, bugun)}</div>
-                {g.neden && g.tur === 'tarih' && <div className="neden">“{g.neden}”</div>}
+                {g.neden && (g.tur === 'tarih' || g.tur === 'olusturma') && (
+                  <div className="neden">“{g.neden}”</div>
+                )}
                 <div className="soluk kucuk">
                   {g.yapan_ad} · {zamanYaz(g.zaman, bugun)} ·{' '}
                   {new Date(g.zaman).toLocaleDateString('tr-TR', { timeZone: 'Europe/Istanbul' })}
@@ -245,25 +253,34 @@ interface FormProps {
 
 function TarihFormu({ k, bugun, kaydet }: FormProps & { bugun: string }) {
   const [ad] = useAd()
-  const [yeni, setYeni] = useState(k.hedef)
+  const [yeni, setYeni] = useState(k.hedef ?? '')
   const [neden, setNeden] = useState('')
-  const fark = yeni ? gunFarki(k.hedef, yeni) : 0
-  const hizli = [
-    { deger: gunEkle(k.hedef, 3), ad: '+3 gün' },
-    { deger: gunEkle(k.hedef, 7), ad: '+1 hafta' },
-    { deger: gunEkle(k.hedef, 14), ad: '+2 hafta' },
-    { deger: ayEkle(k.hedef, 1), ad: '+1 ay' },
-  ]
+  // Tarihsiz imalata ilk tarih verilirken neden sorulmaz; bu tarih ilk hedef olur.
+  const ilkTarih = !k.hedef
+  const fark = yeni && k.hedef ? gunFarki(k.hedef, yeni) : 0
+  const hizli = k.hedef
+    ? [
+        { deger: gunEkle(k.hedef, 3), ad: '+3 gün' },
+        { deger: gunEkle(k.hedef, 7), ad: '+1 hafta' },
+        { deger: gunEkle(k.hedef, 14), ad: '+2 hafta' },
+        { deger: ayEkle(k.hedef, 1), ad: '+1 ay' },
+      ]
+    : [
+        { deger: gunEkle(bugun, 7), ad: '1 hafta' },
+        { deger: gunEkle(bugun, 14), ad: '2 hafta' },
+        { deger: ayEkle(bugun, 1), ad: '1 ay' },
+        { deger: ayEkle(bugun, 2), ad: '2 ay' },
+      ]
 
   function gonder(e: FormEvent) {
     e.preventDefault()
-    kaydet(() => api.tarih(k.id, yeni, neden, ad))
+    kaydet(() => api.tarih(k.id, yeni, ilkTarih ? '' : neden, ad))
   }
 
   return (
     <form id="f-tarih" className="form" onSubmit={gonder}>
       <div className="alan">
-        <span>Yeni hedef tarih</span>
+        <span>{ilkTarih ? 'Hedef bitiş tarihi' : 'Yeni hedef tarih'}</span>
         <Cipler etiket="Hızlı seçim" secenekler={hizli} deger={yeni} sec={setYeni} />
         <input
           type="date"
@@ -274,29 +291,38 @@ function TarihFormu({ k, bugun, kaydet }: FormProps & { bugun: string }) {
         />
         {fark !== 0 && (
           <small className={fark > 0 ? 'r-kirmizi-yazi' : 'r-yesil-yazi'}>
-            {tarihYaz(k.hedef, bugun)} → {tarihYaz(yeni, bugun)} ({gunYaz(fark)})
+            {tarihYaz(k.hedef!, bugun)} → {tarihYaz(yeni, bugun)} ({gunYaz(fark)})
             {gunFarki(bugun, yeni) < 0 && ' · geçmiş bir tarih'}
           </small>
         )}
+        {ilkTarih && yeni && (
+          <small className={gunFarki(bugun, yeni) < 0 ? 'r-kirmizi-yazi' : 'soluk'}>
+            {gunFarki(bugun, yeni) < 0
+              ? 'Bu tarih geçmişte; imalat gecikmiş görünecek.'
+              : `${tarihYaz(yeni, bugun)} · ${gunFarki(bugun, yeni)} gün sonra · ilk hedef olarak kaydedilir`}
+          </small>
+        )}
       </div>
-      <div className="alan">
-        <span>Neden değişiyor?</span>
-        <Cipler
-          etiket="Hazır nedenler"
-          secenekler={HAZIR_NEDENLER.map((n) => ({ deger: n, ad: n }))}
-          deger={neden}
-          sec={setNeden}
-        />
-        <textarea
-          value={neden}
-          onChange={(e) => setNeden(e.target.value)}
-          placeholder="Seçin ya da kısaca yazın"
-          required
-          minLength={3}
-          rows={2}
-          aria-label="Neden değişiyor?"
-        />
-      </div>
+      {!ilkTarih && (
+        <div className="alan">
+          <span>Neden değişiyor?</span>
+          <Cipler
+            etiket="Hazır nedenler"
+            secenekler={HAZIR_NEDENLER.map((n) => ({ deger: n, ad: n }))}
+            deger={neden}
+            sec={setNeden}
+          />
+          <textarea
+            value={neden}
+            onChange={(e) => setNeden(e.target.value)}
+            placeholder="Seçin ya da kısaca yazın"
+            required
+            minLength={3}
+            rows={2}
+            aria-label="Neden değişiyor?"
+          />
+        </div>
+      )}
       <AdAlani />
     </form>
   )
@@ -355,12 +381,12 @@ function DuzenleFormu({ k, kaydet }: FormProps) {
   const [ad] = useAd()
   const [isim, setIsim] = useState(k.ad)
   const [konum, setKonum] = useState(k.konum ?? '')
-  const [hedef, setHedef] = useState(k.hedef)
+  const [hedef, setHedef] = useState(k.hedef ?? '')
   const tarihDuzeltilebilir = k.erteleme === 0 && k.durum === 'devam'
 
   function gonder(e: FormEvent) {
     e.preventDefault()
-    kaydet(() => api.duzenle(k.id, isim, konum, tarihDuzeltilebilir ? hedef : null, ad))
+    kaydet(() => api.duzenle(k.id, isim, konum, (tarihDuzeltilebilir && hedef) || null, ad))
   }
 
   return (
@@ -375,8 +401,13 @@ function DuzenleFormu({ k, kaydet }: FormProps) {
       </label>
       {tarihDuzeltilebilir ? (
         <label className="alan">
-          <span>Hedef tarih (yanlış girildiyse)</span>
-          <input type="date" value={hedef} onChange={(e) => setHedef(e.target.value)} required />
+          <span>{k.hedef ? 'Hedef tarih (yanlış girildiyse)' : 'Hedef tarih (isteğe bağlı)'}</span>
+          <input
+            type="date"
+            value={hedef}
+            onChange={(e) => setHedef(e.target.value)}
+            required={!!k.hedef}
+          />
           <small className="soluk">Henüz ertelenmediği için ilk hedef de birlikte düzeltilir.</small>
         </label>
       ) : (

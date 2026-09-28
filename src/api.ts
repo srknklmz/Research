@@ -26,8 +26,9 @@ export interface Kalem {
   santiye_id: number
   ad: string
   konum: string | null
-  ilk_hedef: string
-  hedef: string
+  /** İkisi birlikte boştur: hedef tarihi henüz belli olmayan imalat. */
+  ilk_hedef: string | null
+  hedef: string | null
   durum: 'devam' | 'bitti'
   bitis: string | null
   olusturan_ad: string

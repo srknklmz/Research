@@ -13,7 +13,7 @@ import {
   type Sonuc,
 } from './tarih'
 
-export type DurumFiltre = 'tumu' | 'gecikti' | 'yakin' | 'bitti'
+export type DurumFiltre = 'tumu' | 'gecikti' | 'yakin' | 'tarihsiz' | 'bitti'
 
 interface Props {
   veri: Veri
@@ -58,6 +58,7 @@ export function Imalatlar({
       tumu: devam.length,
       gecikti: devam.filter((k) => durum(k, bugun) === 'gecikti').length,
       yakin: devam.filter((k) => durum(k, bugun) === 'yakin').length,
+      tarihsiz: devam.filter((k) => !k.hedef).length,
       bitti: kapsam.length - devam.length,
       kaymis: devam.filter((k) => kayma(k) > 0).length,
     }
@@ -75,12 +76,12 @@ export function Imalatlar({
   }, [kapsam, sorgu, durumFiltre, bugun])
 
   const sonuclar = useMemo(() => {
-    const r: Record<Sonuc, number> = { ilk_hedefte: 0, revize_hedefte: 0, gec: 0 }
+    const r: Record<Sonuc, number> = { ilk_hedefte: 0, revize_hedefte: 0, gec: 0, hedefsiz: 0 }
     for (const k of liste) if (k.durum === 'bitti') r[sonuc(k)]++
     return r
   }, [liste])
 
-  const kutular: { id: DurumFiltre; ad: string; renk: string }[] = [
+  const kutular: { id: Exclude<DurumFiltre, 'tarihsiz'>; ad: string; renk: string }[] = [
     { id: 'tumu', ad: 'Devam eden', renk: '' },
     { id: 'gecikti', ad: 'Gecikmiş', renk: 'r-kirmizi-yazi' },
     { id: 'yakin', ad: 'Bu hafta', renk: 'r-sari-yazi' },
@@ -131,6 +132,22 @@ export function Imalatlar({
           {sayilar.tumu} imalattan {sayilar.kaymis} tanesinin hedefi ilk tarihten kaydı.
         </p>
       )}
+      {durumFiltre === 'tumu' && sayilar.tarihsiz > 0 && (
+        <p className="soluk kucuk liste-not">
+          {sayilar.tarihsiz} imalatın hedef tarihi yok; listenin sonunda.{' '}
+          <button type="button" className="baglanti" onClick={() => setDurumFiltre('tarihsiz')}>
+            Yalnız onları göster
+          </button>
+        </p>
+      )}
+      {durumFiltre === 'tarihsiz' && (
+        <p className="soluk kucuk liste-not">
+          Hedef tarihi olmayan {sayilar.tarihsiz} imalat.{' '}
+          <button type="button" className="baglanti" onClick={() => setDurumFiltre('tumu')}>
+            Hepsini göster
+          </button>
+        </p>
+      )}
       {durumFiltre === 'bitti' && liste.length > 0 && (
         <p className="hedef-tutma">
           <span className="rozet r-yesil">{sonuclar.ilk_hedefte} ilk hedefte</span>
@@ -165,6 +182,7 @@ function bosMesaj(f: DurumFiltre, sorgu: string) {
     tumu: 'Devam eden imalat yok. Sağ alttaki “+” ile ekleyin.',
     gecikti: 'Gecikmiş imalat yok.',
     yakin: 'Bu hafta bitmesi gereken imalat yok.',
+    tarihsiz: 'Hedef tarihi olmayan imalat yok.',
     bitti: 'Henüz biten imalat yok.',
   }[f]
 }
@@ -215,6 +233,7 @@ const ROZET: Record<Durum, string> = {
   gecikti: 'r-kirmizi',
   yakin: 'r-sari',
   yolunda: 'r-yesil',
+  tarihsiz: 'r-gri',
   bitti: '',
 }
 
@@ -222,6 +241,7 @@ const SONUC_YAZI: Record<Sonuc, [string, string]> = {
   ilk_hedefte: ['İlk hedefte', 'r-yesil'],
   revize_hedefte: ['Revize hedefte', 'r-sari'],
   gec: ['Geç', 'r-kirmizi'],
+  hedefsiz: ['Bitti', 'r-gri'],
 }
 
 function Satir({
@@ -246,15 +266,17 @@ function Satir({
         <span className="satir-sol">
           <span className="satir-ad">{k.ad}</span>
           {alt && <span className="satir-alt">{alt}</span>}
-          <span className="satir-alt">
-            İlk hedef {tarihYaz(k.ilk_hedef, bugun)}
-            {kay !== 0 && ` · son hedef ${tarihYaz(k.hedef, bugun)}`}
-          </span>
+          {k.ilk_hedef && k.hedef && (
+            <span className="satir-alt">
+              İlk hedef {tarihYaz(k.ilk_hedef, bugun)}
+              {kay !== 0 && ` · son hedef ${tarihYaz(k.hedef, bugun)}`}
+            </span>
+          )}
         </span>
         <span className="satir-sag">
           <span className="satir-tarih">{tarihYaz(k.bitis!, bugun)}</span>
           <span className={`rozet ${SONUC_YAZI[s][1]}`}>
-            {s === 'gec' ? `${gunFarki(k.hedef, k.bitis!)} gün geç` : SONUC_YAZI[s][0]}
+            {s === 'gec' ? `${gunFarki(k.hedef!, k.bitis!)} gün geç` : SONUC_YAZI[s][0]}
           </span>
         </span>
       </button>
@@ -268,14 +290,20 @@ function Satir({
         {alt && <span className="satir-alt">{alt}</span>}
         {kay !== 0 && (
           <span className="satir-alt kayma">
-            İlk hedef {tarihYaz(k.ilk_hedef, bugun)} · {gunYaz(kay)}
+            İlk hedef {tarihYaz(k.ilk_hedef!, bugun)} · {gunYaz(kay)}
             {k.erteleme > 1 && ` · ${k.erteleme} kez`}
           </span>
         )}
       </span>
       <span className="satir-sag">
-        <span className="satir-tarih">{tarihYaz(k.hedef, bugun)}</span>
-        <span className={`rozet ${ROZET[d]}`}>{kalanYaz(k.hedef, bugun)}</span>
+        {k.hedef ? (
+          <>
+            <span className="satir-tarih">{tarihYaz(k.hedef, bugun)}</span>
+            <span className={`rozet ${ROZET[d]}`}>{kalanYaz(k.hedef, bugun)}</span>
+          </>
+        ) : (
+          <span className={`rozet ${ROZET[d]}`}>Tarih yok</span>
+        )}
       </span>
     </button>
   )

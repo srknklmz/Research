@@ -42,8 +42,8 @@ create table if not exists imalat_kalem (
   santiye_id   smallint not null references imalat_santiye(id),
   ad           text not null check (length(trim(ad)) between 1 and 200),
   konum        text check (konum is null or length(konum) <= 200),
-  ilk_hedef    date not null,
-  hedef        date not null,
+  ilk_hedef    date,
+  hedef        date,
   durum        text not null default 'devam' check (durum in ('devam', 'bitti')),
   bitis        date,
   olusturan_ad text not null,
@@ -65,6 +65,16 @@ create table if not exists imalat_degisiklik (
   yapan_hesap text not null,
   zaman       timestamptz not null default now()
 );
+-- Hedef tarihi henüz belli olmayan imalatta ilk_hedef ve hedef birlikte
+-- boştur; ilk verilen tarih ilk hedef olur. (Tablo önceden varsa boşluğa izin ver.)
+alter table imalat_kalem alter column ilk_hedef drop not null,
+                         alter column hedef drop not null;
+do $$ begin
+  alter table imalat_kalem add constraint imalat_kalem_tarih_birlikte
+    check ((ilk_hedef is null) = (hedef is null));
+exception when duplicate_object then null;
+end $$;
+
 create index if not exists imalat_degisiklik_kalem on imalat_degisiklik (kalem_id, zaman);
 create index if not exists imalat_degisiklik_zaman on imalat_degisiklik (zaman);
 
@@ -219,7 +229,7 @@ begin
                'olusturan_ad', k.olusturan_ad,
                'olusturma', k.olusturma,
                'erteleme', (select count(*) from imalat_degisiklik d where d.kalem_id = k.id and d.tur = 'tarih')
-             ) order by k.hedef, k.id), '[]'::jsonb)
+             ) order by k.hedef nulls last, k.id), '[]'::jsonb)
         from imalat_kalem k
        where s.o_merkez or k.santiye_id = s.o_santiye
     ),
@@ -320,6 +330,16 @@ begin
   if p_yeni is null then
     raise exception 'Yeni hedef tarihini seçin.';
   end if;
+
+  -- Tarihsiz imalata ilk tarih verilmesi erteleme değildir: neden sorulmaz,
+  -- tarih ilk hedef olur ve geçmişe düzeltme olarak yazılır.
+  if (v.o_kalem).hedef is null then
+    update imalat_kalem set hedef = p_yeni, ilk_hedef = p_yeni where id = p_kalem;
+    insert into imalat_degisiklik (kalem_id, tur, yeni_hedef, neden, yapan_ad, yapan_hesap)
+    values (p_kalem, 'duzenleme', p_yeni, 'Hedef tarih verildi', v_yapan, v.o_kod);
+    return;
+  end if;
+
   if p_yeni = (v.o_kalem).hedef then
     raise exception 'Yeni tarih mevcut hedefle aynı.';
   end if;
@@ -391,10 +411,10 @@ begin
   v_hedef := coalesce(p_hedef, (v.o_kalem).hedef);
   if trim(p_ad) = (v.o_kalem).ad
      and nullif(trim(coalesce(p_konum, '')), '') is not distinct from (v.o_kalem).konum
-     and v_hedef = (v.o_kalem).hedef then
+     and v_hedef is not distinct from (v.o_kalem).hedef then
     return;
   end if;
-  if v_hedef <> (v.o_kalem).hedef then
+  if v_hedef is distinct from (v.o_kalem).hedef then
     if exists (select 1 from imalat_degisiklik where kalem_id = p_kalem and tur = 'tarih') then
       raise exception 'Bu imalat ertelenmiş; tarihi "Tarihi değiştir" ile nedeniyle güncelleyin.';
     end if;
@@ -407,13 +427,13 @@ begin
      set ad = trim(p_ad),
          konum = nullif(trim(coalesce(p_konum, '')), ''),
          hedef = v_hedef,
-         ilk_hedef = case when v_hedef <> hedef then v_hedef else ilk_hedef end
+         ilk_hedef = case when v_hedef is distinct from hedef then v_hedef else ilk_hedef end
    where id = p_kalem;
 
   insert into imalat_degisiklik (kalem_id, tur, eski_hedef, yeni_hedef, neden, yapan_ad, yapan_hesap)
   values (p_kalem, 'duzenleme',
-          case when v_hedef <> (v.o_kalem).hedef then (v.o_kalem).hedef end,
-          case when v_hedef <> (v.o_kalem).hedef then v_hedef end,
+          case when v_hedef is distinct from (v.o_kalem).hedef then (v.o_kalem).hedef end,
+          case when v_hedef is distinct from (v.o_kalem).hedef then v_hedef end,
           'Bilgiler düzeltildi', v_yapan, v.o_kod);
 end $$;
 

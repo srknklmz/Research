@@ -34,13 +34,14 @@ export function tarihYaz(tarih: string, bugun: string): string {
   return tarih.slice(0, 4) === bugun.slice(0, 4) ? kisa.format(d) : uzun.format(d)
 }
 
-export type Durum = 'gecikti' | 'yakin' | 'yolunda' | 'bitti'
+export type Durum = 'gecikti' | 'yakin' | 'yolunda' | 'tarihsiz' | 'bitti'
 
 /** Bu kadar gün (dahil) içinde bitmesi gereken imalat "yakın" sayılır. */
 export const YAKIN_GUN = 7
 
 export function durum(k: Pick<Kalem, 'durum' | 'hedef'>, bugun: string): Durum {
   if (k.durum === 'bitti') return 'bitti'
+  if (!k.hedef) return 'tarihsiz'
   const kalan = gunFarki(bugun, k.hedef)
   if (kalan < 0) return 'gecikti'
   if (kalan <= YAKIN_GUN) return 'yakin'
@@ -57,13 +58,14 @@ export function kalanYaz(hedef: string, bugun: string): string {
 
 /** İlk hedefe göre kaç gün kaydı (+ geç, − erken). */
 export function kayma(k: Pick<Kalem, 'ilk_hedef' | 'hedef'>): number {
-  return gunFarki(k.ilk_hedef, k.hedef)
+  return k.ilk_hedef && k.hedef ? gunFarki(k.ilk_hedef, k.hedef) : 0
 }
 
-export type Sonuc = 'ilk_hedefte' | 'revize_hedefte' | 'gec'
+export type Sonuc = 'ilk_hedefte' | 'revize_hedefte' | 'gec' | 'hedefsiz'
 
 /** Biten imalat hedefini tuttu mu? */
 export function sonuc(k: Pick<Kalem, 'ilk_hedef' | 'hedef' | 'bitis'>): Sonuc {
+  if (!k.ilk_hedef || !k.hedef) return 'hedefsiz'
   const bitis = k.bitis!
   if (gunFarki(bitis, k.ilk_hedef) >= 0) return 'ilk_hedefte'
   if (gunFarki(bitis, k.hedef) >= 0) return 'revize_hedefte'
@@ -103,16 +105,19 @@ export function degisiklikYaz(
   const t = (x: string | null) => (x ? tarihYaz(x, bugun) : '')
   switch (d.tur) {
     case 'olusturma':
-      return `Yeni imalat · hedef ${t(d.yeni_hedef)}`
+      return d.yeni_hedef ? `Yeni imalat · hedef ${t(d.yeni_hedef)}` : 'Yeni imalat · tarih yok'
     case 'tarih': {
       const fark = gunFarki(d.eski_hedef!, d.yeni_hedef!)
       return `Hedef ${t(d.eski_hedef)} → ${t(d.yeni_hedef)} (${gunYaz(fark)})`
     }
     case 'bitti':
-      return `Bitti · ${t(d.yeni_hedef)} (hedef ${t(d.eski_hedef)})`
+      return d.eski_hedef
+        ? `Bitti · ${t(d.yeni_hedef)} (hedef ${t(d.eski_hedef)})`
+        : `Bitti · ${t(d.yeni_hedef)}`
     case 'geri_acildi':
       return 'Yeniden açıldı'
     case 'duzenleme':
+      if (d.yeni_hedef && !d.eski_hedef) return `Hedef tarih verildi · ${t(d.yeni_hedef)}`
       return d.yeni_hedef
         ? `Bilgiler düzeltildi · hedef ${t(d.eski_hedef)} → ${t(d.yeni_hedef)}`
         : 'Bilgiler düzeltildi'

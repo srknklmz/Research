@@ -532,6 +532,9 @@ input[type='date'] {
 .satir.d-yolunda {
   border-left-color: var(--yesil);
 }
+.satir.d-tarihsiz {
+  border-left-color: var(--soluk);
+}
 .satir.d-bitti {
   border-left-color: var(--cizgi);
 }
@@ -583,6 +586,10 @@ input[type='date'] {
 .r-yesil {
   background: var(--yesil-zemin);
   color: var(--yesil);
+}
+.r-gri {
+  background: var(--gri-zemin);
+  color: var(--soluk);
 }
 .hedef-tutma {
   display: flex;

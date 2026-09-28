@@ -74,7 +74,9 @@ export function Degisiklikler({ veri, santiye, setSantiye, santiyeAdi, ac }: Pro
                         )}
                       </span>
                       <span>{degisiklikYaz(d, bugun)}</span>
-                      {d.neden && d.tur === 'tarih' && <span className="neden">“{d.neden}”</span>}
+                      {d.neden && (d.tur === 'tarih' || d.tur === 'olusturma') && (
+                        <span className="neden">“{d.neden}”</span>
+                      )}
                       <span className="soluk kucuk">
                         {d.yapan_ad} · {zamanYaz(d.zaman, bugun)}
                       </span>

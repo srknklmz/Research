@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ayEkle, durum, gunEkle, gunFarki, kalanYaz, kayma, sonuc, tarihYaz, zamanYaz } from './tarih'
+import { ayEkle, degisiklikYaz, durum, gunEkle, gunFarki, kalanYaz, kayma, sonuc, tarihYaz, zamanYaz } from './tarih'
 
 describe('tarih', () => {
   it('gün farkını ay ve yıl geçişinde doğru sayar', () => {
@@ -45,5 +45,19 @@ describe('tarih', () => {
     expect(zamanYaz('2026-09-27T22:30:00Z', '2026-09-28')).toBe('bugün 01:30')
     expect(zamanYaz('2026-09-27T10:00:00Z', '2026-09-28')).toBe('dün 13:00')
     expect(zamanYaz('2026-09-24T10:00:00Z', '2026-09-28')).toBe('4 gün önce')
+  })
+
+  it('hedef tarihi olmayan imalatı ayrı tutar', () => {
+    const bugun = '2026-09-28'
+    expect(durum({ durum: 'devam', hedef: null }, bugun)).toBe('tarihsiz')
+    expect(durum({ durum: 'bitti', hedef: null }, bugun)).toBe('bitti')
+    expect(kayma({ ilk_hedef: null, hedef: null })).toBe(0)
+    expect(sonuc({ ilk_hedef: null, hedef: null, bitis: bugun })).toBe('hedefsiz')
+    expect(degisiklikYaz({ tur: 'olusturma', eski_hedef: null, yeni_hedef: null }, bugun)).toBe(
+      'Yeni imalat · tarih yok',
+    )
+    expect(
+      degisiklikYaz({ tur: 'duzenleme', eski_hedef: null, yeni_hedef: '2026-10-08' }, bugun),
+    ).toBe('Hedef tarih verildi · 8 Eki')
   })
 })
