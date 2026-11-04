@@ -163,5 +163,9 @@ R("""    case 'swstep':applyDesign(S.d+(+v));return;
 R("const S={sbw:SBW0,d:0,","const S={rv:(()=>{try{const v=+localStorage.getItem('evrak-rv');if(v>=0&&v<10)return v}catch(e){}return 0})(),sbw:SBW0,d:0,")
 R("const SB_DEF=280,SB_WIDE=440;","const SB_DEF=300,SB_WIDE=440;")
 R("if(v>=200&&v<=700)return v}catch(e){}return 280}","if(v>=200&&v<=700)return v}catch(e){}return 300}")
+# Seçim: 07 Monokrom Kod sabit; tasarım seçici kaldırıldı
+R("const S={rv:(()=>{try{const v=+localStorage.getItem('evrak-rv');if(v>=0&&v<10)return v}catch(e){}return 0})(),","const S={rv:6,")
+R("function switcher(){\n  const d=RV[S.rv]","function switcher(){return '';\n  const d=RV[S.rv]")
+R(".toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));",".toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));")
 open('sade.html','w').write(s)
 print('ok')

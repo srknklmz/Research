@@ -189,7 +189,7 @@ textarea.inp{height:60px;padding:8px 10px;resize:none;display:block}
 .findbar{position:absolute;top:calc(var(--tb-h) + 8px);right:20px;display:flex;align-items:center;gap:2px;padding:4px 4px 4px 10px;border-radius:10px;width:340px;max-width:calc(100% - 40px);background:var(--pop-bg);color:var(--pop-fg);box-shadow:0 0 0 1px rgba(0,0,0,.07),0 10px 30px rgba(0,0,0,.18);z-index:7}
 .findbar input{flex:1;min-width:0;border:0;outline:none;background:none;font-size:13px;padding:6px 4px}
 .findbar .n{color:var(--muted);font-variant-numeric:tabular-nums;padding:0 6px;font-size:12px;white-space:nowrap}
-.toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1d1d1f;color:#fff;padding:10px 14px;border-radius:10px;font-size:12.5px;z-index:90;display:flex;gap:14px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100% - 32px)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1d1d1f;color:#fff;padding:10px 14px;border-radius:10px;font-size:12.5px;z-index:90;display:flex;gap:14px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100% - 32px)}
 .toast button{border:0;background:none;color:#8fb3ff;font-weight:650;cursor:pointer;padding:0}
 /* tasarım değiştirici */
 .sw{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:4px;background:rgba(22,24,30,.9);color:#fff;border-radius:14px;padding:5px;box-shadow:0 10px 34px rgba(0,0,0,.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);max-width:calc(100% - 32px)}
@@ -530,7 +530,7 @@ const DESIGNS=[
 
 /* ---------- durum ---------- */
 let SBW0=SB_DEF_INIT();
-const S={rv:(()=>{try{const v=+localStorage.getItem('evrak-rv');if(v>=0&&v<10)return v}catch(e){}return 0})(),sbw:SBW0,d:0,dir:'gelen',proj:'ALL',q:'',df:'',sel:{gelen:'2026/0148',giden:'2026/0132'},zoomMul:1,rot:0,br:0,ct:0,pop:null,popAt:null,find:{open:false,q:'',i:0,n:0},thumbs:false,drawer:null,edit:false,full:false,dark:false,glass:true,palette:false,pq:'',pal:{proj:'ALL',df:'',dir:'all'},newQ:[],newI:0,newDir:'gelen',swGrid:false,swHide:false,page:1,toast:null};
+const S={rv:6,sbw:SBW0,d:0,dir:'gelen',proj:'ALL',q:'',df:'',sel:{gelen:'2026/0148',giden:'2026/0132'},zoomMul:1,rot:0,br:0,ct:0,pop:null,popAt:null,find:{open:false,q:'',i:0,n:0},thumbs:false,drawer:null,edit:false,full:false,dark:false,glass:true,palette:false,pq:'',pal:{proj:'ALL',df:'',dir:'all'},newQ:[],newI:0,newDir:'gelen',swGrid:false,swHide:false,page:1,toast:null};
 let lastDocKey='',savedScroll=0,prevDrawer=null;
 const D=()=>DESIGNS[S.d];
 const nextNo=()=>'2026/'+pad(Math.max(...DOCS.map(d=>+d.no.slice(5)))+1);
@@ -827,7 +827,7 @@ function popHTML(){
 function ddItems(){const it=visible();if(!it.length)return '<div class="empty">Eşleşen evrak yok</div>';const sel=S.sel[S.dir];return it.map(d=>`<button class="ddi${d.no===sel?' sel':''}" data-a="sel" data-v="${d.no}" style="--c:${P[d.proj].c}"><span class="dot"></span><span class="no">${d.no}</span><span class="k">${esc(d.konu)}</span><span class="d">${+d.date.slice(0,2)} ${AY[+d.date.slice(3,5)-1]}</span></button>`).join('')}
 
 /* ---------- tasarım değiştirici ---------- */
-function switcher(){
+function switcher(){return '';
   const d=RV[S.rv],n=String(S.rv+1).padStart(2,'0');
   if(S.swHide)return `<button class="sw-mini" data-a="swshow">${ic('layout-grid',15)}Satır ${n}</button>`;
   return `<div class="sw" role="toolbar" aria-label="Satır tasarımı seçici"><button data-a="swstep" data-v="-1" title="Önceki satır tasarımı">${ic('chevron-left',18,2)}</button>
