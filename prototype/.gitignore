@@ -1,3 +1,5 @@
 node_modules
 dist
+designs/dist
+designs/shots
 test/shots

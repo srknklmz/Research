@@ -1,0 +1,48 @@
+// 5 tasarım önerisi. Her biri aynı motoru farklı ışık, malzeme ve tipografiyle kullanır.
+export const DESIGNS = {
+  1: {
+    name: 'KORTEKS',
+    blurb: 'Derin uzay laciverti, cam beyin kabuğu, kızıl-magenta sinyaller',
+    fonts: { display: "'Barlow Condensed'", body: "'Newsreader'", ui: "'Barlow'" },
+    fontUrl: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600&family=Barlow:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap',
+    shell: 'glass', defaultMode: 'dark', mono: 0.0, fiber: 1.0, breath: 1.0, wobble: 0.0, soma: 1.0,
+    dark: { bg: '#050916', bg2: '#0b1a3a', text: '#eef1f8', mute: '#8791a8', accent: '#ff2d6f', shell: '#7fa6ff', shellInt: 0.4, bloom: [0.62, 0.55, 0.3], glass: 'rgba(12,18,36,.55)', line: 'rgba(255,255,255,.12)' },
+    light: { bg: '#eceef3', bg2: '#ffffff', text: '#10131c', mute: '#5d6578', accent: '#d81b5c', shell: '#5a6c96', shellInt: 0.5, glass: 'rgba(255,255,255,.6)', line: 'rgba(16,19,28,.14)' },
+  },
+  2: {
+    name: 'DERİN',
+    blurb: 'Biyolüminesans: nefes alan zar, kalın lifler, sıvı gibi akan ışık',
+    fonts: { display: "'Saira Condensed'", body: "'Fraunces'", ui: "'Saira'" },
+    fontUrl: 'https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600&family=Saira:wght@400;500&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap',
+    shell: 'glass', defaultMode: 'dark', mono: 0.15, fiber: 1.9, breath: 2.2, wobble: 1.0, soma: 1.45,
+    dark: { bg: '#02080f', bg2: '#06263a', text: '#eaf6f7', mute: '#7e98a3', accent: '#ff3d9a', shell: '#4fe0d0', shellInt: 0.45, bloom: [0.85, 0.8, 0.22], glass: 'rgba(4,22,32,.5)', line: 'rgba(160,240,235,.14)' },
+    light: { bg: '#e9f1f0', bg2: '#fbfffe', text: '#0c1a1d', mute: '#55696d', accent: '#d61f7f', shell: '#2a8f88', shellInt: 0.55, glass: 'rgba(250,255,254,.6)', line: 'rgba(12,26,29,.14)' },
+  },
+  3: {
+    name: 'SİNEMA',
+    blurb: 'Neredeyse siyah-beyaz; kızıl yalnızca sinyalde. Sinema perdesi sadeliği',
+    fonts: { display: "'Antonio'", body: "'EB Garamond'", ui: "'Inter'" },
+    fontUrl: 'https://fonts.googleapis.com/css2?family=Antonio:wght@300;400;500&family=EB+Garamond:wght@400;500&family=Inter:wght@400;500&display=swap',
+    shell: 'glass', defaultMode: 'dark', mono: 0.82, fiber: 0.7, breath: 0.7, wobble: 0.0, soma: 0.85,
+    dark: { bg: '#04060b', bg2: '#0a1022', text: '#f3f3f1', mute: '#8a8d95', accent: '#e5173f', shell: '#c9d4ee', shellInt: 0.34, bloom: [0.5, 0.45, 0.32], glass: 'rgba(8,10,16,.6)', line: 'rgba(255,255,255,.1)' },
+    light: { bg: '#f1f0ec', bg2: '#fbfaf7', text: '#121212', mute: '#62625e', accent: '#c8102e', shell: '#55585f', shellInt: 0.45, glass: 'rgba(251,250,247,.65)', line: 'rgba(18,18,18,.14)' },
+  },
+  4: {
+    name: 'MÜREKKEP',
+    blurb: 'Sürpriz: kâğıt üstünde mürekkep çizimi. Cajal’ın nöron çizimlerinden ilham',
+    fonts: { display: "'Oswald'", body: "'Source Serif 4'", ui: "'Inter'" },
+    fontUrl: 'https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Inter:wght@400;500&display=swap',
+    shell: 'ink', defaultMode: 'light', mono: 0.7, fiber: 1.0, breath: 0.5, wobble: 0.0, soma: 0.9,
+    dark: { bg: '#0d0c0a', bg2: '#1c1915', text: '#efe9dc', mute: '#978f80', accent: '#ff3b5c', shell: '#d9cfb8', shellInt: 0.45, bloom: [0.45, 0.35, 0.3], glass: 'rgba(20,18,14,.6)', line: 'rgba(239,233,220,.14)' },
+    light: { bg: '#efe8d8', bg2: '#f8f3e7', text: '#1a1712', mute: '#6a6253', accent: '#c2143c', shell: '#2a251c', shellInt: 0.7, glass: 'rgba(248,243,231,.7)', line: 'rgba(26,23,18,.18)' },
+  },
+  5: {
+    name: 'TAKTİK',
+    blurb: 'Sürpriz: oyun HUD’u. Nokta bulutu beyin, kesik köşeler, amber veri ekranı',
+    fonts: { display: "'Chakra Petch'", body: "'IBM Plex Serif'", ui: "'JetBrains Mono'" },
+    fontUrl: 'https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap',
+    shell: 'points', defaultMode: 'dark', mono: 0.35, fiber: 0.6, breath: 0.4, wobble: 0.0, soma: 0.8,
+    dark: { bg: '#030405', bg2: '#0c1210', text: '#e9efe6', mute: '#7d8a80', accent: '#ffb000', shell: '#59ffc8', shellInt: 0.5, bloom: [0.7, 0.3, 0.28], glass: 'rgba(6,10,9,.7)', line: 'rgba(89,255,200,.2)' },
+    light: { bg: '#e6e9e4', bg2: '#f6f8f4', text: '#0e1410', mute: '#566058', accent: '#c26a00', shell: '#1f6b54', shellInt: 0.6, glass: 'rgba(246,248,244,.7)', line: 'rgba(14,20,16,.2)' },
+  },
+};
