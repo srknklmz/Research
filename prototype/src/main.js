@@ -1,10 +1,8 @@
-import ForceGraph3D from '3d-force-graph';
-import * as THREE from 'three';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { marked } from 'marked';
+import * as THREE from 'three';
 import * as pdfjs from 'pdfjs-dist/build/pdf.mjs';
 import * as pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs';
+import { Brain, S } from './brain.js';
 
 // pdf.js'i ana iş parçacığında çalıştır (ayrı worker dosyası gerekmez).
 globalThis.pdfjsWorker = pdfWorker;
@@ -115,6 +113,7 @@ const noteByTitle = (t) => notes().find((n) => norm(n.title) === norm(t));
 async function save(doc) {
   const clean = JSON.parse(JSON.stringify(doc));
   state.docs.set(doc.id, clean);
+  scheduleRender();
   if (!state.col) return;
   try {
     await state.col.doc(doc.id).set(clean);
@@ -133,6 +132,7 @@ async function save(doc) {
 
 async function remove(id) {
   state.docs.delete(id);
+  scheduleRender();
   if (state.col) await state.col.doc(id).delete();
 }
 
@@ -148,7 +148,7 @@ function scheduleRender() {
 
 async function initRuntime() {
   if (!window.claude?.use) {
-    setSync('Çevrimdışı mod', 'err');
+    setSync('ÇEVRİMDIŞI', 'err');
     banner('Bu sayfa Claude dışında açıldı: kaydetme ve yapay zeka çalışmaz.');
     return;
   }
@@ -165,26 +165,27 @@ async function initRuntime() {
 
   const uid = user ? await user.id().catch(() => null) : null;
   if (!db || !uid) {
-    setSync('Kaydetme kapalı', 'err');
+    setSync('KAYDETME KAPALI', 'err');
     banner('Notlar kaydedilemiyor (giriş yapılmamış olabilir). Bu oturumda eklediklerin sayfa kapanınca kaybolur.');
     return;
   }
   state.db = db;
   state.col = db.collection('data/users/' + uid);
-  setSync('Yükleniyor…');
-  const timer = setTimeout(() => setSync('Sunucuya ulaşılamıyor', 'err'), 10000);
+  setSync('YÜKLENİYOR');
+  const timer = setTimeout(() => setSync('SUNUCUYA ULAŞILAMIYOR', 'err'), 10000);
   state.col.onSnapshot(
     (snap) => {
       for (const ch of snap.docChanges()) {
         if (ch.type === 'removed') state.docs.delete(ch.doc.id);
         else state.docs.set(ch.doc.id, { ...ch.doc.data(), id: ch.doc.id });
       }
-      if (!snap.metadata.fromCache) { clearTimeout(timer); setSync('Senkron', 'ok'); }
+      if (!snap.metadata.fromCache) { clearTimeout(timer); setSync('SENKRON', 'ok'); }
+      state.loaded = true;
       scheduleRender();
     },
     (err) => {
       clearTimeout(timer);
-      setSync('Bağlantı koptu', 'err');
+      setSync('BAĞLANTI KOPTU', 'err');
       console.error(err);
     },
   );
@@ -195,7 +196,6 @@ function setSync(text, cls = '') {
   s.textContent = text;
   s.className = 'sync ' + cls;
 }
-
 /* ------------------------------------------------------------------ */
 /* Yapay zeka                                                          */
 /* ------------------------------------------------------------------ */
@@ -290,27 +290,6 @@ async function collectInput({ text, url, why, files }) {
   if (urlInText) { url = urlInText; content = ''; }
   return { content: content.slice(0, MAX_CONTENT), url: url || '', why: why || '', images, fileNames };
 }
-
-/* ------------------------------------------------------------------ */
-/* Analiz hattı                                                        */
-/* ------------------------------------------------------------------ */
-
-const STEPS = ['İçerik okunuyor', 'Tekrar kontrolü', 'Analiz ve detaylandırma', 'Bağlantılar ve fikirler', 'Kavram ve kişi notları', 'Kaydediliyor'];
-
-function pipelineUI() {
-  const el = $('#pipeline');
-  el.hidden = false;
-  el.innerHTML = STEPS.map((s, i) => `<div class="step" data-i="${i}"><span class="dot"></span>${s}</div>`).join('');
-  return {
-    set(i, st, extra) {
-      const s = $(`.step[data-i="${i}"]`, el);
-      if (!s) return;
-      s.className = 'step ' + st;
-      if (extra) s.innerHTML = `<span class="dot"></span>${esc(STEPS[i])} — ${esc(extra)}`;
-    },
-  };
-}
-
 function analysisPrompt(inp) {
   const kind = inp.images.length && !inp.content ? 'görsel' : inp.url && !inp.content ? 'yalnızca link' : 'metin';
   return `Sen "Sinaps" adlı kişisel bilgi asistanısın. Kullanıcının internetten bulduğu bir veriyi inceleyip Türkçe, detaylı ve dürüst bir analiz çıkar.
@@ -448,180 +427,6 @@ function findDuplicate(inp) {
   }
   return null;
 }
-
-async function ingest(raw) {
-  if (state.busy) return;
-  if (!state.sample) { toast('Yapay zeka kullanılamıyor.'); return; }
-  state.busy = true;
-  const btn = $('#ingestBtn');
-  btn.disabled = true;
-  $('#ingestResult').innerHTML = '';
-  const ui = pipelineUI();
-  let step = 0;
-  try {
-    ui.set(0, 'run');
-    const inp = await collectInput(raw);
-    if (!inp.content && !inp.url && !inp.images.length) throw new Error('Boş veri gönderilemez.');
-    if (inp.images.length && !state.sampleImages) throw new Error('Bu görünümde yapay zeka görsel okuyamıyor.');
-    ui.set(0, 'done');
-
-    step = 1; ui.set(1, 'run');
-    const dup = findDuplicate(inp);
-    let mergeInto = null;
-    if (dup) {
-      const choice = await modal(`
-        <h2>Bu veri zaten var gibi</h2>
-        <p>“<b>${esc(dup.title)}</b>” notuna çok benziyor (${fmtDate(dup.createdAt)}).</p>
-        <div class="row actions">
-          <button class="btn" data-choice="merge">Mevcut nota ekle</button>
-          <button class="btn" data-choice="new">Ayrı not olarak kaydet</button>
-          <span class="spacer"></span>
-          <button class="btn ghost" data-choice="cancel">Vazgeç</button>
-        </div>`);
-      if (!choice || choice === 'cancel') { ui.set(1, 'fail', 'vazgeçildi'); return; }
-      if (choice === 'merge') mergeInto = dup;
-    }
-    ui.set(1, 'done', dup ? (mergeInto ? 'mevcut nota eklenecek' : 'ayrı not') : 'yeni');
-
-    if (mergeInto) {
-      step = 2; ui.set(2, 'run');
-      const add = await ask(`Aşağıdaki mevcut nota yeni gelen veriyi ekleyeceğiz. Yeni verinin getirdiği YENİ bilgileri Türkçe, madde madde, kısa özetle (mevcut notta olanı tekrarlama).
-
-MEVCUT NOT: ${mergeInto.title}
-${mergeInto.summary}
-
-YENİ VERİ:
-${inp.content || inp.url}`, { modelTier: 'default', images: inp.images.length ? inp.images : undefined });
-      ui.set(2, 'done');
-      [3, 4].forEach((i) => ui.set(i, 'done', 'atlandı'));
-      ui.set(5, 'run');
-      const n = { ...mergeInto };
-      n.body = (n.body || '') + `\n\n## Ek veri (${fmtDate(now())})\n${add}\n`;
-      n.content = ((n.content || '') + '\n\n---\n\n' + (inp.content || '')).slice(0, MAX_CONTENT);
-      n.updatedAt = now();
-      await save(n);
-      ui.set(5, 'done');
-      showResult(n, 0, 0);
-      fire(n.id);
-      return;
-    }
-
-    step = 2; ui.set(2, 'run');
-    const a = await askJSON(analysisPrompt(inp), { modelTier: 'default', images: inp.images.length ? inp.images : undefined });
-    a.title = String(a.title || 'Başlıksız').slice(0, 160);
-    if (!TOPICS.some((t) => t.key === a.topic)) a.topic = 'Diğer';
-    a.tags = (a.tags || []).map((t) => norm(t)).filter(Boolean).slice(0, 6);
-    a.concepts = (a.concepts || []).slice(0, 6);
-    a.people = (a.people || []).slice(0, 5);
-    ui.set(2, 'done', a.title);
-
-    const noteId = newId('n');
-    step = 3; ui.set(3, 'run');
-    const cands = candidateNotes(a, noteId);
-    let lr = { links: [], ideas: [], projectHints: [] };
-    try {
-      lr = await askJSON(linkPrompt(a, cands), { modelTier: 'default' });
-    } catch (e) {
-      console.warn('bağlantı adımı', e);
-    }
-    const validLinks = (lr.links || []).filter((l) => noteById(l.id) && l.id !== noteId);
-    ui.set(3, 'done', `${validLinks.length} bağlantı, ${(lr.ideas || []).length} fikir`);
-
-    step = 4; ui.set(4, 'run');
-    const note = {
-      id: noteId,
-      kind: 'note',
-      type: 'source',
-      title: a.title,
-      topic: a.topic,
-      sourceType: a.sourceType || '',
-      language: a.language || '',
-      summary: a.summary || '',
-      tags: a.tags,
-      credibility: clamp(a.credibility?.score, 0, 5),
-      concepts: a.concepts.map((c) => c.name),
-      people: a.people.map((p) => p.name),
-      events: (a.events || []).slice(0, 12),
-      url: inp.url,
-      why: inp.why,
-      content: inp.content,
-      fileNames: inp.fileNames,
-      collections: [],
-      projectHints: (lr.projectHints || []).slice(0, 4),
-      body: buildBody(a, inp),
-      createdAt: now(),
-      updatedAt: now(),
-    };
-    const writes = [];
-    let entityLinks = 0;
-    const entity = async (name, type, text) => {
-      if (!name) return;
-      let e = noteByTitle(name);
-      const line = `- [[${a.title}]]: ${text}`;
-      if (e && (e.type === 'concept' || e.type === 'person')) {
-        e = { ...e, body: (e.body || '') + '\n' + line, updatedAt: now() };
-      } else if (!e) {
-        e = {
-          id: newId('n'), kind: 'note', type, title: name, topic: a.topic, summary: text, tags: [], concepts: [], people: [],
-          body: `${text}\n\n## Geçtiği kaynaklar\n${line}`, createdAt: now(), updatedAt: now(), collections: [],
-        };
-      }
-      writes.push(e);
-      writes.push({ id: newId('l'), kind: 'link', a: note.id, b: e.id, type: type === 'concept' ? 'kavram' : 'kişi', reason: text.slice(0, 160), strength: 1, createdAt: now() });
-      entityLinks++;
-    };
-    for (const c of a.concepts) await entity(c.name, 'concept', c.explanation || '');
-    for (const p of a.people) await entity(p.name, 'person', p.role || '');
-    ui.set(4, 'done', `${entityLinks} kavram/kişi`);
-
-    step = 5; ui.set(5, 'run');
-    await save(note);
-    for (const w of writes) await save(w);
-    for (const l of validLinks) {
-      await save({
-        id: newId('l'), kind: 'link', a: note.id, b: l.id,
-        type: LINK_TYPES[l.type] ? l.type : 'aynı konu',
-        reason: String(l.reason || '').slice(0, 300), strength: clamp(l.strength, 1, 3), createdAt: now(),
-      });
-    }
-    for (const i of (lr.ideas || []).slice(0, 4)) {
-      await save({
-        id: newId('i'), kind: 'idea', title: String(i.title || '').slice(0, 160), body: i.body || '',
-        type: IDEA_TYPES.includes(i.type) ? i.type : 'sentez',
-        novelty: clamp(i.novelty, 0, 10), feasibility: clamp(i.feasibility, 0, 10), potential: clamp(i.potential, 0, 10),
-        fromNotes: [note.id, ...(i.fromNotes || []).filter((x) => noteById(x))].slice(0, 6),
-        status: 'new', createdAt: now(),
-      });
-    }
-    ui.set(5, 'done');
-    maybeLearnInterests();
-    showResult(note, validLinks.length, (lr.ideas || []).length);
-    fire(note.id);
-    resetForm();
-  } catch (e) {
-    console.error(e);
-    ui.set(step, 'fail', aiError(e));
-  } finally {
-    state.busy = false;
-    btn.disabled = false;
-    scheduleRender();
-  }
-}
-
-function showResult(note, nLinks, nIdeas) {
-  $('#ingestResult').innerHTML = `
-    <div class="card result-card">
-      <div class="card-title">${esc(note.title)}</div>
-      <div class="card-sum">${esc(note.summary)}</div>
-      <div class="row actions">
-        <span class="muted small">${nLinks} bağlantı · ${nIdeas} yeni fikir</span>
-        <span class="spacer"></span>
-        <a class="btn small" href="#beyin">Beyinde gör</a>
-        <button class="btn small primary" type="button" data-open="${note.id}">Notu aç</button>
-      </div>
-    </div>`;
-}
-
 let learnCounter = 0;
 async function maybeLearnInterests() {
   learnCounter++;
@@ -633,11 +438,6 @@ async function maybeLearnInterests() {
     await save({ ...profile(), id: 'profile', kind: 'profile', learned: text.trim().slice(0, 500) });
   } catch (e) { console.warn(e); }
 }
-
-/* ------------------------------------------------------------------ */
-/* Not işlemleri                                                       */
-/* ------------------------------------------------------------------ */
-
 async function deepen(note) {
   toast('Derin inceleme başladı…', 2500);
   try {
@@ -699,7 +499,7 @@ async function syncWikiLinks(note) {
 
 async function deleteNote(note) {
   const c = await modal(`<h2>Not silinsin mi?</h2><p>“${esc(note.title)}” ve bağlantıları silinecek.</p>
-    <div class="row actions"><span class="spacer"></span><button class="btn ghost" data-choice="no">Vazgeç</button><button class="btn danger" data-choice="yes">Sil</button></div>`);
+    <div class="row"><span class="spacer"></span><button class="ghost" data-choice="no">Vazgeç</button><button class="ghost solid" data-choice="yes">Sil</button></div>`);
   if (c !== 'yes') return;
   for (const l of links().filter((l) => l.a === note.id || l.b === note.id)) await remove(l.id);
   await remove(note.id);
@@ -713,72 +513,9 @@ function linksOf(id) {
     .map((l) => ({ ...l, other: l.a === id ? l.b : l.a }))
     .filter((l) => noteById(l.other));
 }
-
-/* ------------------------------------------------------------------ */
-/* Görünümler                                                          */
-/* ------------------------------------------------------------------ */
-
-function route() {
-  const v = (location.hash || '#ekle').slice(1);
-  state.view = ['ekle', 'beyin', 'notlar', 'fikirler', 'profil'].includes(v) ? v : 'ekle';
-  $$('.view').forEach((el) => (el.hidden = el.id !== 'view-' + state.view));
-  $$('.tabs a').forEach((a) => a.classList.toggle('active', a.dataset.view === state.view));
-  renderAll();
-  if (state.view === 'beyin') showGraph();
-  else pauseGraph();
-}
-
-function renderAll() {
-  renderRecent();
-  if (state.view === 'notlar') renderNotes();
-  if (state.view === 'fikirler') renderIdeas();
-  if (state.view === 'profil') renderProfile();
-  if (state.view === 'beyin') updateGraph();
-}
-
-function topicPill(t) {
-  return `<span class="topic" style="background:${topicColor(t)}">${esc(t || 'Diğer')}</span>`;
-}
-
-function renderRecent() {
-  const list = notes().filter((n) => n.type === 'source' || n.type === 'own')
-    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0, 6);
-  $('#recentList').innerHTML = list.length
-    ? list.map((n) => `<div class="card" data-open="${n.id}"><div class="card-title">${esc(n.title)}</div><div class="card-sum">${esc(n.summary || '')}</div></div>`).join('')
-    : '<div class="muted">Henüz bir şey eklemedin.</div>';
-}
-
-/* --- Notlar --- */
-
-function filteredNotes() {
-  const { q, type, coll } = state.noteFilter;
-  const qq = norm(q);
-  return notes()
-    .filter((n) => type === 'all' || n.type === type)
-    .filter((n) => !coll || (n.collections || []).includes(coll))
-    .filter((n) => !qq || norm(n.title + ' ' + (n.summary || '') + ' ' + (n.tags || []).join(' ') + ' ' + (n.body || '')).includes(qq))
-    .sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''));
-}
-
 function collections() {
   return (profile().collections || '').split(',').map((s) => s.trim()).filter(Boolean);
 }
-
-function renderNotes() {
-  $('#typeChips').innerHTML = [['all', 'Hepsi'], ...Object.entries(NOTE_TYPES)]
-    .map(([k, v]) => `<button type="button" class="chip ${state.noteFilter.type === k ? 'on' : ''}" data-ntype="${k}">${v}</button>`).join('');
-  const cs = collections();
-  $('#collFilter').innerHTML = `<option value="">Tüm koleksiyonlar</option>` + cs.map((c) => `<option ${state.noteFilter.coll === c ? 'selected' : ''}>${esc(c)}</option>`).join('');
-  $('#collFilter').hidden = !cs.length;
-  const list = filteredNotes();
-  $('#noteList').innerHTML = list.length
-    ? list.map((n) => `<div class="note-item ${state.selectedNote === n.id ? 'active' : ''}" data-select="${n.id}">
-        <div class="t"><span class="topic" style="background:${topicColor(n.topic)};width:8px;height:8px;padding:0"></span>${esc(n.title)}</div>
-        <div class="s">${esc(NOTE_TYPES[n.type] || '')} · ${esc(n.summary || '')}</div></div>`).join('')
-    : '<div class="muted small" style="padding:10px">Not bulunamadı.</div>';
-  if (!state.editing) renderNoteDetail();
-}
-
 function renderMarkdown(md) {
   const withWiki = String(md || '').replace(/\[\[([^\]]+)\]\]/g, (_, t) => {
     const target = noteByTitle(t.trim());
@@ -798,149 +535,7 @@ function renderMarkdown(md) {
   div.appendChild(tpl.content);
   return div.innerHTML;
 }
-
-function noteView(n, compact = false) {
-  const ls = linksOf(n.id).sort((a, b) => (b.strength || 1) - (a.strength || 1));
-  const relIdeas = ideas().filter((i) => (i.fromNotes || []).includes(n.id));
-  const stars = n.credibility ? `<span class="stars" title="Güvenilirlik">${'★'.repeat(n.credibility)}${'☆'.repeat(5 - n.credibility)}</span>` : '';
-  const cs = collections();
-  return `
-    <div class="note-head">
-      <h1>${esc(n.title)}</h1>
-      ${compact ? '' : `<div class="note-tools">
-        <button class="btn small" data-act="edit">Düzenle</button>
-        ${n.type !== 'concept' && n.type !== 'person' ? '<button class="btn small" data-act="deep">Daha derin incele</button>' : ''}
-        <button class="btn small" data-act="links">Bağlantı bul</button>
-        <button class="btn small danger" data-act="delete">Sil</button>
-      </div>`}
-    </div>
-    <div class="note-meta">
-      ${topicPill(n.topic)} <span class="badge">${esc(NOTE_TYPES[n.type] || '')}</span> ${stars}
-      <span>${fmtDate(n.createdAt)}</span>
-      ${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener">Kaynağa git ↗</a>` : ''}
-    </div>
-    <div>${(n.tags || []).map((t) => `<span class="tag">#${esc(t)}</span>`).join('')}</div>
-    ${!compact && cs.length ? `<div class="chips">${cs.map((c) => `<button type="button" class="chip ${(n.collections || []).includes(c) ? 'on' : ''}" data-coll="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
-    ${(n.projectHints || []).length ? `<div class="panel"><h3>Projelerine katkısı</h3>${n.projectHints.map((p) => `<div><b>${esc(p.project)}</b>: ${esc(p.why)}</div>`).join('')}</div>` : ''}
-    <div class="md">${renderMarkdown(compact ? (n.summary || n.body) : n.body)}</div>
-    <div class="panel">
-      <h3>Bağlantılar (${ls.length})</h3>
-      ${ls.length ? ls.map((l) => { const o = noteById(l.other); return `<div class="link-row">
-        <span class="link-type" style="background:${LINK_TYPES[l.type] || '#64748b'}">${esc(l.type)}</span>
-        <div><a data-open="${o.id}">${esc(o.title)}</a><div class="why">${esc(l.reason || '')}</div></div></div>`; }).join('') : '<div class="muted small">Henüz bağlantı yok.</div>'}
-    </div>
-    ${relIdeas.length ? `<div class="panel"><h3>Bu nottan doğan fikirler</h3>${relIdeas.map((i) => `<div class="link-row"><span class="link-type" style="background:var(--accent)">${esc(i.type)}</span><div><b>${esc(i.title)}</b><div class="why">${esc(i.body)}</div></div></div>`).join('')}</div>` : ''}
-    ${!compact && n.content ? `<details class="orig panel"><summary>Orijinal içerik (${esc(n.language || 'kaynak dili')})</summary><pre>${esc(n.content)}</pre></details>` : ''}
-    ${compact ? `<div class="row"><button class="btn primary small" data-goto="${n.id}">Notu aç</button></div>` : ''}`;
-}
-
-function renderNoteDetail() {
-  const el = $('#noteDetail');
-  const n = noteById(state.selectedNote);
-  if (!n) {
-    el.innerHTML = `<div class="empty">Soldan bir not seç ya da <a href="#ekle">yeni veri ekle</a>.</div>`;
-    return;
-  }
-  el.innerHTML = noteView(n);
-}
-
-function openEditor(n) {
-  state.editing = true;
-  const el = $('#noteDetail');
-  el.innerHTML = `
-    <form class="editor" id="editForm">
-      <input id="edTitle" type="text" value="${esc(n?.title || '')}" placeholder="Başlık">
-      <div class="row"><input id="edTags" type="text" value="${esc((n?.tags || []).join(', '))}" placeholder="Etiketler (virgülle)"></div>
-      <div class="row"><select id="edTopic">${TOPICS.map((t) => `<option ${n?.topic === t.key ? 'selected' : ''}>${t.key}</option>`).join('')}</select></div>
-      <p class="muted small">Markdown yazabilirsin. Başka bir nota bağlamak için <code>[[Not başlığı]]</code> yaz.</p>
-      <textarea id="edBody">${esc(n?.body || '')}</textarea>
-      <div class="row actions">
-        <button class="btn ghost" type="button" id="edCancel">Vazgeç</button>
-        <span class="spacer"></span>
-        ${state.sample ? '<button class="btn" type="button" id="edSaveLink">Kaydet ve bağlantı bul</button>' : ''}
-        <button class="btn primary" type="submit">Kaydet</button>
-      </div>
-    </form>`;
-  const doSave = async (findLinks) => {
-    const title = $('#edTitle').value.trim() || 'Başlıksız';
-    const body = $('#edBody').value;
-    const base = n || { id: newId('n'), kind: 'note', type: 'own', createdAt: now(), collections: [], concepts: [], people: [] };
-    const summary = n?.summary && n.type !== 'own' ? n.summary : body.replace(/[#>*\[\]_`-]/g, '').trim().slice(0, 220);
-    const doc = {
-      ...base, title, body, summary,
-      tags: $('#edTags').value.split(',').map((t) => norm(t)).filter(Boolean).slice(0, 10),
-      topic: $('#edTopic').value,
-      updatedAt: now(),
-    };
-    await save(doc);
-    await syncWikiLinks(doc);
-    state.editing = false;
-    state.selectedNote = doc.id;
-    scheduleRender();
-    if (findLinks) findLinksFor(doc);
-  };
-  $('#editForm').onsubmit = (e) => { e.preventDefault(); doSave(false); };
-  $('#edSaveLink')?.addEventListener('click', () => doSave(true));
-  $('#edCancel').onclick = () => { state.editing = false; renderNotes(); };
-  $('#edTitle').focus();
-}
-
-async function toggleCollection(n, c) {
-  const set = new Set(n.collections || []);
-  set.has(c) ? set.delete(c) : set.add(c);
-  await save({ ...n, collections: [...set], updatedAt: now() });
-  scheduleRender();
-}
-
-function openNote(id) {
-  state.selectedNote = id;
-  state.editing = false;
-  if (location.hash !== '#notlar') location.hash = 'notlar';
-  else renderNotes();
-}
-
-/* --- Fikirler --- */
-
 function ideaScore(i) { return (i.novelty || 0) + (i.feasibility || 0) + (i.potential || 0); }
-
-function renderIdeas() {
-  $('#ideaChips').innerHTML = [['all', 'Hepsi'], ['liked', 'Beğendiklerim'], ...IDEA_TYPES.map((t) => [t, t])]
-    .map(([k, v]) => `<button type="button" class="chip ${state.ideaFilter === k ? 'on' : ''}" data-ifilter="${esc(k)}">${esc(v)}</button>`).join('');
-  const f = state.ideaFilter;
-  const list = ideas()
-    .filter((i) => f === 'all' ? i.status !== 'disliked' : f === 'liked' ? i.status === 'liked' : i.type === f)
-    .sort((a, b) => ideaScore(b) - ideaScore(a));
-  const open = state.openIdea;
-  $('#ideaList').innerHTML = list.length ? list.map((i) => `
-    <div class="idea ${i.status || ''}" data-idea="${i.id}">
-      <div class="idea-top">
-        <span class="badge">${esc(i.type)}</span>
-        <div class="idea-title">${esc(i.title)}</div>
-        <span class="muted small">${ideaScore(i)}/30</span>
-      </div>
-      <div>${esc(i.body)}</div>
-      <div class="scores">
-        ${[['Yenilik', i.novelty], ['Uygulanabilirlik', i.feasibility], ['Potansiyel', i.potential]].map(([k, v]) => `<div class="score"><label>${k} ${v || 0}</label><div class="bar"><i style="width:${(v || 0) * 10}%"></i></div></div>`).join('')}
-      </div>
-      <div class="from">Kaynak: ${(i.fromNotes || []).map((id) => noteById(id)).filter(Boolean).map((n) => `<a data-open="${n.id}">${esc(n.title)}</a>`).join(', ') || '—'}</div>
-      <div class="idea-actions">
-        <button class="btn small ${i.status === 'liked' ? 'on' : ''}" data-iact="like">👍 Beğen</button>
-        <button class="btn small ${i.status === 'disliked' ? 'on' : ''}" data-iact="dislike">👎 Reddet</button>
-        <button class="btn small" data-iact="plan">Eylem planı</button>
-        <button class="btn small" data-iact="market">Pazar/rakip kontrolü</button>
-        <button class="btn small" data-iact="chat">Geliştir (sohbet)</button>
-        <button class="btn small ghost danger" data-iact="del">Sil</button>
-      </div>
-      ${i.plan ? `<div class="idea-extra md"><h3>Eylem planı</h3>${renderMarkdown(i.plan)}</div>` : ''}
-      ${i.market ? `<div class="idea-extra md"><h3>Pazar / rakip kontrolü</h3>${renderMarkdown(i.market)}</div>` : ''}
-      ${open === i.id ? `<div class="idea-extra">
-        <div class="chat">${(i.chat || []).map((m) => `<div class="msg ${m.role}">${m.role === 'assistant' ? renderMarkdown(m.content) : esc(m.content)}</div>`).join('')}</div>
-        <form class="row" data-chatform="${i.id}"><input type="text" name="m" placeholder="Bu fikri nasıl geliştirelim?" autocomplete="off"><button class="btn primary small">Gönder</button></form>
-      </div>` : ''}
-    </div>`).join('')
-    : `<div class="empty">Henüz fikir yok. Veri ekledikçe Sinaps fikir üretir.</div>`;
-}
-
 async function ideaAction(i, act) {
   if (act === 'like' || act === 'dislike') {
     const st = act === 'like' ? 'liked' : 'disliked';
@@ -1002,281 +597,619 @@ JSON: { "ideas": [{ "title": "", "body": "", "type": "${IDEA_TYPES.join(' | ')}"
   } catch (e) { toast('Sentez başarısız: ' + aiError(e)); }
 }
 
-/* --- Profil --- */
+/* ================================================================== */
+/* Arayüz: Korteks tasarımı                                            */
+/* ================================================================== */
 
-function renderProfile() {
-  const p = profile();
-  const f = $('#profileForm');
-  if (f.dataset.dirty) return;
-  $('#pInterests').value = p.interests || '';
-  $('#pGoals').value = p.goals || '';
-  $('#pProjects').value = p.projects || '';
-  $('#pCollections').value = p.collections || '';
-  $('#learned').innerHTML = p.learned ? `<div class="panel"><h3>Sinaps'ın senden öğrendiği ilgi alanları</h3>${esc(p.learned)}</div>` : '';
+const DESIGN = {
+  name: 'KORTEKS', shell: 'glass', defaultMode: 'dark', mono: 0.0, fiber: 1.0, breath: 1.0, wobble: 0.0, soma: 1.0,
+  dark: { bg: '#050916', bg2: '#0b1a3a', text: '#eef1f8', mute: '#8791a8', accent: '#ff2d6f', shell: '#7fa6ff', shellInt: 0.4, bloom: [0.62, 0.55, 0.3], glass: 'rgba(12,18,36,.55)', line: 'rgba(255,255,255,.12)' },
+  light: { bg: '#eceef3', bg2: '#ffffff', text: '#10131c', mute: '#5d6578', accent: '#d81b5c', shell: '#5a6c96', shellInt: 0.5, glass: 'rgba(255,255,255,.6)', line: 'rgba(16,19,28,.14)' },
+};
+const LOBES = [[0, 0.16, 0.74], [0, 0.5, -0.08], [0, 0.12, -0.86], [-0.6, -0.14, 0.1], [0.6, -0.14, 0.1], [0, -0.5, -0.74]];
+const BT = TOPICS.map((t, i) => ({ ...t, lobe: LOBES[i] }));
+const LTL = Object.entries(LINK_TYPES).map(([key, color]) => ({ key, color }));
+const topicIdx = (t) => { const i = TOPICS.findIndex((x) => x.key === t); return i < 0 ? 5 : i; };
+const linkIdx = (t) => { const i = LTL.findIndex((x) => x.key === t); return i < 0 ? 4 : i; };
+const up = (s) => String(s || '').toLocaleUpperCase('tr');
+const TYPE_UP = { source: 'KAYNAK', concept: 'KAVRAM', person: 'KİŞİ', own: 'KENDİ NOTUM' };
+const store = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+Object.assign(state, { selIdea: null, openIdea: null, hold: false, listType: 'all', listQ: '' });
+
+/* ---------- tema ---------- */
+let mode = store.get('sinaps-mode') === 'light' ? 'light' : 'dark';
+function applyTheme() {
+  const m = DESIGN[mode];
+  const st = document.documentElement.style;
+  document.documentElement.dataset.mode = mode;
+  for (const k of ['bg', 'bg2', 'text', 'mute', 'accent', 'glass', 'line', 'shell']) st.setProperty('--' + k, m[k]);
+  st.setProperty('--f-display', "'Barlow Condensed', 'Arial Narrow', sans-serif");
+  st.setProperty('--f-body', "'Newsreader', Georgia, serif");
+  st.setProperty('--f-ui', "'Barlow', system-ui, sans-serif");
+}
+applyTheme();
+
+/* ---------- ses ---------- */
+const audio = { ctx: null, on: false, amb: null };
+function tone(freq, dur, vol, type = 'sine') {
+  if (!audio.on) return;
+  const c = audio.ctx, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, c.currentTime); g.gain.linearRampToValueAtTime(vol, c.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
+  o.connect(g).connect(c.destination); o.start(); o.stop(c.currentTime + dur + 0.05);
+}
+const SCALE = [220, 261.6, 293.7, 329.6, 392, 440, 523.3];
+const sfx = {
+  click: () => tone(1250, 0.06, 0.025, 'triangle'),
+  open: () => { tone(420, 0.18, 0.03); setTimeout(() => tone(630, 0.22, 0.025), 70); },
+  fire: () => tone(SCALE[Math.floor(Math.random() * SCALE.length)] * 2, 0.7, 0.022),
+};
+function toggleSound() {
+  try {
+    if (!audio.ctx) audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    audio.on = !audio.on;
+    if (audio.on) {
+      audio.ctx.resume();
+      const c = audio.ctx, g = c.createGain(), f = c.createBiquadFilter();
+      f.type = 'lowpass'; f.frequency.value = 220; g.gain.value = 0.035;
+      const os = [55, 55.4, 82.6].map((hz) => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = hz; o.connect(f); o.start(); return o; });
+      f.connect(g).connect(c.destination); audio.amb = { os };
+      sfx.open();
+    } else if (audio.amb) { audio.amb.os.forEach((o) => o.stop()); audio.amb = null; }
+  } catch { audio.on = false; }
+  $('#btnSound').classList.toggle('on', audio.on);
 }
 
-/* ------------------------------------------------------------------ */
-/* 3D Beyin                                                            */
-/* ------------------------------------------------------------------ */
+/* ---------- beyin ---------- */
+DESIGN.defaultMode = mode;
+const brain = new Brain($('#gl'), DESIGN, BT, LTL);
+let lastFire = 0;
+brain.onFire = () => { const t = performance.now(); if (t - lastFire > 90) { lastFire = t; sfx.fire(); } };
+function fire(id) { brain.fire(id, 1.5); }
 
-const G = { graph: null, bloom: null, nodes: new Map(), links: new Map(), sig: '', angle: 0, idleUntil: 0, raf: 0, pulses: new Map() };
-
-function isDark() { return document.documentElement.dataset.theme !== 'light'; }
-
-function legend() {
-  $('#legend').innerHTML = TOPICS.map((t) => `<span><i style="background:${t.color}"></i>${t.key}</span>`).join('');
-}
-
-function initGraph() {
-  const el = $('#graph');
-  const g = ForceGraph3D({ controlType: 'orbit' })(el)
-    .backgroundColor(isDark() ? '#000000' : '#eef1f8')
-    .showNavInfo(false)
-    .nodeId('id')
-    .nodeLabel((n) => `<div style="background:rgba(10,12,20,.85);color:#fff;padding:6px 10px;border-radius:8px;font:13px Inter,sans-serif;max-width:280px"><b>${esc(n.title)}</b><br><span style="opacity:.7">${esc(NOTE_TYPES[n.type] || '')} · ${n.deg} bağlantı</span></div>`)
-    .nodeVal((n) => (n.type === 'source' || n.type === 'own' ? 2.5 : 1) + n.deg * 1.6 + (G.pulses.has(n.id) ? 14 : 0))
-    .nodeColor((n) => (G.pulses.has(n.id) ? '#ffffff' : n.color))
-    .nodeOpacity(0.95)
-    .nodeResolution(14)
-    .linkColor((l) => (isDark() ? 'rgba(140,160,255,0.28)' : 'rgba(60,70,120,0.28)'))
-    .linkWidth((l) => (l.type === 'kavram' || l.type === 'kişi' ? 0.3 : 0.6 + (l.strength || 1) * 0.3))
-    .linkOpacity(0.5)
-    .linkDirectionalParticles((l) => (l.type === 'kavram' || l.type === 'kişi' ? 1 : 2))
-    .linkDirectionalParticleSpeed(() => 0.003 + Math.random() * 0.006)
-    .linkDirectionalParticleWidth((l) => (l.type === 'kavram' || l.type === 'kişi' ? 1.2 : 2))
-    .linkDirectionalParticleColor((l) => LINK_TYPES[l.type] || '#9fb3ff')
-    .onNodeClick((n) => flyTo(n))
-    .onBackgroundClick(() => { $('#drawer').hidden = true; });
-
-  g.d3Force('charge').strength(-60);
-  g.d3Force('link').distance((l) => (l.type === 'kavram' || l.type === 'kişi' ? 30 : 55));
-
-  G.bloom = new UnrealBloomPass(new THREE.Vector2(el.clientWidth || 800, el.clientHeight || 600), 0.75, 0.35, 0.3);
-  g.postProcessingComposer().addPass(G.bloom);
-  g.postProcessingComposer().addPass(new OutputPass());
-  G.bloom.enabled = isDark();
-
-  const stopIdle = () => { G.idleUntil = performance.now() + 9000; };
-  el.addEventListener('pointerdown', stopIdle);
-  el.addEventListener('wheel', stopIdle, { passive: true });
-  window.addEventListener('resize', () => { if (state.view === 'beyin') g.width(el.clientWidth).height(el.clientHeight); });
-
-  G.graph = g;
-  legend();
-}
-
-function graphData() {
-  const ns = notes();
-  const ls = links().filter((l) => noteById(l.a) && noteById(l.b));
-  const deg = new Map();
-  for (const l of ls) { deg.set(l.a, (deg.get(l.a) || 0) + 1); deg.set(l.b, (deg.get(l.b) || 0) + 1); }
-  const nodes = ns.map((n) => {
-    let o = G.nodes.get(n.id);
-    if (!o) { o = { id: n.id }; G.nodes.set(n.id, o); }
-    o.title = n.title; o.type = n.type; o.deg = deg.get(n.id) || 0;
-    const base = topicColor(n.topic);
-    o.color = n.type === 'concept' || n.type === 'person' ? base + 'aa' : base;
-    return o;
-  });
-  const live = new Set(ns.map((n) => n.id));
-  for (const id of [...G.nodes.keys()]) if (!live.has(id)) G.nodes.delete(id);
-  const linksArr = ls.map((l) => {
-    let o = G.links.get(l.id);
-    if (!o) { o = { id: l.id, source: l.a, target: l.b }; G.links.set(l.id, o); }
-    o.type = l.type; o.strength = l.strength;
-    return o;
-  });
-  const liveL = new Set(ls.map((l) => l.id));
-  for (const id of [...G.links.keys()]) if (!liveL.has(id)) G.links.delete(id);
-  return { nodes, links: linksArr };
-}
-
-function updateGraph() {
-  if (!G.graph) return;
-  const ns = notes();
-  const sig = ns.map((n) => n.id + n.topic + n.title).join('|') + '#' + links().map((l) => l.id).join('|');
-  $('#graphEmpty').hidden = ns.length > 0;
-  if (sig === G.sig) return;
-  G.sig = sig;
-  const before = G.graph.graphData().nodes.length;
-  G.graph.graphData(graphData());
-  if (!before || ns.length - before > 3) fitSoon();
-}
-
-function fitSoon() {
-  clearTimeout(G.fitT);
-  G.fitT = setTimeout(() => {
-    if (state.view !== 'beyin' || !G.graph) return;
-    G.idleUntil = performance.now() + 1200;
-    G.graph.zoomToFit(900, 90);
-  }, 1800);
-}
-
-function showGraph() {
-  if (!G.graph) initGraph();
-  const el = $('#graph');
-  G.graph.width(el.clientWidth).height(el.clientHeight);
-  G.graph.resumeAnimation();
-  updateGraph();
-  fitSoon();
-  cancelAnimationFrame(G.raf);
-  const tick = () => {
-    G.raf = requestAnimationFrame(tick);
-    if (performance.now() < G.idleUntil) return;
-    const cam = G.graph.camera();
-    const r = Math.max(40, Math.hypot(cam.position.x, cam.position.z));
-    G.angle = Math.atan2(cam.position.x, cam.position.z) + 0.0016;
-    cam.position.x = r * Math.sin(G.angle);
-    cam.position.z = r * Math.cos(G.angle);
-    cam.lookAt(0, 0, 0);
-  };
-  tick();
-  if (state.pendingFire.length) {
-    const ids = state.pendingFire.splice(0);
-    setTimeout(() => ids.forEach(fire), 900);
+const labels = $('#labels');
+const nodeEls = new Map();
+const lobeEls = BT.map((t, i) => {
+  const el = document.createElement('button');
+  el.className = 'lobe'; el.type = 'button'; el.textContent = up(t.key); el.dataset.lobe = i; el.style.setProperty('--c', t.color);
+  labels.appendChild(el); return el;
+});
+const lobePos = BT.map((t) => { const v = new THREE.Vector3(...t.lobe); return v.multiplyScalar(S).add(v.clone().normalize().multiplyScalar(34)).add(new THREE.Vector3(0, 14, 0)); });
+let linkEls = [];
+function setLinkLabels(id) {
+  linkEls.forEach((x) => x.el.remove()); linkEls = [];
+  if (id == null) return;
+  for (const { link } of brain.neighbors(id).slice(0, 30)) {
+    const t = LTL[link.type];
+    if (t.key === 'kavram' || t.key === 'kişi') continue;
+    const el = document.createElement('div');
+    el.className = 'llabel'; el.textContent = t.key; el.style.setProperty('--c', t.color);
+    labels.appendChild(el); linkEls.push({ el, link });
   }
 }
+const o = {};
+brain.onFrame = () => {
+  const cam = brain.camera.position;
+  const selSet = brain.sel != null ? new Set([brain.sel, ...brain.neighbors(brain.sel).map((x) => x.node.key)]) : null;
+  const dist = cam.distanceTo(brain.controls.target);
+  const near = 175 * brain.far();
+  for (const n of brain.nodes) {
+    const el = nodeEls.get(n.key);
+    if (!el) continue;
+    const d = cam.distanceTo(n.pos);
+    let a = 0;
+    if (n.reveal > 0.8) {
+      if (selSet) a = selSet.has(n.key) ? 1 : 0;
+      else if (brain.lobe != null) a = n.topic === brain.lobe && n.type === 'source' ? 1 : 0;
+      else a = Math.max(0, Math.min(1, (near - d) / 45));
+      if (n.key === brain.hover) a = 1;
+    }
+    if (a > 0.01) {
+      brain.screen(n.pos, o);
+      if (o.z > 1) a = 0;
+      else el.style.transform = `translate(-50%,-100%) translate(${o.x.toFixed(1)}px,${(o.y - 8 - (n.size * 600) / d).toFixed(1)}px)`;
+    }
+    if (a !== el._a) { el._a = a; el.style.opacity = a.toFixed(2); el.classList.toggle('sel', n.key === brain.sel); }
+  }
+  lobeEls.forEach((el, i) => {
+    brain.screen(lobePos[i], o);
+    const a = brain.sel != null || o.z > 1 || !brain.nodes.length ? 0 : brain.lobe != null ? (brain.lobe === i ? 0.9 : 0.12) : Math.max(0, Math.min(1, (dist - 190 * brain.far()) / 90));
+    el.style.opacity = (a * brain.shellU.uReveal.value).toFixed(2);
+    el.style.pointerEvents = a > 0.3 ? 'auto' : 'none';
+    el.style.transform = `translate(-50%,-50%) translate(${o.x.toFixed(1)}px,${o.y.toFixed(1)}px)`;
+  });
+  for (const { el, link } of linkEls) {
+    if (!link.mid) continue;
+    brain.screen(link.mid, o);
+    el.style.opacity = o.z < 1 ? 1 : 0;
+    el.style.transform = `translate(-50%,-50%) translate(${o.x.toFixed(1)}px,${o.y.toFixed(1)}px)`;
+  }
+};
+labels.addEventListener('click', (e) => {
+  const l = e.target.closest('.lobe');
+  if (l) { sfx.open(); closePanels(); brain.focusLobe(+l.dataset.lobe); }
+});
 
-function pauseGraph() {
-  cancelAnimationFrame(G.raf);
-  G.graph?.pauseAnimation();
+let graphSig = '';
+function syncGraph() {
+  const ns = notes(), ls = links();
+  const sig = ns.map((n) => n.id + '|' + n.title + '|' + n.topic).join(';') + '#' + ls.map((l) => l.id + l.type).join(';');
+  document.body.classList.toggle('empty', !ns.length && state.loaded);
+  $('#stats').textContent = ns.length ? `${ns.filter((n) => n.type === 'source' || n.type === 'own').length} NOT · ${ls.length} SİNAPS · ${ideas().length} FİKİR` : '';
+  if (sig === graphSig) return;
+  graphSig = sig;
+  const t = Date.now();
+  brain.setGraph(
+    ns.map((n) => ({ key: n.id, title: n.title, topic: topicIdx(n.topic), type: n.type === 'own' ? 'source' : n.type, days: Math.max(0, (t - new Date(n.updatedAt || n.createdAt || t).getTime()) / 864e5) })),
+    ls.filter((l) => noteById(l.a) && noteById(l.b)).map((l) => ({ key: l.id, a: l.a, b: l.b, type: linkIdx(l.type) })),
+  );
+  const live = new Set(ns.map((n) => n.id));
+  for (const [k, el] of nodeEls) if (!live.has(k)) { el.remove(); nodeEls.delete(k); }
+  for (const n of ns) {
+    let el = nodeEls.get(n.id);
+    if (!el) { el = document.createElement('div'); el.className = 'nlabel'; labels.appendChild(el); nodeEls.set(n.id, el); }
+    if (el.textContent !== n.title) el.textContent = n.title;
+  }
+  if (brain.sel != null) setLinkLabels(brain.sel);
 }
 
-function flyTo(n) {
-  G.idleUntil = performance.now() + 15000;
-  const dist = 60;
-  const r = 1 + dist / Math.hypot(n.x || 1, n.y || 1, n.z || 1);
-  G.graph.cameraPosition({ x: (n.x || 1) * r, y: (n.y || 1) * r, z: (n.z || 1) * r }, n, 1400);
-  const note = noteById(n.id);
-  if (!note) return;
-  const d = $('#drawer');
-  d.hidden = false;
-  d.innerHTML = `<button class="btn small ghost drawer-close" data-closedrawer>✕</button>` + noteView(note, true);
-  fire(n.id, true);
+/* ---------- genel çizim ---------- */
+function renderAll() {
+  if (!state.hold) syncGraph();
+  if ($('#list').classList.contains('open')) renderList();
+  if ($('#ideas').classList.contains('open')) renderIdeas();
+  if ($('#palette').classList.contains('open')) renderPalette();
+  if (state.selectedNote && !state.editing) renderNote();
+  renderProfile();
 }
 
-function fire(id, quiet = false) {
-  if (!G.graph || state.view !== 'beyin') {
-    if (!quiet) state.pendingFire.push(id);
+/* ---------- not ekranı ---------- */
+let noteSig = '';
+function noteHTML(n) {
+  const ls = linksOf(n.id).sort((a, b) => (b.strength || 1) - (a.strength || 1));
+  const rel = ideas().filter((i) => (i.fromNotes || []).includes(n.id));
+  const t = TOPICS[topicIdx(n.topic)];
+  const cs = collections();
+  const stars = n.credibility ? ' · GÜVENİLİRLİK ' + '★'.repeat(n.credibility) + '☆'.repeat(5 - n.credibility) : '';
+  return `
+    <button class="ghost small x" data-close type="button">KAPAT</button>
+    <div class="note-kicker"><i style="background:${t.color};color:${t.color}"></i>${up(t.key)} · ${TYPE_UP[n.type] || ''} · ${up(fmtDate(n.createdAt))}${stars}</div>
+    <h1>${esc(up(n.title))}</h1>
+    <div class="note-tools">
+      <button class="ghost small" data-act="edit" type="button">DÜZENLE</button>
+      ${n.type === 'concept' || n.type === 'person' ? '' : '<button class="ghost small" data-act="deep" type="button">DAHA DERİN İNCELE</button>'}
+      <button class="ghost small" data-act="links" type="button">BAĞLANTI BUL</button>
+      ${n.url ? `<a class="ghost small" href="${esc(n.url)}" target="_blank" rel="noopener">KAYNAĞA GİT</a>` : ''}
+      <button class="ghost small danger" data-act="delete" type="button">SİL</button>
+    </div>
+    <div class="tags">${(n.tags || []).map((x) => `<span>#${esc(x)}</span>`).join('')}</div>
+    ${cs.length ? `<div class="chips">${cs.map((c) => `<button type="button" class="chip ${(n.collections || []).includes(c) ? 'on' : ''}" data-coll="${esc(c)}">${esc(up(c))}</button>`).join('')}</div>` : ''}
+    ${(n.projectHints || []).length ? `<div class="hints">${n.projectHints.map((p) => `<div><b>${esc(p.project)}:</b> ${esc(p.why)}</div>`).join('')}</div>` : ''}
+    <div class="note-body">${renderMarkdown(n.body)}</div>
+    <h3 class="sec">BAĞLANTILAR <span>${ls.length}</span></h3>
+    <div class="links">${ls.map((l) => { const x = noteById(l.other); return `<button type="button" class="linkrow" data-open="${x.id}"><span class="lt" style="--c:${LINK_TYPES[l.type] || '#94a3b8'}">${esc(up(l.type))}</span><div>${esc(x.title)}<span class="why">${esc(l.reason || '')}</span></div></button>`; }).join('') || '<div class="empty">Henüz bağlantı yok.</div>'}</div>
+    ${rel.length ? `<h3 class="sec">BU NOTTAN DOĞAN FİKİRLER <span>${rel.length}</span></h3><div class="links">${rel.map((i) => `<button type="button" class="linkrow" data-idea-open="${i.id}"><span class="lt" style="--c:var(--accent)">${esc(up(i.type))}</span><div>${esc(i.title)}<span class="why">${esc(i.body)}</span></div></button>`).join('')}</div>` : ''}
+    ${n.content ? `<details class="orig"><summary>ORİJİNAL İÇERİK${n.language ? ' · ' + esc(up(n.language)) : ''}</summary><pre>${esc(n.content)}</pre></details>` : ''}`;
+}
+function renderNote(force) {
+  const n = noteById(state.selectedNote);
+  const p = $('#note');
+  if (!n) { state.selectedNote = null; document.body.classList.remove('split'); return; }
+  const sig = n.id + (n.updatedAt || '') + linksOf(n.id).length + ideas().length + (n.collections || []).join() + profile().collections;
+  if (sig === noteSig && !force) return;
+  const keep = noteSig.startsWith(n.id) ? p.scrollTop : 0;
+  noteSig = sig;
+  p.innerHTML = noteHTML(n); p.scrollTop = keep;
+}
+brain.onSelect = (node) => {
+  setLinkLabels(node ? node.key : null);
+  state.editing = false;
+  if (!node) { state.selectedNote = null; noteSig = ''; document.body.classList.remove('split'); return; }
+  state.selectedNote = node.key;
+  renderNote(true);
+  document.body.classList.add('split');
+  sfx.open();
+};
+function openNote(id) {
+  closePanels();
+  if (!brain.byKey.has(id)) { graphSig = ''; syncGraph(); }
+  if (brain.byKey.has(id)) brain.select(id);
+}
+function openEditor(n) {
+  state.editing = true;
+  const p = $('#note');
+  p.innerHTML = `
+    <form class="editor" id="editForm">
+      <div class="note-kicker">${n ? 'NOTU DÜZENLE' : 'YENİ NOT'}</div>
+      <input id="edTitle" class="field" type="text" value="${esc(n?.title || '')}" placeholder="Başlık" style="margin-top:14px">
+      <input id="edTags" class="field" type="text" value="${esc((n?.tags || []).join(', '))}" placeholder="Etiketler (virgülle)" style="font:400 14px var(--f-ui);letter-spacing:0">
+      <select id="edTopic" class="field">${TOPICS.map((t) => `<option ${n?.topic === t.key ? 'selected' : ''}>${t.key}</option>`).join('')}</select>
+      <p class="hint">Markdown yazabilirsin. Başka bir nota bağlamak için <code>[[Not başlığı]]</code> yaz.</p>
+      <textarea id="edBody" class="field">${esc(n?.body || '')}</textarea>
+      <div class="row">
+        <button class="ghost" type="button" id="edCancel">VAZGEÇ</button>
+        ${state.sample ? '<button class="ghost" type="button" id="edSaveLink">KAYDET VE BAĞLANTI BUL</button>' : ''}
+        <button class="ghost solid" type="submit">KAYDET</button>
+      </div>
+    </form>`;
+  document.body.classList.add('split');
+  const doSave = async (find) => {
+    const title = $('#edTitle').value.trim() || 'Başlıksız';
+    const body = $('#edBody').value;
+    const base = n || { id: newId('n'), kind: 'note', type: 'own', createdAt: now(), collections: [], concepts: [], people: [] };
+    const summary = n?.summary && n.type !== 'own' ? n.summary : body.replace(/[#>*\[\]_`-]/g, '').trim().slice(0, 220);
+    const doc = { ...base, title, body, summary, tags: $('#edTags').value.split(',').map((t) => norm(t)).filter(Boolean).slice(0, 10), topic: $('#edTopic').value, updatedAt: now() };
+    await save(doc);
+    await syncWikiLinks(doc);
+    state.editing = false;
+    graphSig = ''; syncGraph();
+    brain.select(doc.id);
+    if (find) findLinksFor(doc);
+  };
+  $('#editForm').onsubmit = (e) => { e.preventDefault(); doSave(false); };
+  $('#edSaveLink')?.addEventListener('click', () => doSave(true));
+  $('#edCancel').onclick = () => { state.editing = false; if (n) renderNote(true); else { document.body.classList.remove('split'); } };
+  $('#edTitle').focus();
+}
+$('#note').addEventListener('click', async (e) => {
+  const t = e.target.closest('[data-close],[data-act],[data-coll],[data-idea-open]');
+  if (!t) return;
+  sfx.click();
+  if (t.dataset.close !== undefined) return brain.select(null);
+  if (t.dataset.ideaOpen) { state.selIdea = t.dataset.ideaOpen; brain.select(null); return toggle('ideas'); }
+  const n = noteById(state.selectedNote);
+  if (!n) return;
+  if (t.dataset.coll) { const set = new Set(n.collections || []); set.has(t.dataset.coll) ? set.delete(t.dataset.coll) : set.add(t.dataset.coll); return save({ ...n, collections: [...set] }); }
+  if (t.dataset.act === 'edit') return openEditor(n);
+  if (t.dataset.act === 'deep') { t.disabled = true; brain.think(true); await deepen(n); brain.think(false); return; }
+  if (t.dataset.act === 'links') { t.disabled = true; brain.think(true); await findLinksFor(n); brain.think(false); t.disabled = false; return; }
+  if (t.dataset.act === 'delete') { await deleteNote(n); if (!noteById(n.id)) brain.select(null); }
+});
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-open]');
+  if (a) { e.preventDefault(); openNote(a.dataset.open); }
+});
+
+/* ---------- paneller ---------- */
+const PANELS = ['list', 'ideas', 'palette', 'profile'];
+function closePanels(except) {
+  for (const id of PANELS) if (id !== except) $('#' + id).classList.remove('open');
+  document.body.classList.toggle('overlay', except === 'ideas');
+}
+function toggle(id) {
+  const el = $('#' + id);
+  const open = !el.classList.contains('open');
+  closePanels(open ? id : null);
+  el.classList.toggle('open', open);
+  if (open) { sfx.open(); if (id === 'list') renderList(); if (id === 'ideas') { if (brain.sel != null) brain.select(null); renderIdeas(); } if (id === 'profile') renderProfile(true); }
+  return open;
+}
+
+/* not listesi */
+function renderList() {
+  $('#listChips').innerHTML = [['all', 'HEPSİ'], ['source', 'KAYNAK'], ['own', 'KENDİ'], ['concept', 'KAVRAM'], ['person', 'KİŞİ'], ...collections().map((c) => ['c:' + c, up(c)])]
+    .map(([k, v]) => `<button type="button" class="chip ${state.listType === k ? 'on' : ''}" data-ltype="${esc(k)}">${esc(v)}</button>`).join('');
+  const q = norm(state.listQ), f = state.listType;
+  const ns = notes()
+    .filter((n) => f === 'all' ? true : f.startsWith('c:') ? (n.collections || []).includes(f.slice(2)) : n.type === f)
+    .filter((n) => !q || norm(n.title + ' ' + (n.summary || '') + ' ' + (n.tags || []).join(' ') + ' ' + (n.body || '')).includes(q))
+    .sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''));
+  $('#listBody').innerHTML = TOPICS.map((t) => {
+    const g = ns.filter((n) => TOPICS[topicIdx(n.topic)] === t);
+    if (!g.length) return '';
+    return `<div class="grp"><h4><i style="background:${t.color}"></i>${up(t.key)}<span>${g.length}</span></h4>${g.map((n) => `<button type="button" data-node="${n.id}">${esc(n.title)}${n.type !== 'source' ? `<em>${TYPE_UP[n.type]}</em>` : ''}</button>`).join('')}</div>`;
+  }).join('') || `<div class="empty">${notes().length ? 'Eşleşen not yok.' : 'Henüz not yok.'}</div>`;
+}
+$('#list').addEventListener('click', (e) => {
+  const c = e.target.closest('[data-ltype]'); if (c) { state.listType = c.dataset.ltype; return renderList(); }
+  const b = e.target.closest('[data-node]'); if (b) openNote(b.dataset.node);
+});
+$('#list').addEventListener('pointerover', (e) => { const b = e.target.closest('[data-node]'); if (b) { brain.hover = b.dataset.node; const n = brain.byKey.get(b.dataset.node); if (n) n.flash = Math.max(n.flash, 0.7); } });
+$('#listSearch').addEventListener('input', (e) => { state.listQ = e.target.value; renderList(); });
+$('#newNote').onclick = () => { closePanels(); if (brain.sel != null) brain.select(null); openEditor(null); };
+
+/* arama */
+const palIn = $('#palIn');
+function renderPalette() {
+  const q = norm(palIn.value);
+  const hits = notes().filter((n) => !q || norm(n.title + ' ' + (n.tags || []).join(' ') + ' ' + (n.summary || '')).includes(q))
+    .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || '')).slice(0, 9);
+  $('#palList').innerHTML = hits.map((n) => `<button type="button" data-node="${n.id}"><i style="background:${TOPICS[topicIdx(n.topic)].color}"></i><span>${esc(n.title)}</span><em>${TYPE_UP[n.type] || ''}</em></button>`).join('') || '<div class="none">SONUÇ YOK</div>';
+}
+palIn.addEventListener('input', renderPalette);
+palIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { const b = $('#palList [data-node]'); if (b) openNote(b.dataset.node); } });
+$('#palette').addEventListener('click', (e) => { const b = e.target.closest('[data-node]'); if (b) openNote(b.dataset.node); else if (e.target.id === 'palette') closePanels(); });
+function openSearch() { if (toggle('palette')) { palIn.value = ''; renderPalette(); setTimeout(() => palIn.focus(), 50); } }
+
+/* profil */
+function renderProfile(force) {
+  const f = $('#profileForm');
+  if (f.dataset.dirty && !force) return;
+  const p = profile();
+  $('#pInterests').value = p.interests || ''; $('#pGoals').value = p.goals || ''; $('#pProjects').value = p.projects || ''; $('#pCollections').value = p.collections || '';
+  $('#learned').innerHTML = p.learned ? `<b>SİNAPS'IN SENDEN ÖĞRENDİKLERİ</b>${esc(p.learned)}` : '';
+}
+$('#profileForm').addEventListener('input', (e) => (e.currentTarget.dataset.dirty = '1'));
+$('#profileForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await save({ ...profile(), id: 'profile', kind: 'profile', interests: $('#pInterests').value.trim(), goals: $('#pGoals').value.trim(), projects: $('#pProjects').value.trim(), collections: $('#pCollections').value.trim() });
+  delete e.currentTarget.dataset.dirty;
+  toast('PROFİL KAYDEDİLDİ');
+});
+
+/* ---------- fikir ağacı ---------- */
+function radar(s) {
+  const R = 78, cx = 110, cy = 104, ax = [-90, 30, 150].map((d) => (d * Math.PI) / 180);
+  const pt = (i, v) => `${(cx + Math.cos(ax[i]) * R * v).toFixed(1)},${(cy + Math.sin(ax[i]) * R * v).toFixed(1)}`;
+  const grid = [0.33, 0.66, 1].map((k) => `<polygon points="${[0, 1, 2].map((i) => pt(i, k)).join(' ')}"/>`).join('');
+  const names = ['YENİLİK', 'UYGULANABİLİRLİK', 'POTANSİYEL'];
+  const lab = [0, 1, 2].map((i) => { const [x, yy] = pt(i, 1.2).split(','); return `<text x="${x}" y="${+yy + 3}" text-anchor="${i === 0 ? 'middle' : i === 1 ? 'start' : 'end'}">${names[i]} ${s[i]}</text>`; }).join('');
+  return `<svg class="radar" viewBox="-110 0 440 200"><g class="grid">${grid}${[0, 1, 2].map((i) => `<line x1="${cx}" y1="${cy}" x2="${pt(i, 1).split(',')[0]}" y2="${pt(i, 1).split(',')[1]}"/>`).join('')}</g><polygon class="val" points="${[0, 1, 2].map((i) => pt(i, Math.max(0.05, s[i] / 10))).join(' ')}"/>${lab}</svg>`;
+}
+function ideaDetailHTML(i) {
+  const s = [i.novelty || 0, i.feasibility || 0, i.potential || 0];
+  const from = (i.fromNotes || []).map(noteById).filter(Boolean);
+  return `
+    <div class="note-kicker">${esc(up(i.type))} · ${ideaScore(i)}/30${i.status === 'liked' ? ' · BEĞENİLDİ' : i.status === 'disliked' ? ' · REDDEDİLDİ' : ''}</div>
+    <h2>${esc(up(i.title))}</h2>
+    ${radar(s)}
+    <p class="serif">${esc(i.body)}</p>
+    <h3 class="sec">DAYANDIĞI NOTLAR</h3>
+    <div class="links">${from.map((n) => `<button type="button" class="linkrow" data-open="${n.id}"><div>${esc(n.title)}</div></button>`).join('') || '<div class="empty">—</div>'}</div>
+    <div class="row">
+      <button class="ghost small ${i.status === 'liked' ? 'on' : ''}" data-iact="like" type="button">BEĞEN</button>
+      <button class="ghost small ${i.status === 'disliked' ? 'on' : ''}" data-iact="dislike" type="button">REDDET</button>
+      <button class="ghost small" data-iact="plan" type="button">EYLEM PLANI</button>
+      <button class="ghost small" data-iact="market" type="button">PAZAR KONTROLÜ</button>
+      <button class="ghost small ${state.openIdea === i.id ? 'on' : ''}" data-iact="chat" type="button">GELİŞTİR</button>
+      <button class="ghost small danger" data-iact="del" type="button">SİL</button>
+    </div>
+    ${i.plan ? `<div class="idea-extra"><h3 class="sec">EYLEM PLANI</h3><div class="note-body">${renderMarkdown(i.plan)}</div></div>` : ''}
+    ${i.market ? `<div class="idea-extra"><h3 class="sec">PAZAR / RAKİP KONTROLÜ</h3><div class="note-body">${renderMarkdown(i.market)}</div></div>` : ''}
+    ${state.openIdea === i.id ? `<div class="idea-extra"><h3 class="sec">FİKRİ GELİŞTİR</h3>
+      <div class="chat">${(i.chat || []).map((m) => `<div class="msg ${m.role}">${m.role === 'assistant' ? renderMarkdown(m.content) : esc(m.content)}</div>`).join('')}</div>
+      <form class="chatform" data-chatform="${i.id}"><input class="field" type="text" name="m" placeholder="Bu fikri nasıl geliştirelim?" autocomplete="off"><button class="ghost small solid">GÖNDER</button></form></div>` : ''}`;
+}
+let ideaSig = '';
+function renderIdeas() {
+  const f = state.ideaFilter;
+  $('#ideaChips').innerHTML = [['all', 'HEPSİ'], ['liked', 'BEĞENDİKLERİM'], ['disliked', 'REDDEDİLENLER']].map(([k, v]) => `<button type="button" class="chip ${f === k ? 'on' : ''}" data-ifilter="${k}">${v}</button>`).join('');
+  const list = ideas().filter((i) => (f === 'all' ? i.status !== 'disliked' : i.status === f));
+  const det = $('#ideaDetail');
+  if (!list.length) {
+    $('#tree').innerHTML = ''; ideaSig = '';
+    det.innerHTML = `<div class="empty">${ideas().length ? 'Bu filtrede fikir yok.' : 'Henüz fikir yok. Veri ekledikçe Sinaps fikir üretir; en az üç notun olunca “Arşivden sentez üret” ile de isteyebilirsin.'}</div>`;
     return;
   }
-  G.pulses.set(id, true);
-  G.graph.nodeVal(G.graph.nodeVal()).nodeColor(G.graph.nodeColor());
-  const { links: ls } = G.graph.graphData();
-  const touching = ls.filter((l) => (l.source.id || l.source) === id || (l.target.id || l.target) === id);
-  let k = 0;
-  const burst = setInterval(() => {
-    touching.forEach((l) => G.graph.emitParticle(l));
-    if (++k > 6) clearInterval(burst);
-  }, 160);
-  setTimeout(() => {
-    G.pulses.delete(id);
-    G.graph.nodeVal(G.graph.nodeVal()).nodeColor(G.graph.nodeColor());
-  }, 1600);
+  if (!list.some((i) => i.id === state.selIdea)) state.selIdea = [...list].sort((a, b) => ideaScore(b) - ideaScore(a))[0].id;
+  const branches = IDEA_TYPES.map((t) => ({ type: t, items: list.filter((i) => i.type === t).sort((a, b) => ideaScore(b) - ideaScore(a)) })).filter((b) => b.items.length);
+  const total = list.length;
+  const W = 700, H = Math.max(520, total * 50 + 90), rootX = 50, bx = 196, lx = 318;
+  let row = 0, paths = '', nodes = '';
+  const y = (r) => 46 + (r + 0.5) * ((H - 92) / total);
+  const curve = (x1, y1, x2, y2) => `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`;
+  for (const b of branches) {
+    const start = row;
+    const ys = b.items.map(() => y(row++));
+    const by = (ys[0] + ys[ys.length - 1]) / 2;
+    paths += `<path d="${curve(rootX, H / 2, bx, by)}"/>`;
+    nodes += `<g class="tb" transform="translate(${bx},${by})"><circle r="7"/><text x="-14" y="-14" text-anchor="end">${esc(up(b.type))}</text></g>`;
+    b.items.forEach((it, k) => {
+      const sum = ideaScore(it), on = it.id === state.selIdea;
+      paths += `<path d="${curve(bx, by, lx, ys[k])}" class="${on ? 'on' : ''}"/>`;
+      const ttl = it.title.length > 40 ? it.title.slice(0, 39) + '…' : it.title;
+      nodes += `<g class="leaf ${on ? 'on' : ''} ${it.status || ''}" data-idea="${it.id}" transform="translate(${lx},${ys[k]})"><rect class="hit" x="-26" y="-22" width="${W - lx}" height="44" fill="transparent"/><circle class="ring" r="${9 + sum * 0.38}"/><circle class="dot" r="5"/><text x="${24 + sum * 0.3}" y="5">${sum}</text><text class="ttl" x="${62 + sum * 0.3}" y="5">${esc(ttl)}</text></g>`;
+    });
+    void start;
+  }
+  const sig = list.map((i) => i.id + i.status + ideaScore(i)).join() + state.selIdea + f;
+  if (sig !== ideaSig) {
+    ideaSig = sig;
+    $('#tree').innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMid meet"><g class="paths">${paths}</g><g class="root" transform="translate(${rootX},${H / 2})"><circle r="13"/><circle r="22" class="halo"/><text y="46" text-anchor="middle">ARŞİV</text></g>${nodes}</svg>`;
+  }
+  const keep = det.dataset.id === state.selIdea ? det.scrollTop : 0;
+  det.dataset.id = state.selIdea;
+  det.innerHTML = ideaDetailHTML(state.docs.get(state.selIdea));
+  det.scrollTop = keep;
+}
+$('#ideas').addEventListener('click', async (e) => {
+  const c = e.target.closest('[data-ifilter]'); if (c) { state.ideaFilter = c.dataset.ifilter; return renderIdeas(); }
+  const g = e.target.closest('[data-idea]'); if (g) { state.selIdea = g.dataset.idea; sfx.click(); return renderIdeas(); }
+  if (e.target.closest('[data-close]')) return closePanels();
+  const b = e.target.closest('[data-iact]');
+  if (b) {
+    sfx.click();
+    const i = state.docs.get(state.selIdea);
+    if (!i) return;
+    const slow = b.dataset.iact === 'plan' || b.dataset.iact === 'market';
+    if (slow) { b.disabled = true; b.textContent = 'HAZIRLANIYOR…'; }
+    await ideaAction(i, b.dataset.iact);
+    renderIdeas();
+  }
+});
+$('#synthBtn').onclick = async (e) => { e.currentTarget.disabled = true; await synthesize(); e.currentTarget.disabled = false; renderIdeas(); };
+document.addEventListener('submit', (e) => {
+  const f = e.target.closest('[data-chatform]');
+  if (!f) return;
+  e.preventDefault();
+  const msg = f.m.value.trim();
+  const i = state.docs.get(f.dataset.chatform);
+  if (msg && i) ideaChat(i, msg);
+});
+
+/* ---------- ekle akışı ---------- */
+const add = $('#add'), addIn = $('#addIn');
+const pendingFiles = [];
+function renderFiles() {
+  $('#fileList').innerHTML = pendingFiles.map((f, i) => `<span>${esc(f.name)}<button type="button" data-rm="${i}" aria-label="Kaldır">✕</button></span>`).join('');
+  if (pendingFiles.length) add.classList.add('big');
+}
+$('#fileList').addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (b) { pendingFiles.splice(+b.dataset.rm, 1); renderFiles(); } });
+$('#addFile').addEventListener('change', (e) => { pendingFiles.push(...e.target.files); e.target.value = ''; renderFiles(); });
+function resetForm() { addIn.value = ''; $('#addUrl').value = ''; $('#addWhy').value = ''; pendingFiles.length = 0; renderFiles(); add.classList.remove('big'); }
+
+function caption(text, frac) {
+  const cap = $('#caption');
+  cap.textContent = text; cap.classList.remove('in'); void cap.offsetWidth; cap.classList.add('in');
+  if (frac != null) $('#progress i').style.width = frac * 100 + '%';
+}
+async function typeOut(text) {
+  const el = $('#stream'); el.textContent = '';
+  const t = String(text || '').slice(0, 260);
+  for (let i = 0; i < t.length; i += 2) { el.textContent = t.slice(0, i + 2); await wait(14); }
 }
 
-function applyTheme(t) {
-  document.documentElement.dataset.theme = t;
-  try { localStorage.setItem('sinaps-theme', t); } catch {}
-  if (G.graph) {
-    G.graph.backgroundColor(t === 'light' ? '#eef1f8' : '#000000');
-    G.bloom.enabled = t !== 'light';
-    G.graph.linkColor(G.graph.linkColor());
+async function ingest(raw) {
+  if (state.busy) return;
+  if (!state.sample) return toast('YAPAY ZEKA BU GÖRÜNÜMDE KULLANILAMIYOR');
+  state.busy = true; state.hold = true;
+  closePanels(); if (brain.sel != null || brain.lobe != null) brain.select(null);
+  add.classList.remove('big'); addIn.blur();
+  document.body.classList.add('working');
+  $('#stream').textContent = ''; $('#progress i').style.width = '0%';
+  brain.think(true); sfx.open();
+  let done = null;
+  try {
+    caption('OKUNUYOR', 0.1);
+    const inp = await collectInput(raw);
+    if (!inp.content && !inp.url && !inp.images.length) throw new Error('Boş veri gönderilemez.');
+    if (inp.images.length && !state.sampleImages) throw new Error('Bu görünümde yapay zeka görsel okuyamıyor.');
+
+    const dup = findDuplicate(inp);
+    let mergeInto = null;
+    if (dup) {
+      const choice = await modal(`<h2>BU VERİ ZATEN VAR GİBİ</h2><p>“${esc(dup.title)}” notuna çok benziyor (${fmtDate(dup.createdAt)}).</p>
+        <div class="row"><button class="ghost small" data-choice="merge">MEVCUT NOTA EKLE</button><button class="ghost small" data-choice="new">AYRI NOT</button><button class="ghost small" data-choice="cancel">VAZGEÇ</button></div>`);
+      if (!choice || choice === 'cancel') return;
+      if (choice === 'merge') mergeInto = dup;
+    }
+
+    if (mergeInto) {
+      caption('ANALİZ EDİLİYOR', 0.5);
+      const addText = await ask(`Aşağıdaki mevcut nota yeni gelen veriyi ekleyeceğiz. Yeni verinin getirdiği YENİ bilgileri Türkçe, madde madde, kısa özetle (mevcut notta olanı tekrarlama).\n\nMEVCUT NOT: ${mergeInto.title}\n${mergeInto.summary}\n\nYENİ VERİ:\n${inp.content || inp.url}`, { modelTier: 'default', images: inp.images.length ? inp.images : undefined });
+      await typeOut(addText.replace(/[#*_-]/g, ''));
+      const n = { ...mergeInto };
+      n.body = (n.body || '') + `\n\n## Ek veri (${fmtDate(now())})\n${addText}\n`;
+      n.content = ((n.content || '') + '\n\n---\n\n' + (inp.content || '')).slice(0, MAX_CONTENT);
+      n.updatedAt = now();
+      caption('NÖRON GÜNCELLENİYOR', 0.9);
+      await save(n);
+      done = n.id;
+      return;
+    }
+
+    caption('ANALİZ EDİLİYOR', 0.3);
+    const a = await askJSON(analysisPrompt(inp), { modelTier: 'default', images: inp.images.length ? inp.images : undefined });
+    a.title = String(a.title || 'Başlıksız').slice(0, 160);
+    if (!TOPICS.some((t) => t.key === a.topic)) a.topic = 'Diğer';
+    a.tags = (a.tags || []).map((t) => norm(t)).filter(Boolean).slice(0, 6);
+    a.concepts = (a.concepts || []).filter((c) => c && c.name).slice(0, 6);
+    a.people = (a.people || []).filter((p) => p && p.name).slice(0, 5);
+    const typing = typeOut(a.summary);
+
+    caption('BAĞLANIYOR', 0.6);
+    const noteId = newId('n');
+    let lr = { links: [], ideas: [], projectHints: [] };
+    try { lr = await askJSON(linkPrompt(a, candidateNotes(a, noteId)), { modelTier: 'default' }); } catch (e) { console.warn('bağlantı adımı', e); }
+    const validLinks = (lr.links || []).filter((l) => noteById(l.id) && l.id !== noteId);
+    await typing;
+
+    caption('NÖRONLAR OLUŞUYOR', 0.85);
+    const note = {
+      id: noteId, kind: 'note', type: 'source', title: a.title, topic: a.topic, sourceType: a.sourceType || '', language: a.language || '',
+      summary: a.summary || '', tags: a.tags, credibility: clamp(a.credibility?.score, 0, 5),
+      concepts: a.concepts.map((c) => c.name), people: a.people.map((p) => p.name), events: (a.events || []).slice(0, 12),
+      url: inp.url, why: inp.why, content: inp.content, fileNames: inp.fileNames, collections: [],
+      projectHints: (lr.projectHints || []).filter((p) => p && p.project).slice(0, 4), body: buildBody(a, inp), createdAt: now(), updatedAt: now(),
+    };
+    const writes = [note];
+    const entity = (name, type, text) => {
+      let e = writes.find((w) => w.kind === 'note' && norm(w.title) === norm(name)) || noteByTitle(name);
+      if (e && e.id === note.id) return;
+      const line = `- [[${a.title}]]: ${text}`;
+      if (e && (e.type === 'concept' || e.type === 'person')) e = { ...e, body: (e.body || '') + '\n' + line, updatedAt: now() };
+      else if (!e) e = { id: newId('n'), kind: 'note', type, title: name, topic: a.topic, summary: text, tags: [], concepts: [], people: [], body: `${text}\n\n## Geçtiği kaynaklar\n${line}`, createdAt: now(), updatedAt: now(), collections: [] };
+      writes.push(e);
+      writes.push({ id: newId('l'), kind: 'link', a: note.id, b: e.id, type: type === 'concept' ? 'kavram' : 'kişi', reason: String(text).slice(0, 160), strength: 1, createdAt: now() });
+    };
+    for (const c of a.concepts) entity(c.name, 'concept', c.explanation || '');
+    for (const p of a.people) entity(p.name, 'person', p.role || '');
+    for (const l of validLinks) writes.push({ id: newId('l'), kind: 'link', a: note.id, b: l.id, type: LINK_TYPES[l.type] ? l.type : 'aynı konu', reason: String(l.reason || '').slice(0, 300), strength: clamp(l.strength, 1, 3), createdAt: now() });
+    for (const i of (lr.ideas || []).slice(0, 4)) writes.push({
+      id: newId('i'), kind: 'idea', title: String(i.title || '').slice(0, 160), body: i.body || '', type: IDEA_TYPES.includes(i.type) ? i.type : 'sentez',
+      novelty: clamp(i.novelty, 0, 10), feasibility: clamp(i.feasibility, 0, 10), potential: clamp(i.potential, 0, 10),
+      fromNotes: [note.id, ...(i.fromNotes || []).filter((x) => noteById(x))].slice(0, 6), status: 'new', createdAt: now(),
+    });
+    for (const w of writes) await save(w);
+    done = note.id;
+    maybeLearnInterests();
+    resetForm();
+  } catch (e) {
+    console.error(e);
+    caption('OLMADI', 0);
+    $('#stream').textContent = aiError(e);
+    await wait(3200);
+  } finally {
+    brain.think(false);
+    state.hold = false;
+    graphSig = ''; syncGraph();
+    if (done) {
+      const n = brain.byKey.get(done);
+      if (n) { brain.controls.autoRotate = false; brain.flyToNode(n); brain.fire(n, 2); }
+      caption('BAĞLANTI KURULDU', 1);
+      await wait(2600);
+    }
+    document.body.classList.remove('working');
+    state.busy = false;
+    if (done) brain.select(done);
   }
 }
+$('#addForm').addEventListener('submit', (e) => { e.preventDefault(); ingest({ text: addIn.value.trim(), url: $('#addUrl').value.trim(), why: $('#addWhy').value.trim(), files: [...pendingFiles] }); });
+addIn.addEventListener('focus', () => add.classList.add('big'));
+addIn.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) $('#addForm').requestSubmit(); });
+addIn.addEventListener('paste', (e) => { const fs = [...(e.clipboardData?.files || [])]; if (fs.length) { e.preventDefault(); pendingFiles.push(...fs); renderFiles(); } });
+document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#add, #bar') && !addIn.value && !pendingFiles.length && !$('#addUrl').value) add.classList.remove('big'); });
+['dragenter', 'dragover'].forEach((ev) => window.addEventListener(ev, (e) => { e.preventDefault(); document.body.classList.add('drag'); }));
+window.addEventListener('dragleave', (e) => { e.preventDefault(); if (!e.relatedTarget) document.body.classList.remove('drag'); });
+window.addEventListener('drop', (e) => {
+  e.preventDefault(); document.body.classList.remove('drag');
+  const fs = [...(e.dataTransfer?.files || [])];
+  const text = e.dataTransfer?.getData('text/plain');
+  if (fs.length) { pendingFiles.push(...fs); renderFiles(); }
+  else if (text) { addIn.value = text; add.classList.add('big'); }
+});
 
-/* ------------------------------------------------------------------ */
-/* Olaylar                                                             */
-/* ------------------------------------------------------------------ */
+/* ---------- alt bar ve kısayollar ---------- */
+const QN = ['DÜŞÜK', 'ORTA', 'YÜKSEK'];
+const q0 = store.get('sinaps-quality');
+if (q0 != null && QN[+q0]) brain.setQuality(+q0);
+$('#btnQuality').textContent = QN[brain.quality];
+$('#bar').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  sfx.click();
+  if (b.id === 'btnList') toggle('list');
+  if (b.id === 'btnIdeas') toggle('ideas');
+  if (b.id === 'btnProfile') toggle('profile');
+  if (b.id === 'btnSearch') openSearch();
+  if (b.id === 'btnAdd') { closePanels(); if (brain.sel != null || state.editing) { state.editing = false; brain.select(null); document.body.classList.remove('split'); } add.classList.add('big'); addIn.focus(); }
+  if (b.id === 'btnTheme') { mode = mode === 'dark' ? 'light' : 'dark'; store.set('sinaps-mode', mode); applyTheme(); brain.setMode(mode); }
+  if (b.id === 'btnSound') toggleSound();
+  if (b.id === 'btnQuality') { brain.setQuality((brain.quality + 1) % 3); b.textContent = QN[brain.quality]; store.set('sinaps-quality', brain.quality); }
+});
+window.addEventListener('keydown', (e) => {
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '');
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); return openSearch(); }
+  if (e.key === 'Escape') {
+    if (!$('#modal').hidden) return $('#modal').click();
+    if (PANELS.some((id) => $('#' + id).classList.contains('open'))) return closePanels();
+    if (state.editing) { state.editing = false; if (state.selectedNote) renderNote(true); else document.body.classList.remove('split'); return; }
+    if (brain.sel != null || brain.lobe != null) return brain.select(null);
+    add.classList.remove('big'); document.activeElement?.blur();
+  }
+  if (e.key === 'n' && !typing && !e.metaKey && !e.ctrlKey) { e.preventDefault(); $('#btnAdd').click(); }
+});
 
-const pendingFiles = [];
-
-function renderFiles() {
-  $('#fileList').innerHTML = pendingFiles.map((f, i) => `<span class="file-pill">${esc(f.name)}<button type="button" data-rmfile="${i}" aria-label="Kaldır">✕</button></span>`).join('');
-}
-
-function resetForm() {
-  $('#inText').value = '';
-  $('#inUrl').value = '';
-  $('#inWhy').value = '';
-  pendingFiles.length = 0;
-  renderFiles();
-}
-
-function bind() {
-  window.addEventListener('hashchange', route);
-
-  try { const t = localStorage.getItem('sinaps-theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
-  $('#themeBtn').onclick = () => applyTheme(isDark() ? 'light' : 'dark');
-
-  const dz = $('#ingestForm');
-  dz.addEventListener('submit', (e) => {
-    e.preventDefault();
-    ingest({ text: $('#inText').value.trim(), url: $('#inUrl').value.trim(), why: $('#inWhy').value.trim(), files: [...pendingFiles] });
-  });
-  $('#inFile').addEventListener('change', (e) => { pendingFiles.push(...e.target.files); e.target.value = ''; renderFiles(); });
-  ['dragenter', 'dragover'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('drag'); }));
-  ['dragleave', 'drop'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('drag'); }));
-  dz.addEventListener('drop', (e) => { pendingFiles.push(...(e.dataTransfer?.files || [])); renderFiles(); });
-  $('#inText').addEventListener('paste', (e) => {
-    const fs = [...(e.clipboardData?.files || [])];
-    if (fs.length) { e.preventDefault(); pendingFiles.push(...fs); renderFiles(); }
-  });
-  $('#inText').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) dz.requestSubmit(); });
-
-  document.addEventListener('click', async (e) => {
-    const t = e.target.closest('[data-open],[data-goto],[data-select],[data-act],[data-ntype],[data-coll],[data-ifilter],[data-iact],[data-rmfile],[data-closedrawer]');
-    if (!t) return;
-    if (t.dataset.rmfile !== undefined) { pendingFiles.splice(+t.dataset.rmfile, 1); return renderFiles(); }
-    if (t.dataset.closedrawer !== undefined) { $('#drawer').hidden = true; return; }
-    if (t.dataset.open) {
-      if (state.view === 'beyin' && G.nodes.get(t.dataset.open)) return flyTo(G.nodes.get(t.dataset.open));
-      return openNote(t.dataset.open);
-    }
-    if (t.dataset.goto) return openNote(t.dataset.goto);
-    if (t.dataset.select) { state.selectedNote = t.dataset.select; state.editing = false; return renderNotes(); }
-    if (t.dataset.ntype) { state.noteFilter.type = t.dataset.ntype; return renderNotes(); }
-    if (t.dataset.ifilter) { state.ideaFilter = t.dataset.ifilter; return renderIdeas(); }
-    const n = noteById(state.selectedNote);
-    if (t.dataset.coll && n) return toggleCollection(n, t.dataset.coll);
-    if (t.dataset.act && n) {
-      if (t.dataset.act === 'edit') return openEditor(n);
-      if (t.dataset.act === 'deep') return deepen(n);
-      if (t.dataset.act === 'links') return findLinksFor(n);
-      if (t.dataset.act === 'delete') return deleteNote(n);
-    }
-    if (t.dataset.iact) {
-      const i = state.docs.get(t.closest('[data-idea]').dataset.idea);
-      if (i) return ideaAction(i, t.dataset.iact);
-    }
-  });
-
-  document.addEventListener('submit', (e) => {
-    const f = e.target.closest('[data-chatform]');
-    if (!f) return;
-    e.preventDefault();
-    const msg = f.m.value.trim();
-    const i = state.docs.get(f.dataset.chatform);
-    if (msg && i) ideaChat(i, msg);
-  });
-
-  $('#noteSearch').addEventListener('input', (e) => { state.noteFilter.q = e.target.value; renderNotes(); });
-  $('#collFilter').addEventListener('change', (e) => { state.noteFilter.coll = e.target.value; renderNotes(); });
-  $('#newNoteBtn').onclick = () => { state.selectedNote = null; openEditor(null); };
-  $('#synthBtn').onclick = synthesize;
-
-  const pf = $('#profileForm');
-  pf.addEventListener('input', () => (pf.dataset.dirty = '1'));
-  pf.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    await save({ ...profile(), id: 'profile', kind: 'profile', interests: $('#pInterests').value.trim(), goals: $('#pGoals').value.trim(), projects: $('#pProjects').value.trim(), collections: $('#pCollections').value.trim() });
-    delete pf.dataset.dirty;
-    toast('Profil kaydedildi.');
-  });
-
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (!$('#modal').hidden) $('#modal').click(); $('#drawer').hidden = true; } });
-}
-
-bind();
-route();
-initRuntime();
+setTimeout(() => document.body.classList.add('ready'), 300);
+initRuntime().then(() => { if (!state.col) { state.loaded = true; scheduleRender(); } });
