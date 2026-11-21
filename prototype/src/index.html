@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sinaps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#ekle"><span class="brand-dot"></span>Sinaps</a>
+  <nav class="tabs" aria-label="Bölümler">
+    <a href="#ekle" data-view="ekle">Ekle</a>
+    <a href="#beyin" data-view="beyin">Beyin</a>
+    <a href="#notlar" data-view="notlar">Notlar</a>
+    <a href="#fikirler" data-view="fikirler">Fikirler</a>
+    <a href="#profil" data-view="profil">Profil</a>
+  </nav>
+  <div class="topbar-right">
+    <span id="sync" class="sync" title="Bağlantı durumu">Bağlanıyor…</span>
+    <button id="themeBtn" class="icon-btn" type="button" aria-label="Temayı değiştir">◐</button>
+  </div>
+</header>
+
+<div id="banner" class="banner" hidden></div>
+
+<main>
+  <!-- EKLE -->
+  <section id="view-ekle" class="view">
+    <div class="ingest">
+      <h1>Beynine yeni bir şey at</h1>
+      <p class="muted">Metin, link, PDF ya da görsel. Sinaps okur, detaylandırır, eski notlarınla bağlar ve fikir üretir.</p>
+      <form id="ingestForm" class="dropzone" autocomplete="off">
+        <textarea id="inText" rows="7" placeholder="Metni buraya yapıştır… (link de olur)"></textarea>
+        <div class="row">
+          <input id="inUrl" type="url" placeholder="Kaynak linki (isteğe bağlı)">
+        </div>
+        <div class="row">
+          <input id="inWhy" type="text" placeholder="Neden kaydediyorsun? (isteğe bağlı)">
+        </div>
+        <div id="fileList" class="file-list"></div>
+        <div class="row actions">
+          <label class="btn ghost file-btn">Dosya ekle
+            <input id="inFile" type="file" multiple accept=".pdf,.txt,.md,image/*" hidden>
+          </label>
+          <span class="muted small">ya da dosyayı bu kutuya sürükle</span>
+          <span class="spacer"></span>
+          <button id="ingestBtn" class="btn primary" type="submit">Sinaps'a gönder</button>
+        </div>
+      </form>
+      <div id="pipeline" class="pipeline" hidden></div>
+      <div id="ingestResult"></div>
+      <div class="recent">
+        <h2>Son eklenenler</h2>
+        <div id="recentList" class="card-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEYIN -->
+  <section id="view-beyin" class="view" hidden>
+    <div id="graph" class="graph"></div>
+    <div class="graph-legend" id="legend"></div>
+    <div class="graph-hint muted small">Sürükle: döndür · Tekerlek: yakınlaş · Düğüme tıkla: içine uç</div>
+    <div class="graph-empty" id="graphEmpty" hidden>Henüz nöron yok. <a href="#ekle">İlk veriyi at</a>.</div>
+    <aside id="drawer" class="drawer" hidden></aside>
+  </section>
+
+  <!-- NOTLAR -->
+  <section id="view-notlar" class="view" hidden>
+    <div class="notes-layout">
+      <div class="notes-side">
+        <div class="row">
+          <input id="noteSearch" type="search" placeholder="Notlarda ara…">
+        </div>
+        <div class="chips" id="typeChips"></div>
+        <select id="collFilter" aria-label="Koleksiyon"></select>
+        <button id="newNoteBtn" class="btn ghost wide" type="button">+ Kendi notunu yaz</button>
+        <div id="noteList" class="note-list"></div>
+      </div>
+      <div id="noteDetail" class="note-detail"></div>
+    </div>
+  </section>
+
+  <!-- FIKIRLER -->
+  <section id="view-fikirler" class="view" hidden>
+    <div class="ideas-wrap">
+      <div class="ideas-head">
+        <h1>Fikirler</h1>
+        <div class="chips" id="ideaChips"></div>
+        <span class="spacer"></span>
+        <button id="synthBtn" class="btn ghost" type="button">Tüm arşivden sentez üret</button>
+      </div>
+      <div id="ideaList" class="idea-list"></div>
+    </div>
+  </section>
+
+  <!-- PROFIL -->
+  <section id="view-profil" class="view" hidden>
+    <form id="profileForm" class="profile" autocomplete="off">
+      <h1>Profil</h1>
+      <p class="muted">Sinaps fikirleri bunlara göre üretir ve yeni verinin hangi projene yaradığını söyler.</p>
+      <label>İlgi alanların<textarea id="pInterests" rows="3" placeholder="Örn. yapay zeka ürünleri, sağlık teknolojisi, girişimcilik"></textarea></label>
+      <label>Hedeflerin<textarea id="pGoals" rows="3" placeholder="Örn. 2027'de bir SaaS ürünü çıkarmak"></textarea></label>
+      <label>Aktif projeler <span class="muted small">(her satıra bir proje: ad — kısa açıklama)</span><textarea id="pProjects" rows="4"></textarea></label>
+      <label>Koleksiyonlar <span class="muted small">(virgülle)</span><input id="pCollections" type="text" placeholder="Okunacaklar, Girişim, Sağlık"></label>
+      <div class="learned" id="learned"></div>
+      <div class="row actions"><span class="spacer"></span><button class="btn primary" type="submit">Kaydet</button></div>
+    </form>
+  </section>
+</main>
+
+<div id="modal" class="modal" hidden><div class="modal-card" id="modalCard"></div></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

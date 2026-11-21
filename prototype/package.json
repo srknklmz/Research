@@ -1,0 +1,17 @@
+{
+  "name": "sinaps-prototype",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
+  },
+  "dependencies": {
+    "3d-force-graph": "^1.80.2",
+    "marked": "^15.0.12",
+    "pdfjs-dist": "^4.10.38",
+    "three": "^0.187.0"
+  }
+}
