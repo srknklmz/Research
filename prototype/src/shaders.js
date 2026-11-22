@@ -43,20 +43,25 @@ export const SOMA_FS = `
 uniform float uInk; uniform vec3 uAccent; uniform vec3 uInkColor;
 varying vec3 vColor; varying float vI; varying float vFlash; varying float vBlur;
 void main(){
-  float d = length(gl_PointCoord - 0.5) * 2.0;
+  vec2 q = gl_PointCoord - 0.5;
+  float d = length(q) * 2.0;
   if (d > 1.0) discard;
-  float core = smoothstep(0.42, 0.05, d);
-  float halo = exp(-d*d*5.0);
-  vec3 col = mix(vColor, vec3(1.0), core*0.55);
-  col = mix(col, uAccent, clamp(vFlash,0.0,1.0)*0.75);
-  float a = (core*0.9 + halo*0.4) * vI / (1.0 + vBlur*1.6);
+  float body = smoothstep(0.6, 0.52, d);
+  float rim = body * smoothstep(0.3, 0.58, d);
+  float hl = smoothstep(0.13, 0.0, length(q - vec2(-0.1, -0.11)));
+  float halo = exp(-d*d*3.5) * (1.0 - body);
+  vec3 base = mix(vColor, vec3(1.0), 0.3);
+  float shade = 0.62 + 0.38 * (1.0 - smoothstep(0.0, 0.6, length(q - vec2(-0.08, -0.1)) * 2.0));
+  vec3 col = base * shade + rim * 0.35 + hl * 0.9;
+  col = mix(col, uAccent + 0.25, clamp(vFlash,0.0,1.0)*0.7);
+  float a = (body * 0.96 + halo * 0.55) * vI / (1.0 + vBlur*1.4);
   if (uInk > 0.5) {
-    float disc = smoothstep(0.62, 0.5, d);
-    float ring = smoothstep(0.1, 0.0, abs(d-0.72)) * 0.5;
-    col = mix(mix(uInkColor, vColor, 0.55), uAccent, clamp(vFlash,0.0,1.0));
-    a = (disc + ring) * clamp(vI, 0.0, 1.0) / (1.0 + vBlur);
+    col = mix(mix(vColor, vec3(1.0), 0.15) * shade + hl*0.6, uAccent, clamp(vFlash,0.0,1.0));
+    float ring = smoothstep(0.08, 0.0, abs(d-0.58)) * 0.6;
+    col = mix(col, uInkColor, ring*0.5);
+    a = (body + ring) * clamp(vI, 0.0, 1.0) / (1.0 + vBlur);
   }
-  gl_FragColor = vec4(col, a);
+  gl_FragColor = vec4(col, clamp(a, 0.0, 1.0));
 }`;
 
 export const LINE_VS = `
@@ -81,8 +86,8 @@ uniform sampler2D uTex; uniform float uTime;
 varying vec3 vColor; varying float vI; varying float vPulse; varying float vBurst; varying float vFres;
 void main(){
   vec4 d = texture2D(uTex, vec2((aLink + 0.5) / ${LT}.0, 0.5));
-  float p = fract(aT - uTime * (0.10 + aSeed*0.10) - aSeed*7.0);
-  vPulse = smoothstep(0.16, 0.0, p) + smoothstep(0.985, 1.0, p);
+  float p = fract(aT - uTime * (0.05 + aSeed*0.05) - aSeed*7.0);
+  vPulse = smoothstep(0.07, 0.0, p) * 0.8 + smoothstep(0.993, 1.0, p) * 0.8;
   float p2 = fract(aT - uTime*0.9 - aSeed*3.0);
   vBurst = d.g * smoothstep(0.3, 0.0, p2);
   vI = d.r * step(aT, d.b);
@@ -96,8 +101,8 @@ uniform vec3 uAccent; uniform float uInk; uniform vec3 uInkColor;
 varying vec3 vColor; varying float vI; varying float vPulse; varying float vBurst; varying float vFres;
 void main(){
   float sig = vPulse + vBurst*2.0;
-  vec3 col = vColor * (0.22 + 0.25*vFres) + uAccent * sig * 1.3;
-  float a = (0.24 + sig) * vI;
+  vec3 col = vColor * (0.35 + 0.35*(1.0-vFres)) + mix(uAccent, vec3(1.0), 0.35) * sig * 1.2;
+  float a = (0.2 * (1.0 - vFres*0.6) + sig) * vI;
   if (uInk > 0.5) { col = mix(mix(uInkColor, vColor, 0.35), uAccent, clamp(sig,0.0,1.0)); a = (0.6 + sig) * clamp(vI,0.0,1.0); }
   gl_FragColor = vec4(col, clamp(a,0.0,1.0));
 }`;

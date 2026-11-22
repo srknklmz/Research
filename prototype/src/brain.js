@@ -83,7 +83,7 @@ export class Brain {
     this.camera = new THREE.PerspectiveCamera(42, 1, 1, 4000);
     this.camera.position.set(210, 120, 560);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    Object.assign(this.controls, { enableDamping: true, dampingFactor: 0.06, autoRotate: true, autoRotateSpeed: 0.38, minDistance: 40, maxDistance: 900, enablePan: false });
+    Object.assign(this.controls, { enableDamping: true, dampingFactor: 0.06, autoRotate: true, autoRotateSpeed: 0.3, minDistance: 40, maxDistance: 900, enablePan: false });
 
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
@@ -151,7 +151,7 @@ export class Brain {
     const fogAt = (x, y, z, s, key, o) => {
       const m = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, opacity: o });
       const sp = new THREE.Sprite(m); sp.position.set(x, y, z); sp.scale.setScalar(s); sp.renderOrder = -5;
-      sp.userData = { key }; this.fog.push(sp); this.scene.add(sp);
+      sp.userData = { key, o }; this.fog.push(sp); this.scene.add(sp);
     };
     fogAt(0, 10, 0, 520, 'bg2', 0.55); fogAt(-160, 120, -220, 520, 'bg2', 0.4); fogAt(190, -90, -160, 420, 'accent', 0.07); fogAt(0, 200, 60, 380, 'shell', 0.06);
   }
@@ -219,7 +219,7 @@ export class Brain {
     this.links = links;
     this.nodes.forEach((n, i) => { n.i = i; n.deg = 0; });
     this.links.forEach((l, i) => { l.i = i; l.a.deg++; l.b.deg++; });
-    for (const n of this.nodes) n.size = (n.type === 'source' ? 5.2 : 3.4) + Math.min(n.deg, 8) * 0.75;
+    for (const n of this.nodes) n.size = (n.type === 'source' ? 6.2 : 4.0) + Math.min(n.deg, 8) * 0.6;
     if (this.sel != null && !this.byKey.has(this.sel)) { this.sel = null; this.resetTargets(); }
     this.rebuild();
 
@@ -260,39 +260,40 @@ export class Brain {
 
     const lp = [], ln = [], ls = [];
     const seg = (a, b, node, s0, s1) => { lp.push(a.x, a.y, a.z, b.x, b.y, b.z); ln.push(node, node); ls.push(s0, s1); };
-    const branch = (r, start, dir, len, node, s0, depth) => {
+    const stub = (r, start, dir, len, node) => {
       let p = start.clone();
-      const steps = 6, v = dir.clone();
+      const v = dir.clone();
+      const steps = 4;
       for (let i = 0; i < steps; i++) {
-        v.add(rv(r).multiplyScalar(0.7)).normalize();
+        v.add(rv(r).multiplyScalar(0.25)).normalize();
         const q = p.clone().addScaledVector(v, len / steps);
-        const a = s0 + (1 - s0) * (i / steps), b = s0 + (1 - s0) * ((i + 1) / steps);
-        seg(p, q, node, a, b);
-        if (depth > 0 && i === 2) branch(r, q, v.clone().add(rv(r)).normalize(), len * 0.55, node, b, depth - 1);
-        if (depth > 0 && i === 4 && r() < 0.5) branch(r, q, v.clone().add(rv(r)).normalize(), len * 0.4, node, b, 0);
+        seg(p, q, node, i / steps, (i + 1) / steps);
         p = q;
       }
     };
     nodes.forEach((n, i) => {
       const r = rng(hash(n.key) ^ 0x9e37);
-      const k = n.type === 'source' ? 6 : 4;
-      for (let j = 0; j < k; j++) branch(r, n.pos, rv(r).normalize(), n.size * (2.2 + r() * 2.4), i, 0, 1);
+      const k = n.type === 'source' ? 4 : 3;
+      for (let j = 0; j < k; j++) stub(r, n.pos, rv(r).normalize(), n.size * (0.9 + r() * 0.6), i);
     });
 
-    const RING = 5, SEG = 30;
+    const RING = 6, SEG = 28;
     const tp = [], tn = [], tl = [], tt = [], tsd = [], ti = [];
     links.forEach((l, li) => {
       const r = rng(hash(l.key));
       const A = l.a.pos, B = l.b.pos, dist = A.distanceTo(B);
-      const mid = (t) => A.clone().lerp(B, t).add(rv(r).multiplyScalar(dist * 0.28));
-      const curve = new THREE.CatmullRomCurve3([A, mid(0.3), mid(0.68), B], false, 'catmullrom', 0.6);
+      const m = A.clone().add(B).multiplyScalar(0.5);
+      const out = m.clone().normalize().multiplyScalar(dist * 0.18 + 4).add(rv(r).multiplyScalar(dist * 0.06));
+      const curve = new THREE.QuadraticBezierCurve3(A.clone(), m.clone().add(out), B.clone());
       l.mid = curve.getPoint(0.5);
       const pts = curve.getPoints(SEG);
       const frames = curve.computeFrenetFrames(SEG, false);
       const base = tp.length / 3;
-      const w = (0.34 + r() * 0.2) * this.design.fiber;
+      const key = this.linkTypes[l.type]?.key;
+      const thin = key === 'kavram' || key === 'kişi';
+      const w = (thin ? 0.16 : 0.3) * this.design.fiber;
       for (let i = 0; i <= SEG; i++) {
-        const t = i / SEG, rad = w * (0.4 + 1.0 * Math.pow(Math.abs(2 * t - 1), 2.4));
+        const t = i / SEG, rad = w * (0.45 + 0.55 * Math.sin(Math.PI * t));
         for (let j = 0; j < RING; j++) {
           const a = (j / RING) * Math.PI * 2;
           const nx = frames.normals[i].clone().multiplyScalar(Math.cos(a)).addScaledVector(frames.binormals[i], Math.sin(a));
@@ -303,14 +304,6 @@ export class Brain {
       for (let i = 0; i < SEG; i++) for (let j = 0; j < RING; j++) {
         const a = base + i * RING + j, b = base + i * RING + ((j + 1) % RING), c = a + RING, e = b + RING;
         ti.push(a, c, b, b, c, e);
-      }
-      for (const [t0, node] of [[0.16, l.a], [0.84, l.b]]) {
-        const p0 = curve.getPoint(t0);
-        for (let k = 0; k < 2; k++) {
-          const end = node.pos.clone().add(rv(r).multiplyScalar(node.size * 1.3));
-          const m = p0.clone().lerp(end, 0.5).add(rv(r).multiplyScalar(3));
-          seg(p0, m, node.i, 0.75, 0.45); seg(m, end, node.i, 0.45, 0.1);
-        }
       }
     });
     const lg = new THREE.BufferGeometry();
@@ -359,7 +352,7 @@ export class Brain {
     const lc = this.lines.geometry.attributes.color;
     for (let i = 0; i < lc.count; i++) { const c = tcs[this.nodes[this.lineNode[i]].topic]; lc.setXYZ(i, c.r, c.g, c.b); }
     lc.needsUpdate = true;
-    const lcs = this.linkTypes.map((_, i) => this.linkColor(i));
+    const lcs = this.linkTypes.map((t, i) => { const c = this.linkColor(i); return t.key === 'kavram' || t.key === 'kişi' ? c.multiplyScalar(0.45) : c; });
     const tc = this.tubes.geometry.attributes.color;
     for (let i = 0; i < tc.count; i++) { const c = lcs[this.links[this.tubeLink[i]].type]; tc.setXYZ(i, c.r, c.g, c.b); }
     tc.needsUpdate = true;
@@ -376,7 +369,7 @@ export class Brain {
     this.shellU.uInt.value = m.shellInt;
     this.dustU.uColor.value.set(ink ? m.text : m.shell);
     this.dustU.uOpacity.value = ink ? 0.16 : 0.5;
-    this.lineU.uGain.value = ink ? 1.15 : 0.5;
+    this.lineU.uGain.value = ink ? 0.7 : 0.32;
     for (const mt of Object.values(this.M)) { mt.blending = ink ? THREE.NormalBlending : THREE.AdditiveBlending; mt.needsUpdate = true; }
     for (const f of this.fog) { f.visible = !ink; f.material.color.set(m[f.userData.key]); }
     if (m.bloom) { this.bloom.strength = m.bloom[0]; this.bloom.radius = m.bloom[1]; this.bloom.threshold = m.bloom[2]; }
@@ -518,8 +511,11 @@ export class Brain {
       ld[i] = l.I; ld[i + 1] = l.burst; ld[i + 2] = l.reveal; ld[i + 3] = 1;
     }
     this.nodeTex.needsUpdate = true; this.linkTex.needsUpdate = true;
-    const dimTo = this.sel != null ? 0.22 : this.lobe != null ? 0.5 : 1;
+    const camD = this.camera.position.distanceTo(this.controls.target) / this.far();
+    const zoomFade = smooth(140, 300, camD);
+    const dimTo = (this.sel != null ? 0.22 : this.lobe != null ? 0.5 : 1) * zoomFade;
     this.shellU.uDim.value += (dimTo - this.shellU.uDim.value) * Math.min(1, dt * 2.5);
+    for (const f of this.fog) f.material.opacity = f.userData.o * (0.15 + 0.85 * zoomFade);
     const sr = this.shellU.uReveal; sr.value += (this.shellRevealTo - sr.value) * Math.min(1, dt * 0.9);
     this.U.uTime.value = this.time;
     this.U.uFocus.value += (this.camera.position.distanceTo(this.controls.target) - this.U.uFocus.value) * Math.min(1, dt * 3);

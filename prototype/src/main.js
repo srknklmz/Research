@@ -602,8 +602,8 @@ JSON: { "ideas": [{ "title": "", "body": "", "type": "${IDEA_TYPES.join(' | ')}"
 /* ================================================================== */
 
 const DESIGN = {
-  name: 'KORTEKS', shell: 'glass', defaultMode: 'dark', mono: 0.0, fiber: 1.0, breath: 1.0, wobble: 0.0, soma: 1.0,
-  dark: { bg: '#050916', bg2: '#0b1a3a', text: '#eef1f8', mute: '#8791a8', accent: '#ff2d6f', shell: '#7fa6ff', shellInt: 0.4, bloom: [0.62, 0.55, 0.3], glass: 'rgba(12,18,36,.55)', line: 'rgba(255,255,255,.12)' },
+  name: 'KORTEKS', shell: 'glass', defaultMode: 'dark', mono: 0.0, fiber: 1.0, breath: 1.0, wobble: 0.0, soma: 1.75,
+  dark: { bg: '#050916', bg2: '#0b1a3a', text: '#eef1f8', mute: '#8791a8', accent: '#ff2d6f', shell: '#7fa6ff', shellInt: 0.32, bloom: [0.55, 0.6, 0.42], glass: 'rgba(12,18,36,.55)', line: 'rgba(255,255,255,.12)' },
   light: { bg: '#eceef3', bg2: '#ffffff', text: '#10131c', mute: '#5d6578', accent: '#d81b5c', shell: '#5a6c96', shellInt: 0.5, glass: 'rgba(255,255,255,.6)', line: 'rgba(16,19,28,.14)' },
 };
 const LOBES = [[0, 0.16, 0.74], [0, 0.5, -0.08], [0, 0.12, -0.86], [-0.6, -0.14, 0.1], [0.6, -0.14, 0.1], [0, -0.5, -0.74]];
